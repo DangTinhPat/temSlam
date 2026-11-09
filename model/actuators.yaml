@@ -1,0 +1,76 @@
+# Actuator specification for RB v1.3 (hand-authored; read by tools/model/assign_inertials.py).
+# Torques are N*m. `peak_torque_nm` is the motor-shaft value; the MJCF control range is
+# peak_torque_nm * ratio, i.e. the torque at the joint output.
+schema_version: 1
+model: RB v1.3
+confirmed_by_user: 2026-10-27
+
+motors:
+  kpower_bl4012:
+    used_for: [hip, wheel]
+    datasheet: docs/datasheets/kpower_4012_outer_rotor_brushless.pdf
+    datasheet_sha256: 164a4c0d6b67c1eb6e6022351575e7c66ddfdfe680c0f951022d383b2e43633a
+    operating_voltage_v: [9, 16]
+    rated_voltage_v: 12
+    rated_torque_nm: 0.13
+    rated_speed_rpm: 400
+    stall_torque_nm: 0.2
+    stall_current_a: 2.0
+    no_load_speed_rpm: 950
+    kv_rpm_per_v: 75
+    terminal_resistance_ohm: 4
+    mass_kg: 0.132
+    peak_torque_nm: 0.2   # datasheet stall torque; not a validated timed-peak or continuous allowance
+    rotor_inertia_kg_m2: null   # not published; needs measurement
+    torque_speed_curve: >-
+      datasheet p.2 plot: speed falls roughly linearly with torque; about 1050 rpm no-load at
+      14 V (945 rpm at 12.6 V), reaching zero near 0.19-0.2 N*m. Plot is read by eye, not tabulated.
+    dimensions_mm: {outer_diameter: 47.8, height_without_pcb: 15}
+  knee_motor:
+    used_for: [knee]
+    source: salvaged from another device; no official datasheet
+    peak_torque_nm: 5.0   # user-stated peak, measured at the output shaft (the crank)
+    peak_torque_reference: output_shaft
+    operating_voltage_v: [12, 24]
+    driver: existing driver supplied by the user
+    continuous_torque_nm: null
+    max_speed_rad_s: null
+    rotor_inertia_kg_m2: null
+
+# ratio: motor revolutions per joint revolution. ctrl in the MJCF is output-side torque.
+# Knee motors act through the parallelogram: the crank motor drives phi = hip + knee,
+# modelled as a fixed tendon so its torque loads both the hip and knee DOFs.
+joint_actuators:
+  - {name: left_hip_motor,    motor: kpower_bl4012, ratio: 7.5, transmission: belt, target: {joint: left_hip}}
+  - {name: right_hip_motor,   motor: kpower_bl4012, ratio: 7.5, transmission: belt, target: {joint: right_hip}}
+  - {name: left_knee_motor,   motor: knee_motor,    ratio: 1.0, transmission: direct_to_crank, target: {tendon: left_crank_angle}}
+  - {name: right_knee_motor,  motor: knee_motor,    ratio: 1.0, transmission: direct_to_crank, target: {tendon: right_crank_angle}}
+  - {name: left_wheel_motor,  motor: kpower_bl4012, ratio: 1.0, transmission: direct, target: {joint: left_wheel}}
+  - {name: right_wheel_motor, motor: kpower_bl4012, ratio: 1.0, transmission: direct, target: {joint: right_wheel}}
+
+crank_tendons:
+  - {name: left_crank_angle,  joints: [left_hip, left_knee]}
+  - {name: right_crank_angle, joints: [right_hip, right_knee]}
+
+wheel_assembly:
+  mass_kg: 0.150        # user-confirmed 2026-10-27: BL4012 motor + wheel + tyre, per side
+  motor_mass_kg: 0.132  # datasheet; wheel and tyre are therefore about 0.018 kg
+  mass_split_known: false   # stator (fixed to the shin) vs outer-rotor can + tyre (spinning) not measured
+
+# Single definition of the friction used by the MJCF generators (tools/model/assign_inertials.py and
+# tools/model/generate_dynamic_model.py both read it). Dry (Coulomb) joint friction is written as MuJoCo `frictionloss`.
+joint_friction_nm:        # N*m per joint, supplied by the user; hip set to 0.001 on 2026-10-28
+  hip: 0.001
+  knee: 0.05
+  wheel: 0.001
+contact_friction:         # sliding friction coefficient against the floor
+  tyre: 0.8               # measured by the user
+  body_shell: 0.2         # user estimate
+
+assumptions:
+  - The whole 150 g wheel assembly is currently modelled as the spinning wheel link. The BL4012 stator
+    is really fixed to the shin, so wheel spin inertia is overestimated and the shin is underweighted.
+  - Belt efficiency is taken as 100%; it has not been measured.
+  - Hip belt ratio 7.5 matches the 120T hip pulley in the CAD (16T motor pulley).
+  - Rotor inertia (armature), motor speed-torque droop and thermal limits are not modelled.
+  - Positive control torque rotates the joint about +Y; hardware sign and encoder zero are unverified.

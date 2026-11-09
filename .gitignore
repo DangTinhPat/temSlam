@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+firmware/esp32/include/rb1/esp32/WifiSecrets.hpp
+firmware/.pio/
+firmware/build/

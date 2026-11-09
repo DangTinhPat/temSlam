@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mujoco model="rb_v1_3_cad_preview">
+  <compiler angle="radian" meshdir="assets" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 0"/>
+  <visual>
+    <global azimuth="0" elevation="-18" fovy="45"/>
+    <headlight ambient="0.65 0.65 0.65" diffuse="0.80 0.80 0.80" specular="0.30 0.30 0.30"/>
+    <map znear="0.01" zfar="5"/>
+  </visual>
+  <asset>
+    <mesh name="mesh_01_00" file="mesh_01_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_02_00" file="mesh_02_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_03_00" file="mesh_03_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_04_00" file="mesh_04_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_05_00" file="mesh_05_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_06_00" file="mesh_06_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_07_00" file="mesh_07_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_08_00" file="mesh_08_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_09_00" file="mesh_09_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_10_00" file="mesh_10_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_11_00" file="mesh_11_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_12_00" file="mesh_12_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_13_00" file="mesh_13_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_14_00" file="mesh_14_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_15_00" file="mesh_15_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_16_00" file="mesh_16_00.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="mesh_17_00" file="mesh_17_00.stl" scale="0.001 0.001 0.001"/>
+    <material name="body" rgba="0.760 0.680 0.480 1.000" specular="0.22" shininess="0.28"/>
+    <material name="left_leg" rgba="0.350 0.520 0.490 1.000" specular="0.22" shininess="0.28"/>
+    <material name="right_leg" rgba="0.390 0.490 0.580 1.000" specular="0.22" shininess="0.28"/>
+    <material name="head" rgba="0.700 0.540 0.380 1.000" specular="0.22" shininess="0.28"/>
+    <material name="electronics" rgba="0.550 0.480 0.620 1.000" specular="0.22" shininess="0.28"/>
+    <material name="battery" rgba="0.620 0.600 0.400 1.000" specular="0.22" shininess="0.28"/>
+    <material name="motor" rgba="0.580 0.370 0.360 1.000" specular="0.22" shininess="0.28"/>
+    <material name="belt" rgba="0.500 0.440 0.320 1.000" specular="0.22" shininess="0.28"/>
+    <material name="metal" rgba="0.420 0.470 0.510 1.000" specular="0.22" shininess="0.28"/>
+    <material name="axis_y" rgba="0.700 0.340 0.310 1.000" specular="0.22" shininess="0.28"/>
+    <material name="axis_z" rgba="0.280 0.440 0.620 1.000" specular="0.22" shininess="0.28"/>
+  </asset>
+  <worldbody>
+    <geom name="ground" type="plane" pos="0 0 -0.078" size="2 2 0.01" rgba="0.88 0.90 0.93 1" contype="0" conaffinity="0"/>
+    <body name="rb_v1_3_cad">
+      <geom name="cad_01_00_Left_LEG_v1_3" type="mesh" mesh="mesh_01_00" material="left_leg" contype="0" conaffinity="0"/>
+      <geom name="cad_02_00_Right_LEG_v1_3" type="mesh" mesh="mesh_02_00" material="right_leg" contype="0" conaffinity="0"/>
+      <geom name="cad_03_00_PCBA" type="mesh" mesh="mesh_03_00" material="electronics" contype="0" conaffinity="0"/>
+      <geom name="cad_04_00_Robot_Head_POC" type="mesh" mesh="mesh_04_00" material="head" contype="0" conaffinity="0"/>
+      <geom name="cad_05_00_Body_1_v1_3_2-1" type="mesh" mesh="mesh_05_00" material="body" contype="0" conaffinity="0"/>
+      <geom name="cad_06_00_Bearing_Clamping_v1_3" type="mesh" mesh="mesh_06_00" material="metal" contype="0" conaffinity="0"/>
+      <geom name="cad_07_00_Bearing_Clamping_v1_3" type="mesh" mesh="mesh_07_00" material="metal" contype="0" conaffinity="0"/>
+      <geom name="cad_08_00_dong_co_dui" type="mesh" mesh="mesh_08_00" material="motor" contype="0" conaffinity="0"/>
+      <geom name="cad_09_00_dong_co_dui" type="mesh" mesh="mesh_09_00" material="motor" contype="0" conaffinity="0"/>
+      <geom name="cad_10_00_Timing_Belt_2GT-290mm" type="mesh" mesh="mesh_10_00" material="belt" contype="0" conaffinity="0"/>
+      <geom name="cad_11_00_Timing_Belt_2GT-290mm" type="mesh" mesh="mesh_11_00" material="belt" contype="0" conaffinity="0"/>
+      <geom name="cad_12_00_Ga_dong_co_dui" type="mesh" mesh="mesh_12_00" material="metal" contype="0" conaffinity="0"/>
+      <geom name="cad_13_00_battery_14_4V-1" type="mesh" mesh="mesh_13_00" material="battery" contype="0" conaffinity="0"/>
+      <geom name="cad_14_00_Body_2_v1_3_2" type="mesh" mesh="mesh_14_00" material="body" contype="0" conaffinity="0"/>
+      <geom name="cad_15_00_M3x20_ISO_4762" type="mesh" mesh="mesh_15_00" material="metal" contype="0" conaffinity="0"/>
+      <geom name="cad_16_00_battery_Cover_v1_3" type="mesh" mesh="mesh_16_00" material="body" contype="0" conaffinity="0"/>
+      <geom name="cad_17_00_Neck_Cover_v1_3" type="mesh" mesh="mesh_17_00" material="body" contype="0" conaffinity="0"/>
+      <geom name="axis_left_hip" type="capsule" fromto="0.00000000 0.06320000 0.00000000 0.00000000 0.09920000 0.00000000" size="0.0018" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="pivot_left_hip" type="sphere" pos="0.00000000 0.08120000 0.00000000" size="0.004" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="axis_right_hip" type="capsule" fromto="0.00000000 -0.09920000 0.00000000 0.00000000 -0.06320000 0.00000000" size="0.0018" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="pivot_right_hip" type="sphere" pos="0.00000000 -0.08120000 0.00000000" size="0.004" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="axis_left_knee" type="capsule" fromto="-0.09999870 0.08440000 -0.00051380 -0.09999870 0.12040000 -0.00051380" size="0.0018" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="pivot_left_knee" type="sphere" pos="-0.09999870 0.10240000 -0.00051380" size="0.004" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="axis_right_knee" type="capsule" fromto="-0.10000000 -0.12040000 0.00000000 -0.10000000 -0.08440000 0.00000000" size="0.0018" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="pivot_right_knee" type="sphere" pos="-0.10000000 -0.10240000 0.00000000" size="0.004" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="axis_left_wheel" type="capsule" fromto="-0.00915230 0.10210000 -0.04230910 -0.00915230 0.13810000 -0.04230910" size="0.0018" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="pivot_left_wheel" type="sphere" pos="-0.00915230 0.12010000 -0.04230910" size="0.004" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="axis_right_wheel" type="capsule" fromto="-0.00936930 -0.13809980 -0.04226210 -0.00936930 -0.10209980 -0.04226210" size="0.0018" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="pivot_right_wheel" type="sphere" pos="-0.00936930 -0.12009980 -0.04226210" size="0.004" material="axis_y" contype="0" conaffinity="0"/>
+      <geom name="axis_head_yaw" type="capsule" fromto="0.02500000 0.00000000 0.03660000 0.02500000 0.00000000 0.08660000" size="0.0018" material="axis_z" contype="0" conaffinity="0"/>
+      <geom name="pivot_head_yaw" type="sphere" pos="0.02500000 0.00000000 0.06160000" size="0.004" material="axis_z" contype="0" conaffinity="0"/>
+    </body>
+  </worldbody>
+</mujoco>

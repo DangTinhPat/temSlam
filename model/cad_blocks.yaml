@@ -1,0 +1,1216 @@
+source:
+  step: cad/robot_v1_3.step
+  sha256: e15ec80d90e41f0f44d8f6a12a0ed586a3863434765069a6c981ab51306232e7
+  length_unit: mm
+  top_level_component_count: 17
+body_frame:
+  name: body_link
+  datum_product: Body 1 v1.3.2-1
+  step_origin_mm:
+  - 1344.2053
+  - 678.8958
+  - 915.1971
+  axes:
+  - x_forward
+  - y_left
+  - z_up
+  robot_aabb_min_m:
+  - -0.13121
+  - -0.132602
+  - -0.077312
+  robot_aabb_max_m:
+  - 0.11165
+  - 0.132602
+  - 0.117302
+position_semantics:
+  aabb_center: axis-aligned bounding-box center; not a mass COM
+  uniform_volume_centroid: geometry volume centroid assuming uniform density; not
+    a measured mass COM
+  uniform_volume_central_inertia: CAD volume inertia about uniform-volume centroid
+    in body_link axes; scale by mass/volume only as a uniform-density approximation
+mass_budget_review:
+  user_row_total_kg: 2.495
+  verified_full_robot_mass_kg: null
+  per_link_inertial_manifest_created: true
+  per_link_inertials_embedded_in_articulated_mjcf_skeleton: true
+  full_visual_contact_model_available: false
+  direct_product_matches:
+    upper_body:
+    - Body 1 v1.3.2-1
+    lower_body:
+    - Body 2 v1.3.2
+    pcb:
+    - PCBA
+    battery:
+    - battery 14.4V-1
+    battery_cover:
+    - battery Cover v1.3
+    thigh_motor_bracket:
+    - Ga dong co dui
+    thigh_motor_pair:
+    - dong co dui
+    knee_motor_pair:
+    - Dong co chan cho
+    head_estimate:
+    - Robot Head POC
+    wheel_pair:
+    - Wheel
+    - Wheel-1
+  unresolved_mass_blocks:
+    wiring_fasteners_misc: 100 g lump has no measured COM or CAD solid; manifest uses
+      a body-centered cuboid estimate.
+  review_required:
+  - Measure complete assembled robot mass to check whether supplied rows cover every
+    component.
+  - Measure or allocate the 100 g wiring/fasteners mass across rigid links.
+  - Replace uniform-density CAD tensor approximations with measured COM/inertia where
+    sim-to-real accuracy requires it.
+symmetry_checks:
+  left_right_leg_aabb_max_mirror_error_m: 6.0e-05
+  left_right_wheel_aabb_max_mirror_error_m: 0.000217
+  hip_axis_max_mirror_error_m: 0.0
+  knee_axis_max_mirror_error_m: 0.000514
+  wheel_axis_max_mirror_error_m: 0.000217
+  interpretation: Geometric symmetry check only; does not validate mass or joint zero/sign.
+joint_axes:
+- name: left_hip
+  parent_link: body_link
+  child_link: left_thigh
+  origin_body_m:
+  - 0.0
+  - 0.0812
+  - 0.0
+  axis_body:
+  - 0.0
+  - 1.0
+  - 0.0
+  source_geometry: Left Hip v1.3-1 cylindrical pivot; axis X=1344.2053, Z=915.1971
+    mm
+- name: right_hip
+  parent_link: body_link
+  child_link: right_thigh
+  origin_body_m:
+  - 0.0
+  - -0.0812
+  - 0.0
+  axis_body:
+  - 0.0
+  - 1.0
+  - 0.0
+  source_geometry: Right Hip v1.3 cylindrical pivot; axis X=1344.2053, Z=915.1971
+    mm
+- name: left_knee
+  parent_link: left_thigh
+  child_link: left_shin
+  origin_body_m:
+  - -0.0999987
+  - 0.1024
+  - -0.0005138
+  axis_body:
+  - 0.0
+  - 1.0
+  - 0.0
+  source_geometry: Left Knee v1.3-1, assembly placement at [1244.2066, 781.2958, 914.6833]
+    mm
+- name: right_knee
+  parent_link: right_thigh
+  child_link: right_shin
+  origin_body_m:
+  - -0.1
+  - -0.1024
+  - 0.0
+  axis_body:
+  - 0.0
+  - 1.0
+  - 0.0
+  source_geometry: Right Knee v1.3 pivot, assembly placement at [1244.2053, 576.4958,
+    915.1971] mm
+- name: left_wheel
+  parent_link: left_shin
+  child_link: left_wheel
+  origin_body_m:
+  - -0.0091523
+  - 0.1201
+  - -0.0423091
+  axis_body:
+  - 0.0
+  - 1.0
+  - 0.0
+  source_geometry: Left Wheel 70mm tire centerline; center [1335.053, 798.996, 872.888]
+    mm
+- name: right_wheel
+  parent_link: right_shin
+  child_link: right_wheel
+  origin_body_m:
+  - -0.0093693
+  - -0.1200998
+  - -0.0422621
+  axis_body:
+  - 0.0
+  - 1.0
+  - 0.0
+  source_geometry: Right Wheel 70mm tire centerline; center [1334.836, 558.796, 872.935]
+    mm
+- name: head_yaw
+  parent_link: body_link
+  child_link: head
+  origin_body_m:
+  - 0.025
+  - 0.0
+  - 0.0616
+  axis_body:
+  - 0.0
+  - 0.0
+  - 1.0
+  source_geometry: JC2804 BLDC Motor central shaft cylinder; axis through [1369.2053,
+    678.8958] mm in STEP X/Y
+axis_geometry_evidence:
+  left_wheel:
+    source_product_path:
+    - Left LEG v1.3
+    - Wheel
+    - Wheel 70mm
+    matching_cylindrical_faces: 91
+    supporting_radii_mm:
+    - 17.0
+    - 21.0
+    - 24.1
+    - 25.0
+    - 27.0
+    - 32.0
+    - 34.0
+    - 34.3
+    max_axis_line_offset_mm: 0.00046
+    status: matched
+  left_hip:
+    source_product_path:
+    - Left LEG v1.3
+    - Left Hip v1.3-1
+    matching_cylindrical_faces: 7
+    supporting_radii_mm:
+    - 8.0
+    - 26.5
+    - 31.5
+    - 32.5
+    max_axis_line_offset_mm: 4.0e-05
+    status: matched
+  left_knee:
+    source_product_path:
+    - Left LEG v1.3
+    - Left Knee v1.3-1
+    matching_cylindrical_faces: 6
+    supporting_radii_mm:
+    - 2.1
+    - 9.0
+    - 10.0
+    max_axis_line_offset_mm: 4.0e-05
+    status: matched
+  right_wheel:
+    source_product_path:
+    - Right LEG v1.3
+    - Wheel-1
+    - Wheel 70mm
+    matching_cylindrical_faces: 91
+    supporting_radii_mm:
+    - 17.0
+    - 21.0
+    - 24.1
+    - 25.0
+    - 27.0
+    - 32.0
+    - 34.0
+    - 34.3
+    max_axis_line_offset_mm: 0.00025
+    status: matched
+  right_hip:
+    source_product_path:
+    - Right LEG v1.3
+    - Right Hip v1.3
+    matching_cylindrical_faces: 7
+    supporting_radii_mm:
+    - 8.0
+    - 26.5
+    - 31.5
+    - 32.5
+    max_axis_line_offset_mm: 4.0e-05
+    status: matched
+  right_knee:
+    source_product_path:
+    - Right LEG v1.3
+    - Right Knee v1.3
+    matching_cylindrical_faces: 6
+    supporting_radii_mm:
+    - 2.1
+    - 9.0
+    - 10.0
+    max_axis_line_offset_mm: 4.0e-05
+    status: matched
+  head_yaw:
+    source_product_path:
+    - Robot Head POC
+    - JC2804 BLDC Motor
+    - JC2804 BLDC Motor
+    matching_cylindrical_faces: 14
+    supporting_radii_mm:
+    - 2.75
+    - 3.25
+    - 5.0
+    - 5.9
+    - 15.25
+    - 17.25
+    max_axis_line_offset_mm: 5.0e-05
+    status: matched
+components:
+- product: Left LEG v1.3
+  assembly_path:
+  - Left LEG v1.3
+  instance: NAUO1
+  aabb_min_body_m:
+  - -0.131209
+  - 0.012099
+  - -0.07731
+  aabb_max_body_m:
+  - 0.039001
+  - 0.132601
+  - 0.039001
+  aabb_center_body_m:
+  - -0.046104
+  - 0.07235
+  - -0.019155
+  uniform_volume_centroid_body_m:
+  - -0.025123
+  - 0.084186
+  - -0.007714
+  solid_volume_m3: 0.000284475
+  uniform_volume_central_inertia_mm5:
+  - - 367791477.042
+    - 74568326.538
+    - 62328713.257
+  - - 74568326.538
+    - 641994968.907
+    - 68426797.346
+  - - 62328713.257
+    - 68426797.346
+    - 646231324.863
+- product: Wheel
+  assembly_path:
+  - Left LEG v1.3
+  - Wheel
+  instance: NAUO68
+  aabb_min_body_m:
+  - -0.044153
+  - 0.102399
+  - -0.07731
+  aabb_max_body_m:
+  - 0.025849
+  - 0.132601
+  - -0.007308
+  aabb_center_body_m:
+  - -0.009152
+  - 0.1175
+  - -0.042309
+  uniform_volume_centroid_body_m:
+  - -0.009068
+  - 0.118628
+  - -0.042348
+  solid_volume_m3: 4.4325e-05
+  uniform_volume_central_inertia_mm5:
+  - - 19008210.276
+    - 53368.596
+    - -22667.881
+  - - 53368.596
+    - 31434196.131
+    - -24712.344
+  - - -22667.881
+    - -24712.344
+    - 18969781.593
+- product: XGO 000 ____ A 2024.2.21
+  assembly_path:
+  - Left LEG v1.3
+  - Wheel
+  - XGO 000 ____ A 2024.2.21
+  instance: NAUO96
+  aabb_min_body_m:
+  - -0.034698
+  - 0.103199
+  - -0.067856
+  aabb_max_body_m:
+  - 0.016394
+  - 0.127101
+  - -0.016763
+  aabb_center_body_m:
+  - -0.009152
+  - 0.11515
+  - -0.042309
+  uniform_volume_centroid_body_m:
+  - -0.009266
+  - 0.118467
+  - -0.042259
+  solid_volume_m3: 7.872e-06
+  uniform_volume_central_inertia_mm5:
+  - - 1709520.632
+    - -10800.368
+    - 5452.801
+  - - -10800.368
+    - 2567002.957
+    - 4835.237
+  - - 5452.801
+    - 4835.237
+    - 1719197.061
+- product: Wheel 70mm
+  assembly_path:
+  - Left LEG v1.3
+  - Wheel
+  - Wheel 70mm
+  instance: NAUO97
+  aabb_min_body_m:
+  - -0.043452
+  - 0.1076
+  - -0.076609
+  aabb_max_body_m:
+  - 0.025148
+  - 0.1326
+  - -0.008009
+  aabb_center_body_m:
+  - -0.009152
+  - 0.1201
+  - -0.042309
+  uniform_volume_centroid_body_m:
+  - -0.009152
+  - 0.121202
+  - -0.042309
+  solid_volume_m3: 2.5938e-05
+  uniform_volume_central_inertia_mm5:
+  - - 12154418.969
+    - -0.0
+    - 0.0
+  - - -0.0
+    - 21529392.577
+    - -0.0
+  - - 0.0
+    - -0.0
+    - 12154418.969
+- product: Spring assembly
+  assembly_path:
+  - Left LEG v1.3
+  - Spring assembly
+  instance: NAUO69
+  aabb_min_body_m:
+  - -0.083439
+  - 0.086782
+  - -0.008027
+  aabb_max_body_m:
+  - -0.016645
+  - 0.103018
+  - 0.009063
+  aabb_center_body_m:
+  - -0.050042
+  - 0.0949
+  - 0.000518
+  uniform_volume_centroid_body_m:
+  - -0.047588
+  - 0.0949
+  - 0.000556
+  solid_volume_m3: 5.506e-06
+  uniform_volume_central_inertia_mm5:
+  - - 169318.225
+    - 0.141
+    - 25034.49
+  - - 0.141
+    - 1217955.624
+    - -0.005
+  - - 25034.49
+    - -0.005
+    - 1217350.085
+- product: Join Link-1
+  assembly_path:
+  - Left LEG v1.3
+  - Join Link-1
+  instance: NAUO70
+  aabb_min_body_m:
+  - -0.118385
+  - 0.0932
+  - 0.009263
+  aabb_max_body_m:
+  - -0.012387
+  - 0.0972
+  - 0.015777
+  aabb_center_body_m:
+  - -0.065386
+  - 0.0952
+  - 0.01252
+  uniform_volume_centroid_body_m:
+  - -0.065386
+  - 0.0952
+  - 0.01252
+  solid_volume_m3: 1.353e-06
+  uniform_volume_central_inertia_mm5:
+  - - 7333.368
+    - 0.0
+    - -7074.977
+  - - 0.0
+    - 1388894.455
+    - -0.0
+  - - -7074.977
+    - -0.0
+    - 1384237.468
+- product: Left Link v1.2-1
+  assembly_path:
+  - Left LEG v1.3
+  - Left Link v1.2-1
+  instance: NAUO71
+  aabb_min_body_m:
+  - -0.019387
+  - 0.0796
+  - -0.0075
+  aabb_max_body_m:
+  - 0.0075
+  - 0.0996
+  - 0.016777
+  aabb_center_body_m:
+  - -0.005944
+  - 0.0896
+  - 0.004639
+  uniform_volume_centroid_body_m:
+  - -0.003106
+  - 0.0919
+  - 0.002913
+  solid_volume_m3: 3.747e-06
+  uniform_volume_central_inertia_mm5:
+  - - 227357.969
+    - 27259.658
+    - 78779.099
+  - - 27259.658
+    - 270321.661
+    - -26754.997
+  - - 78779.099
+    - -26754.997
+    - 247654.917
+- product: Link 2-1
+  assembly_path:
+  - Left LEG v1.3
+  - Link 2-1
+  instance: NAUO82
+  aabb_min_body_m:
+  - -0.018
+  - 0.0628
+  - -0.018
+  aabb_max_body_m:
+  - 0.018
+  - 0.0891
+  - 0.018
+  aabb_center_body_m:
+  - 0.0
+  - 0.07595
+  - 0.0
+  uniform_volume_centroid_body_m:
+  - -0.0
+  - 0.070125
+  - -0.0
+  solid_volume_m3: 5.946e-06
+  uniform_volume_central_inertia_mm5:
+  - - 561846.894
+    - 0.0
+    - 0.0
+  - - 0.0
+    - 521667.8
+    - 0.0
+  - - 0.0
+    - 0.0
+    - 561846.894
+- product: Dong co chan cho
+  assembly_path:
+  - Left LEG v1.3
+  - Dong co chan cho
+  instance: NAUO87
+  aabb_min_body_m:
+  - -0.035301
+  - 0.022299
+  - -0.035301
+  aabb_max_body_m:
+  - 0.035301
+  - 0.064871
+  - 0.035301
+  aabb_center_body_m:
+  - 0.0
+  - 0.043585
+  - 0.0
+  uniform_volume_centroid_body_m:
+  - -0.000134
+  - 0.04621
+  - 5.4e-05
+  solid_volume_m3: 3.9758e-05
+  uniform_volume_central_inertia_mm5:
+  - - 18251421.923
+    - -109059.389
+    - 42425.733
+  - - -109059.389
+    - 24143237.178
+    - 44194.114
+  - - 42425.733
+    - 44194.114
+    - 18336676.71
+- product: Left Hip v1.3-1
+  assembly_path:
+  - Left LEG v1.3
+  - Left Hip v1.3-1
+  instance: NAUO89
+  aabb_min_body_m:
+  - -0.131208
+  - 0.0812
+  - -0.035178
+  aabb_max_body_m:
+  - 0.035177
+  - 0.1086
+  - 0.035177
+  aabb_center_body_m:
+  - -0.048015
+  - 0.0949
+  - -1.0e-06
+  uniform_volume_centroid_body_m:
+  - -0.04782
+  - 0.090259
+  - 0.008213
+  solid_volume_m3: 7.9623e-05
+  uniform_volume_central_inertia_mm5:
+  - - 27997034.551
+    - 5869368.807
+    - 13948802.337
+  - - 5869368.807
+    - 213683615.927
+    - -1713602.174
+  - - 13948802.337
+    - -1713602.174
+    - 195608126.934
+- product: Left Knee v1.3-1
+  assembly_path:
+  - Left LEG v1.3
+  - Left Knee v1.3-1
+  instance: NAUO90
+  aabb_min_body_m:
+  - -0.119385
+  - 0.0874
+  - -0.062613
+  aabb_max_body_m:
+  - 0.011152
+  - 0.1024
+  - 0.016263
+  aabb_center_body_m:
+  - -0.054117
+  - 0.0949
+  - -0.023175
+  uniform_volume_centroid_body_m:
+  - -0.045465
+  - 0.095248
+  - -0.025549
+  solid_volume_m3: 4.1335e-05
+  uniform_volume_central_inertia_mm5:
+  - - 14592079.693
+    - 125772.738
+    - 23944589.663
+  - - 125772.738
+    - 68221032.673
+    - -56361.845
+  - - 23944589.663
+    - -56361.845
+    - 55104753.328
+- product: Right LEG v1.3
+  assembly_path:
+  - Right LEG v1.3
+  instance: NAUO2
+  aabb_min_body_m:
+  - -0.131149
+  - -0.132601
+  - -0.077263
+  aabb_max_body_m:
+  - 0.039001
+  - -0.012099
+  - 0.039001
+  aabb_center_body_m:
+  - -0.046074
+  - -0.07235
+  - -0.019131
+  uniform_volume_centroid_body_m:
+  - -0.024432
+  - -0.083919
+  - -0.007757
+  solid_volume_m3: 0.000275561
+  uniform_volume_central_inertia_mm5:
+  - - 366370450.583
+    - -72921800.143
+    - 62440632.252
+  - - -72921800.143
+    - 631128837.41
+    - -68557844.896
+  - - 62440632.252
+    - -68557844.896
+    - 634879077.757
+- product: Wheel-1
+  assembly_path:
+  - Right LEG v1.3
+  - Wheel-1
+  instance: NAUO50
+  aabb_min_body_m:
+  - -0.04437
+  - -0.132601
+  - -0.077263
+  aabb_max_body_m:
+  - 0.025632
+  - -0.102399
+  - -0.007261
+  aabb_center_body_m:
+  - -0.009369
+  - -0.1175
+  - -0.042262
+  uniform_volume_centroid_body_m:
+  - -0.009285
+  - -0.118628
+  - -0.042301
+  solid_volume_m3: 4.4325e-05
+  uniform_volume_central_inertia_mm5:
+  - - 19008216.8
+    - -53363.166
+    - -22662.349
+  - - -53363.166
+    - 31434196.131
+    - 24724.067
+  - - -22662.349
+    - 24724.067
+    - 18969775.07
+- product: XGO 000 ____ A 2024.2.21
+  assembly_path:
+  - Right LEG v1.3
+  - Wheel-1
+  - XGO 000 ____ A 2024.2.21
+  instance: NAUO63
+  aabb_min_body_m:
+  - -0.034354
+  - -0.127101
+  - -0.067247
+  aabb_max_body_m:
+  - 0.015615
+  - -0.103199
+  - -0.017277
+  aabb_center_body_m:
+  - -0.00937
+  - -0.11515
+  - -0.042262
+  uniform_volume_centroid_body_m:
+  - -0.009481
+  - -0.118467
+  - -0.042208
+  solid_volume_m3: 7.872e-06
+  uniform_volume_central_inertia_mm5:
+  - - 1709770.579
+    - 10672.75
+    - 5664.73
+  - - 10672.75
+    - 2567002.957
+    - -5110.761
+  - - 5664.73
+    - -5110.761
+    - 1718947.114
+- product: Wheel 70mm
+  assembly_path:
+  - Right LEG v1.3
+  - Wheel-1
+  - Wheel 70mm
+  instance: NAUO64
+  aabb_min_body_m:
+  - -0.043669
+  - -0.1326
+  - -0.076562
+  aabb_max_body_m:
+  - 0.024931
+  - -0.1076
+  - -0.007962
+  aabb_center_body_m:
+  - -0.009369
+  - -0.1201
+  - -0.042262
+  uniform_volume_centroid_body_m:
+  - -0.009369
+  - -0.121202
+  - -0.042262
+  solid_volume_m3: 2.5938e-05
+  uniform_volume_central_inertia_mm5:
+  - - 12154418.969
+    - -0.0
+    - -0.0
+  - - -0.0
+    - 21529392.577
+    - -0.0
+  - - -0.0
+    - -0.0
+    - 12154418.969
+- product: Dong co chan cho
+  assembly_path:
+  - Right LEG v1.3
+  - Dong co chan cho
+  instance: NAUO53
+  aabb_min_body_m:
+  - -0.035301
+  - -0.064871
+  - -0.035301
+  aabb_max_body_m:
+  - 0.035301
+  - -0.022299
+  - 0.035301
+  aabb_center_body_m:
+  - 0.0
+  - -0.043585
+  - 0.0
+  uniform_volume_centroid_body_m:
+  - -0.000134
+  - -0.04621
+  - 5.6e-05
+  solid_volume_m3: 3.9758e-05
+  uniform_volume_central_inertia_mm5:
+  - - 18251187.78
+    - 108600.829
+    - 42189.172
+  - - 108600.829
+    - 24143237.178
+    - -45309.27
+  - - 42189.172
+    - -45309.27
+    - 18336910.853
+- product: Right Hip v1.3
+  assembly_path:
+  - Right LEG v1.3
+  - Right Hip v1.3
+  instance: NAUO57
+  aabb_min_body_m:
+  - -0.131148
+  - -0.1086
+  - -0.035178
+  aabb_max_body_m:
+  - 0.035178
+  - -0.0812
+  - 0.035178
+  aabb_center_body_m:
+  - -0.047985
+  - -0.0949
+  - 0.0
+  uniform_volume_centroid_body_m:
+  - -0.047777
+  - -0.090259
+  - 0.008459
+  solid_volume_m3: 7.9623e-05
+  uniform_volume_central_inertia_mm5:
+  - - 28144798.696
+    - -5860486.582
+    - 14809259.935
+  - - -5860486.582
+    - 213683615.239
+    - 1743737.04
+  - - 14809259.935
+    - 1743737.04
+    - 195460362.09
+- product: Right Knee v1.3
+  assembly_path:
+  - Right LEG v1.3
+  - Right Knee v1.3
+  instance: NAUO58
+  aabb_min_body_m:
+  - -0.119321
+  - -0.1024
+  - -0.062604
+  aabb_max_body_m:
+  - 0.010973
+  - -0.0874
+  - 0.016856
+  aabb_center_body_m:
+  - -0.054174
+  - -0.0949
+  - -0.022874
+  uniform_volume_centroid_body_m:
+  - -0.045596
+  - -0.095248
+  - -0.025315
+  solid_volume_m3: 4.1335e-05
+  uniform_volume_central_inertia_mm5:
+  - - 14839206.29
+    - -125481.484
+    - 24151481.564
+  - - -125481.484
+    - 68221032.673
+    - 57007.336
+  - - 24151481.564
+    - 57007.336
+    - 54857626.731
+- product: Join Link
+  assembly_path:
+  - Right LEG v1.3
+  - Join Link
+  instance: NAUO59
+  aabb_min_body_m:
+  - -0.118321
+  - -0.0972
+  - 0.009856
+  aabb_max_body_m:
+  - -0.012321
+  - -0.0932
+  - 0.015856
+  aabb_center_body_m:
+  - -0.065321
+  - -0.0952
+  - 0.012856
+  uniform_volume_centroid_body_m:
+  - -0.065321
+  - -0.0952
+  - 0.012856
+  solid_volume_m3: 1.353e-06
+  uniform_volume_central_inertia_mm5:
+  - - 7297.015
+    - 0.0
+    - -0.0
+  - - 0.0
+    - 1388894.455
+    - -0.0
+  - - -0.0
+    - -0.0
+    - 1384273.821
+- product: Link 2
+  assembly_path:
+  - Right LEG v1.3
+  - Link 2
+  instance: NAUO60
+  aabb_min_body_m:
+  - -0.018
+  - -0.0891
+  - -0.018
+  aabb_max_body_m:
+  - 0.018
+  - -0.0628
+  - 0.018
+  aabb_center_body_m:
+  - 0.0
+  - -0.07595
+  - 0.0
+  uniform_volume_centroid_body_m:
+  - -0.0
+  - -0.070125
+  - -0.0
+  solid_volume_m3: 5.946e-06
+  uniform_volume_central_inertia_mm5:
+  - - 561846.894
+    - -0.0
+    - 0.0
+  - - -0.0
+    - 521667.8
+    - 0.0
+  - - 0.0
+    - 0.0
+    - 561846.894
+- product: Right Link v1.2
+  assembly_path:
+  - Right LEG v1.3
+  - Right Link v1.2
+  instance: NAUO61
+  aabb_min_body_m:
+  - -0.019321
+  - -0.0996
+  - -0.0075
+  aabb_max_body_m:
+  - 0.0075
+  - -0.0796
+  - 0.016856
+  aabb_center_body_m:
+  - -0.005911
+  - -0.0896
+  - 0.004678
+  uniform_volume_centroid_body_m:
+  - -0.003091
+  - -0.0919
+  - 0.002928
+  solid_volume_m3: 3.747e-06
+  uniform_volume_central_inertia_mm5:
+  - - 228168.047
+    - -27121.828
+    - 78879.226
+  - - -27121.828
+    - 270321.661
+    - 26894.707
+  - - 78879.226
+    - 26894.707
+    - 246844.839
+- product: PCBA
+  assembly_path:
+  - PCBA
+  instance: NAUO3
+  aabb_min_body_m:
+  - 0.046998
+  - -0.065502
+  - -0.026602
+  aabb_max_body_m:
+  - 0.097002
+  - 0.065002
+  - -0.019398
+  aabb_center_body_m:
+  - 0.072
+  - -0.00025
+  - -0.023
+  uniform_volume_centroid_body_m:
+  - 0.071009
+  - -0.001055
+  - -0.020998
+  solid_volume_m3: 1.1181e-05
+  uniform_volume_central_inertia_mm5:
+  - - 15291775.636
+    - 11211.091
+    - -26831.21
+  - - 11211.091
+    - 2428856.033
+    - -26892.409
+  - - -26831.21
+    - -26892.409
+    - 17702978.039
+- product: Robot Head POC
+  assembly_path:
+  - Robot Head POC
+  instance: NAUO4
+  aabb_min_body_m:
+  - -0.038002
+  - -0.048002
+  - 0.047998
+  aabb_max_body_m:
+  - 0.097902
+  - 0.048002
+  - 0.117302
+  aabb_center_body_m:
+  - 0.02995
+  - 0.0
+  - 0.08265
+  uniform_volume_centroid_body_m:
+  - 0.01824
+  - 5.4e-05
+  - 0.08877
+  solid_volume_m3: 0.000195707
+  uniform_volume_central_inertia_mm5:
+  - - 210141374.305
+    - -651032.981
+    - -1142485.846
+  - - -651032.981
+    - 384648648.209
+    - -15161.873
+  - - -1142485.846
+    - -15161.873
+    - 442219530.171
+- product: Body 1 v1.3.2-1
+  assembly_path:
+  - Body 1 v1.3.2-1
+  instance: NAUO5
+  aabb_min_body_m:
+  - -0.081648
+  - -0.0804
+  - -0.0425
+  aabb_max_body_m:
+  - 0.111648
+  - 0.0804
+  - 0.05
+  aabb_center_body_m:
+  - 0.015
+  - 0.0
+  - 0.00375
+  uniform_volume_centroid_body_m:
+  - 0.016646
+  - 0.000113
+  - 0.023077
+  solid_volume_m3: 0.0002585
+  uniform_volume_central_inertia_mm5:
+  - - 823810048.947
+    - -1794860.688
+    - 7533855.443
+  - - -1794860.688
+    - 1235016590.835
+    - 1549587.512
+  - - 7533855.443
+    - 1549587.512
+    - 1737424959.495
+- product: dong co dui
+  assembly_path:
+  - dong co dui
+  instance: NAUO8
+  aabb_min_body_m:
+  - 0.042441
+  - 0.015799
+  - -0.01697
+  aabb_max_body_m:
+  - 0.09438
+  - 0.055201
+  - 0.03497
+  aabb_center_body_m:
+  - 0.06841
+  - 0.0355
+  - 0.009
+  uniform_volume_centroid_body_m:
+  - 0.068411
+  - 0.035359
+  - 0.008873
+  solid_volume_m3: 1.3622e-05
+  uniform_volume_central_inertia_mm5:
+  - - 3074751.227
+    - 297.505
+    - 202.01
+  - - 297.505
+    - 4341706.396
+    - -25073.018
+  - - 202.01
+    - -25073.018
+    - 3051639.025
+- product: dong co dui
+  assembly_path:
+  - dong co dui
+  instance: NAUO9
+  aabb_min_body_m:
+  - 0.042441
+  - -0.055201
+  - -0.01697
+  aabb_max_body_m:
+  - 0.09438
+  - -0.015799
+  - 0.03497
+  aabb_center_body_m:
+  - 0.06841
+  - -0.0355
+  - 0.009
+  uniform_volume_centroid_body_m:
+  - 0.06841
+  - -0.035358
+  - 0.008873
+  solid_volume_m3: 1.3622e-05
+  uniform_volume_central_inertia_mm5:
+  - - 3074751.227
+    - 297.505
+    - -202.01
+  - - 297.505
+    - 4341706.396
+    - 25073.018
+  - - -202.01
+    - 25073.018
+    - 3051639.025
+- product: Ga dong co dui
+  assembly_path:
+  - Ga dong co dui
+  instance: NAUO12
+  aabb_min_body_m:
+  - 0.04171
+  - -0.034
+  - -0.0177
+  aabb_max_body_m:
+  - 0.09511
+  - 0.034
+  - 0.044
+  aabb_center_body_m:
+  - 0.06841
+  - 0.0
+  - 0.01315
+  uniform_volume_centroid_body_m:
+  - 0.068762
+  - 0.0
+  - 0.025043
+  solid_volume_m3: 5.4808e-05
+  uniform_volume_central_inertia_mm5:
+  - - 39138512.6
+    - 0.0
+    - -63205.49
+  - - 0.0
+    - 33913936.698
+    - -0.0
+  - - -63205.49
+    - -0.0
+    - 39378303.536
+- product: battery 14.4V-1
+  assembly_path:
+  - battery 14.4V-1
+  instance: NAUO13
+  aabb_min_body_m:
+  - -0.075
+  - -0.0475
+  - -0.04
+  aabb_max_body_m:
+  - -0.049
+  - 0.0475
+  - 0.03
+  aabb_center_body_m:
+  - -0.062
+  - 0.0
+  - -0.005
+  uniform_volume_centroid_body_m:
+  - -0.062
+  - 0.0
+  - -0.005
+  solid_volume_m3: 0.000166891
+  uniform_volume_central_inertia_mm5:
+  - - 185848925.4
+    - -0.0
+    - 0.0
+  - - -0.0
+    - 77169618.053
+    - -0.0
+  - - 0.0
+    - -0.0
+    - 126724105.45
+- product: Body 2 v1.3.2
+  assembly_path:
+  - Body 2 v1.3.2
+  instance: NAUO14
+  aabb_min_body_m:
+  - -0.081648
+  - -0.071648
+  - -0.05
+  aabb_max_body_m:
+  - 0.111648
+  - 0.071648
+  - -0.0005
+  aabb_center_body_m:
+  - 0.015
+  - 0.0
+  - -0.02525
+  uniform_volume_centroid_body_m:
+  - 0.009618
+  - -0.0
+  - -0.043611
+  solid_volume_m3: 0.000118436
+  uniform_volume_central_inertia_mm5:
+  - - 258357194.133
+    - -84.332
+    - 3595779.341
+  - - -84.332
+    - 407480510.632
+    - 12.416
+  - - 3595779.341
+    - 12.416
+    - 649395935.83
+- product: battery Cover v1.3
+  assembly_path:
+  - battery Cover v1.3
+  instance: NAUO16
+  aabb_min_body_m:
+  - -0.08
+  - -0.0497
+  - -0.0377
+  aabb_max_body_m:
+  - -0.0753
+  - 0.0497
+  - 0.0447
+  aabb_center_body_m:
+  - -0.07765
+  - 0.0
+  - 0.0035
+  uniform_volume_centroid_body_m:
+  - -0.078631
+  - 0.0
+  - 0.000103
+  solid_volume_m3: 1.7643e-05
+  uniform_volume_central_inertia_mm5:
+  - - 24530581.858
+    - -0.0
+    - 17384.934
+  - - -0.0
+    - 8994128.419
+    - 0.0
+  - - 17384.934
+    - 0.0
+    - 15574220.696

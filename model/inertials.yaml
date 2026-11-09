@@ -1,0 +1,244 @@
+schema_version: 1
+model: RB v1.3
+source:
+  step: cad/robot_v1_3.step
+  sha256: e15ec80d90e41f0f44d8f6a12a0ed586a3863434765069a6c981ab51306232e7
+  coordinate_frame: body_link; +X forward, +Y left, +Z up; metres and kg
+mass_total_kg: 2.495
+mass_status: matches supplied row sum; completeness is not independently scale-verified
+assembled_reference_pose:
+  mass_kg: 2.495
+  com_body_m:
+  - 0.00403181
+  - 9.0e-07
+  - 0.00342172
+  inertia_com_body_kg_m2:
+  - - 0.013194239027
+    - -4.329084e-06
+    - -0.000678117527
+  - - -4.329084e-06
+    - 0.009522364454
+    - 2.402849e-06
+  - - -0.000678117527
+    - 2.402849e-06
+    - 0.015765715699
+  principal_inertia_kg_m2:
+  - 0.009522358929
+  - 0.013026376473
+  - 0.015933583777
+  note: Aggregate diagnostic at the supplied STEP pose; not a substitute for articulated
+    per-link inertials.
+method:
+  cad_tensor: exact BREP volume tensor about the uniform-volume centroid, scaled by
+    supplied mass/solid volume
+  aggregation: parallel-axis theorem in the STEP assembly pose; link frames use the
+    joint origins in joint_frames.yaml
+  material_limit: CAD does not carry verified material densities or measured component
+    COMs; internal mass is approximated as uniform within each named mass group
+  kinematic_limit: STEP has no joint mates; rigid-link membership is the explicit
+    mapping listed below
+link_membership:
+  body_link: body shells, PCB, battery, cover, thigh-motor bracket, all four 130/410
+    g motors, plus 100 g misc lump
+  left_thigh: Left Hip CAD segment, 85 g; motor-free long link between shoulder and
+    knee axes
+  right_thigh: Right Hip CAD segment, 85 g; motor-free long link between shoulder
+    and knee axes
+  left_shin: Left Knee 35 g
+  right_shin: Right Knee 35 g
+  wheels: 150 g per complete Wheel assembly, including XGO motor as confirmed by user
+  head: Robot Head POC, 220 g user estimate
+links:
+  body_link:
+    mass_kg: 1.735
+    inertial_pos_link_m:
+    - 0.01159216
+    - -5.55e-06
+    - 0.00119209
+    inertia_com_link_kg_m2:
+    - - 0.004201357708
+      - 4.57121e-07
+      - -0.000272497817
+    - - 4.57121e-07
+      - 0.005179520366
+      - -8.1167e-08
+    - - -0.000272497817
+      - -8.1167e-08
+      - 0.00756329587
+    principal_inertia_kg_m2:
+    - 0.004179413756
+    - 0.005179520562
+    - 0.007585239626
+    components:
+    - upper_body_175g
+    - lower_body_92g
+    - pcb_28g
+    - battery_210g
+    - battery_cover_12g
+    - thigh_motor_bracket_38g
+    - left_thigh_motor_130g
+    - right_thigh_motor_130g
+    - left_knee_motor_410g_body
+    - right_knee_motor_410g_body
+    - wiring_fasteners_misc_100g_estimated
+  left_thigh:
+    mass_kg: 0.085
+    inertial_pos_link_m:
+    - -0.04782
+    - 0.009059
+    - 0.008213
+    inertia_com_link_kg_m2:
+    - - 2.9887695e-05
+      - 6.265732e-06
+      - 1.4890775e-05
+    - - 6.265732e-06
+      - 0.000228113828
+      - -1.829323e-06
+    - - 1.4890775e-05
+      - -1.829323e-06
+      - 0.000208817688
+    principal_inertia_kg_m2:
+    - 2.8452088e-05
+    - 0.000209955532
+    - 0.000228411592
+    components:
+    - left_hip_shoulder_85g
+  right_thigh:
+    mass_kg: 0.085
+    inertial_pos_link_m:
+    - -0.047777
+    - -0.009059
+    - 0.008459
+    inertia_com_link_kg_m2:
+    - - 3.0045438e-05
+      - -6.25625e-06
+      - 1.580934e-05
+    - - -6.25625e-06
+      - 0.000228113828
+      - 1.861493e-06
+    - - 1.580934e-05
+      - 1.861493e-06
+      - 0.000208659945
+    principal_inertia_kg_m2:
+    - 2.8452088e-05
+    - 0.000209955531
+    - 0.000228411591
+    components:
+    - right_hip_shoulder_85g
+  left_shin:
+    mass_kg: 0.035
+    inertial_pos_link_m:
+    - 0.0545337
+    - -0.007152
+    - -0.0250352
+    inertia_com_link_kg_m2:
+    - - 1.2355698e-05
+      - 1.06497e-07
+      - 2.0274843e-05
+    - - 1.06497e-07
+      - 5.7765481e-05
+      - -4.7724e-08
+    - - 2.0274843e-05
+      - -4.7724e-08
+      - 4.6659402e-05
+    principal_inertia_kg_m2:
+    - 2.950659e-06
+    - 5.6064191e-05
+    - 5.776573e-05
+    components:
+    - left_knee_shin_35g
+  right_shin:
+    mass_kg: 0.035
+    inertial_pos_link_m:
+    - 0.054404
+    - 0.007152
+    - -0.025315
+    inertia_com_link_kg_m2:
+    - - 1.256495e-05
+      - -1.0625e-07
+      - 2.0450027e-05
+    - - -1.0625e-07
+      - 5.7765481e-05
+      - 4.827e-08
+    - - 2.0450027e-05
+      - 4.827e-08
+      - 4.645015e-05
+    principal_inertia_kg_m2:
+    - 2.950659e-06
+    - 5.6064191e-05
+    - 5.776573e-05
+    components:
+    - right_knee_shin_35g
+  left_wheel:
+    mass_kg: 0.15
+    inertial_pos_link_m:
+    - 8.43e-05
+    - -0.001472
+    - -3.89e-05
+    inertia_com_link_kg_m2:
+    - - 6.4325585e-05
+      - 1.80604e-07
+      - -7.671e-08
+    - - 1.80604e-07
+      - 0.000106376298
+      - -8.3629e-08
+    - - -7.671e-08
+      - -8.3629e-08
+      - 6.4195538e-05
+    principal_inertia_kg_m2:
+    - 6.4160001e-05
+    - 6.436018e-05
+    - 0.000106377241
+    components:
+    - left_wheel_assembly_150g_including_XGO
+  right_wheel:
+    mass_kg: 0.15
+    inertial_pos_link_m:
+    - 8.43e-05
+    - 0.0014718
+    - -3.89e-05
+    inertia_com_link_kg_m2:
+    - - 6.4325607e-05
+      - -1.80586e-07
+      - -7.6692e-08
+    - - -1.80586e-07
+      - 0.000106376298
+      - 8.3669e-08
+    - - -7.6692e-08
+      - 8.3669e-08
+      - 6.4195516e-05
+    principal_inertia_kg_m2:
+    - 6.4160001e-05
+    - 6.436018e-05
+    - 0.000106377241
+    components:
+    - right_wheel_assembly_150g_including_XGO
+  head:
+    mass_kg: 0.22
+    inertial_pos_link_m:
+    - -0.00676
+    - 5.4e-05
+    - 0.02717
+    inertia_com_link_kg_m2:
+    - - 0.000236226105
+      - -7.31845e-07
+      - -1.284302e-06
+    - - -7.31845e-07
+      - 0.000432394869
+      - -1.7044e-08
+    - - -1.284302e-06
+      - -1.7044e-08
+      - 0.000497111992
+    principal_inertia_kg_m2:
+    - 0.000236217052
+    - 0.000432397597
+    - 0.000497118317
+    components:
+    - head_assembly_220g_estimate
+validation:
+  link_mass_sum_kg: 2.495
+  input_row_sum_kg: 2.495
+  all_link_inertia_eigenvalues_positive: true
+  principal_moment_triangle_inequality: true
+  misc_100g_placement: estimated as a 60 mm front block (x 50..110 mm) of the body-shell
+    AABB; replace with measured allocation when available

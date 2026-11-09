@@ -1,0 +1,5 @@
+numpy>=1.26,<2
+networkx>=3
+Pillow>=10
+pycollada==0.9.3
+trimesh==5.2.0

@@ -1,0 +1,18 @@
+# IMU placement for RB v1.3 (hand-authored; read by tools/model/assign_inertials.py).
+# Picked on the CAD drawing of the body PCB (PCBA/PCB-1), confirmed by the user 2026-10-27.
+schema_version: 1
+model: RB v1.3
+imu:
+  parent_link: body_link
+  pcb_side: bottom
+  position_body_m: [0.0767, 0.0301, -0.0266]   # x forward, y left, z up
+  pcb_bottom_face_z_m: -0.0216
+  height_off_pcb_m: 0.005                        # user-stated 0.5 cm, measured away from the board (downward, since the IMU is on the bottom side)
+  axes_in_body:                                  # chip axis -> robot axis
+    x: "+X"
+    y: "+Y"
+    z: "+Z"
+  chip: MPU6500
+  limits:
+    - The 5 mm height is taken as the distance from the PCB bottom face to the chip, directed away from the board.
+    - Noise, bias and sample rate are not supplied; use the MPU6500 datasheet or measure them.

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mujoco model="rb_v1_3_inertial_skeleton">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81"/>
+  <worldbody>
+    <body name="body_link">
+      <freejoint name="root_free"/>
+      <inertial pos="0.01159216 -5.55e-06 0.00119209" mass="1.735" fullinertia="0.004201357708 0.005179520366 0.00756329587 4.57121e-07 -0.000272497817 -8.1167e-08"/>
+      <site name="imu" pos="0.0767 0.0301 -0.0266" size="0.003"/>
+      <body name="left_thigh" pos="0 0.0812 0">
+        <joint name="left_hip" type="hinge" axis="0 1 0" limited="false" frictionloss="0.001"/>
+        <inertial pos="-0.04782 0.009059 0.008213" mass="0.085" fullinertia="2.9887695e-05 0.000228113828 0.000208817688 6.265732e-06 1.4890775e-05 -1.829323e-06"/>
+        <body name="left_shin" pos="-0.0999987 0.0212 -0.0005138">
+          <joint name="left_knee" type="hinge" axis="0 1 0" limited="false" frictionloss="0.05"/>
+          <inertial pos="0.0545337 -0.007152 -0.0250352" mass="0.035" fullinertia="1.2355698e-05 5.7765481e-05 4.6659402e-05 1.06497e-07 2.0274843e-05 -4.7724e-08"/>
+          <body name="left_wheel" pos="0.0908464 0.0177 -0.0417953">
+            <joint name="left_wheel" type="hinge" axis="0 1 0" limited="false" frictionloss="0.001"/>
+            <inertial pos="8.43e-05 -0.001472 -3.89e-05" mass="0.15" fullinertia="6.4325585e-05 0.000106376298 6.4195538e-05 1.80604e-07 -7.671e-08 -8.3629e-08"/>
+          </body>
+        </body>
+      </body>
+      <body name="right_thigh" pos="0 -0.0812 0">
+        <joint name="right_hip" type="hinge" axis="0 1 0" limited="false" frictionloss="0.001"/>
+        <inertial pos="-0.047777 -0.009059 0.008459" mass="0.085" fullinertia="3.0045438e-05 0.000228113828 0.000208659945 -6.25625e-06 1.580934e-05 1.861493e-06"/>
+        <body name="right_shin" pos="-0.1 -0.0212 0">
+          <joint name="right_knee" type="hinge" axis="0 1 0" limited="false" frictionloss="0.05"/>
+          <inertial pos="0.054404 0.007152 -0.025315" mass="0.035" fullinertia="1.256495e-05 5.7765481e-05 4.645015e-05 -1.0625e-07 2.0450027e-05 4.827e-08"/>
+          <body name="right_wheel" pos="0.0906307 -0.0176998 -0.0422621">
+            <joint name="right_wheel" type="hinge" axis="0 1 0" limited="false" frictionloss="0.001"/>
+            <inertial pos="8.43e-05 0.0014718 -3.89e-05" mass="0.15" fullinertia="6.4325607e-05 0.000106376298 6.4195516e-05 -1.80586e-07 -7.6692e-08 8.3669e-08"/>
+          </body>
+        </body>
+      </body>
+      <body name="head" pos="0.025 0 0.0616">
+        <joint name="head_yaw" type="hinge" axis="0 0 1" limited="false"/>
+        <inertial pos="-0.00676 5.4e-05 0.02717" mass="0.22" fullinertia="0.000236226105 0.000432394869 0.000497111992 -7.31845e-07 -1.284302e-06 -1.7044e-08"/>
+      </body>
+    </body>
+  </worldbody>
+  <tendon>
+    <fixed name="left_crank_angle">
+      <joint joint="left_hip" coef="1"/>
+      <joint joint="left_knee" coef="1"/>
+    </fixed>
+    <fixed name="right_crank_angle">
+      <joint joint="right_hip" coef="1"/>
+      <joint joint="right_knee" coef="1"/>
+    </fixed>
+  </tendon>
+  <actuator>
+    <motor name="left_hip_motor" joint="left_hip" ctrlrange="-1.5 1.5"/>
+    <motor name="right_hip_motor" joint="right_hip" ctrlrange="-1.5 1.5"/>
+    <motor name="left_knee_motor" tendon="left_crank_angle" ctrlrange="-5 5"/>
+    <motor name="right_knee_motor" tendon="right_crank_angle" ctrlrange="-5 5"/>
+    <motor name="left_wheel_motor" joint="left_wheel" ctrlrange="-0.2 0.2"/>
+    <motor name="right_wheel_motor" joint="right_wheel" ctrlrange="-0.2 0.2"/>
+  </actuator>
+  <sensor>
+    <gyro name="imu_gyro" site="imu"/>
+    <accelerometer name="imu_accel" site="imu"/>
+    <framequat name="imu_quat" objtype="site" objname="imu"/>
+  </sensor>
+</mujoco>

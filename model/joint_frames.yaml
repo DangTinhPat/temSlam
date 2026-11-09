@@ -1,0 +1,175 @@
+# Joint-axis coordinates measured from cad/robot_v1_3.step.
+# This is the coordinate reference used by preview.xml and its builder.
+schema_version: 1
+model: ROBOT v1.3
+source:
+  file: cad/robot_v1_3.step
+  sha256: e15ec80d90e41f0f44d8f6a12a0ed586a3863434765069a6c981ab51306232e7
+  length_unit: mm
+  step_world_origin_frame: body_link
+  body_link_datum:
+    product: Body 1 v1.3.2-1
+    step_translation_mm: [1344.2053, 678.8958, 915.1971]
+    step_rotation_rpy_rad: [0.0, 0.0, 0.0]
+
+convention:
+  coordinate_axes: [x_forward, y_left, z_up]
+  coordinate_unit: m
+  joint_axis_sign: "+Y for leg and wheel joints; +Z for head yaw"
+  reference_pose: "component placements in the supplied STEP assembly"
+  note: >-
+    STEP carries assembled component placements but no joint mates, encoder
+    zero definitions, motion limits, or validated positive rotation signs.
+    Axis direction signs here are the digital-twin convention; calibrate them
+    against hardware before using motor commands.
+
+joints:
+  - name: left_hip
+    parent_link: body_link
+    child_link: left_thigh
+    origin_body_m: [0.0, 0.0812, 0.0]
+    axis_body: [0.0, 1.0, 0.0]
+    source_geometry: "Left Hip v1.3-1 cylindrical pivot; axis X=1344.2053, Z=915.1971 mm"
+
+  - name: right_hip
+    parent_link: body_link
+    child_link: right_thigh
+    origin_body_m: [0.0, -0.0812, 0.0]
+    axis_body: [0.0, 1.0, 0.0]
+    source_geometry: "Right Hip v1.3 cylindrical pivot; axis X=1344.2053, Z=915.1971 mm"
+
+  - name: left_knee
+    parent_link: left_thigh
+    child_link: left_shin
+    origin_body_m: [-0.0999987, 0.1024, -0.0005138]
+    axis_body: [0.0, 1.0, 0.0]
+    source_geometry: "Left Knee v1.3-1, assembly placement at [1244.2066, 781.2958, 914.6833] mm"
+
+  - name: right_knee
+    parent_link: right_thigh
+    child_link: right_shin
+    origin_body_m: [-0.1, -0.1024, 0.0]
+    axis_body: [0.0, 1.0, 0.0]
+    source_geometry: "Right Knee v1.3 pivot, assembly placement at [1244.2053, 576.4958, 915.1971] mm"
+
+  - name: left_wheel
+    parent_link: left_shin
+    child_link: left_wheel
+    origin_body_m: [-0.0091523, 0.1201, -0.0423091]
+    axis_body: [0.0, 1.0, 0.0]
+    source_geometry: "Left Wheel 70mm tire centerline; center [1335.053, 798.996, 872.888] mm"
+
+  - name: right_wheel
+    parent_link: right_shin
+    child_link: right_wheel
+    origin_body_m: [-0.0093693, -0.1200998, -0.0422621]
+    axis_body: [0.0, 1.0, 0.0]
+    source_geometry: "Right Wheel 70mm tire centerline; center [1334.836, 558.796, 872.935] mm"
+
+  - name: head_yaw
+    parent_link: body_link
+    child_link: head
+    origin_body_m: [0.025, 0.0, 0.0616]
+    axis_body: [0.0, 0.0, 1.0]
+    source_geometry: "JC2804 BLDC Motor central shaft cylinder; axis through [1369.2053, 678.8958] mm in STEP X/Y"
+
+derived_dimensions:
+  hip_axis_spacing_m: 0.1624
+  knee_axis_spacing_m: 0.2048
+  hip_to_knee_axis_distance_m:
+    left: 0.1022225
+    right: 0.1022225
+  wheel_outer_diameter_m: 0.07
+
+mass_budget:
+  source: "User-provided component mass table"
+  input_unit: g
+  interpretation: "KL is per item; multiply by quantity per robot. The wiring/screws row is a lumped total."
+  listed_subtotal_g: 2495
+  listed_subtotal_kg: 2.495
+  full_robot_mass_kg: null
+  status: supplied_row_total_not_yet_verified
+  inertial_assignment:
+    file: inertials.yaml
+    status: per_link_inertial_manifest_generated_from_cad_and_user_mass_table
+    user_confirmations:
+      motor_mass_is_per_motor: true
+      150g_wheel_includes_xgo_motor: true
+      85g_each_maps_to_hip_shoulder: true
+      35g_each_maps_to_knee_shin: true
+      all_four_actuator_motors_are_in_body: true
+      thigh_motor_fixed_to_body_and_belt_drives_shoulder: true
+      knee_motor_fixed_to_body: true
+      thigh_link_is_motor_free_cad_segment_between_hip_and_knee_axes: true
+  items:
+    - component: upper_body
+      quantity_per_robot: 1
+      unit_mass_g: 175
+      subtotal_g: 175
+    - component: lower_body
+      quantity_per_robot: 1
+      unit_mass_g: 92
+      subtotal_g: 92
+    - component: pcb
+      quantity_per_robot: 1
+      unit_mass_g: 28
+      subtotal_g: 28
+    - component: battery
+      quantity_per_robot: 1
+      unit_mass_g: 210
+      subtotal_g: 210
+    - component: battery_cover
+      quantity_per_robot: 1
+      unit_mass_g: 12
+      subtotal_g: 12
+    - component: thigh_motor_bracket
+      quantity_per_robot: 1
+      unit_mass_g: 38
+      subtotal_g: 38
+    - component: thigh_motor
+      quantity_per_robot: 2
+      unit_mass_g: 130
+      subtotal_g: 260
+    - component: knee_motor
+      quantity_per_robot: 2
+      unit_mass_g: 410
+      subtotal_g: 820
+    - component: wiring_fasteners_misc
+      quantity_per_robot: 1
+      unit_mass_g: 100
+      subtotal_g: 100
+    - component: head_assembly_estimate
+      quantity_per_robot: 1
+      unit_mass_g: 220
+      subtotal_g: 220
+    - component: wheel
+      quantity_per_robot: 2
+      unit_mass_g: 150
+      subtotal_g: 300
+    - component: shin
+      quantity_per_robot: 2
+      unit_mass_g: 35
+      subtotal_g: 70
+    - component: thigh
+      quantity_per_robot: 2
+      unit_mass_g: 85
+      subtotal_g: 170
+  duplicate_rows_excluded:
+    - component: battery
+      quantity_per_robot: 1
+      reported_mass_g: 210
+      already_counted_as: battery
+      source_table: second_user_mass_table
+  note: >-
+    The 2.495 kg value is the arithmetic total of supplied rows, not an
+    independent scale measurement. Per-link inertials are in
+    inertials.yaml and an inertial-only skeleton is in
+    inertial_skeleton.xml. Head mass (220 g) and the 100 g miscellaneous
+    lump remain estimates. CAD tensors use uniform-density scaling within each
+    named mass group because measured COM/material density data are unavailable.
+
+calibration_required:
+  - joint_zero_angles
+  - positive_encoder_direction
+  - mechanical_limits
+  - exact head_yaw mating datum along its Z axis
