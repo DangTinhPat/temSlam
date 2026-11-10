@@ -225,7 +225,6 @@ def add_texture_asset(root: ET.Element, texture_path: Path, cache: dict[Path, tu
     if texture_path.is_file():
         with Image.open(texture_path) as image:
             image = image.convert("RGB")
-            image.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
             image.save(out, format="PNG", optimize=True)
     else:
         write_placeholder_poster(out, texture_path.stem)
@@ -360,8 +359,6 @@ def build(source: Path, base_model: Path, output: Path) -> dict:
         for visual_index, item in enumerate(visual_items):
             visual_meshes = added_visual_groups[model_name][visual_index]
             local_pose = floats(child_text(item, "pose"), 6, (0, 0, 0, 0, 0, 0))
-            if model_name == "aws_robomaker_residential_FloorB_01":
-                local_pose = (local_pose[0], local_pose[1], local_pose[2] + 0.004, *local_pose[3:])
             pos, quat = world_pose(base_pose, local_pose)
             for part_index, (mesh_name, material_name) in enumerate(visual_meshes):
                 attrs = {"name": f"house_visual_{instance_index}_{visual_index}_{part_index}", "type": "mesh",

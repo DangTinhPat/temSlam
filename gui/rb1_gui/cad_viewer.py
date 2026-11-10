@@ -54,8 +54,7 @@ class RbModel:
         model_path = Path(model_path).resolve()
         spec = mujoco.MjSpec.from_file(str(model_path))
         self.house_scene = any(geom.name.startswith("house_visual_") for geom in spec.geoms)
-        # In the house scene, simple robot collision geoms render faster than the full STEP-derived CAD overlay.
-        self.meshes = (meshes and not self.house_scene and PARTS.is_dir()
+        self.meshes = (meshes and PARTS.is_dir()
                        and (PARTS / "left_thigh.stl").is_file())
         if self.meshes:
             # The CAD parts below use model/assets as meshdir. Preserve the scene's own mesh/texture paths first.
@@ -73,10 +72,10 @@ class RbModel:
             for geom in spec.geoms:        # hide collision proxies; keep house visuals and CAD meshes visible
                 if geom.name == "ground":
                     continue
-                geom.group = 1 if geom.name.startswith("house_visual_") else 3
+                geom.group = 1 if geom.name.startswith(("house_visual_", "tof_8x8_")) else 3
             self._add_cad(spec)
         self._ground_grid(spec)
-        self._lighting(spec, shadows=not self.house_scene)
+        self._lighting(spec)
         self.model = spec.compile()
         self.data = mujoco.MjData(self.model)
         key = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_KEY, start_key)
@@ -99,14 +98,15 @@ class RbModel:
                 geom.material = "rb_grid"
 
     @staticmethod
-    def _lighting(spec, shadows=True):
+    def _lighting(spec):
         """Bright, even light: a strong headlight, a sun with a shadow, and a sky gradient instead of black."""
         headlight = spec.visual.headlight
         headlight.ambient, headlight.diffuse, headlight.specular = [.45, .45, .45], [.70, .70, .70], [.2, .2, .2]
-        sun = spec.worldbody.add_light()
+        # Reuse the key light to keep the house plus headlight within OpenGL's eight-light limit.
+        sun = spec.light("key") or spec.worldbody.add_light()
         sun.pos, sun.dir = [0.3, -0.5, 2.0], [-0.1, 0.25, -1.0]
         sun.diffuse, sun.specular = [.85, .85, .85], [.3, .3, .3]
-        sun.castshadow = shadows
+        sun.castshadow = True
         sky = spec.add_texture(name="rb_sky", type=mujoco.mjtTexture.mjTEXTURE_SKYBOX,
                                builtin=mujoco.mjtBuiltin.mjBUILTIN_GRADIENT, rgb1=[.72, .82, .95], rgb2=[.35, .42, .55],
                                width=512, height=3072)

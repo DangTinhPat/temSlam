@@ -20,6 +20,10 @@
       <geom name="body_2" type="box" pos="0.015 0 -0.02525" size="0.096648 0.071648 0.02475" rgba="0.7 0.7 0.72 1"/>
       <geom name="robot_head" type="box" pos="0.02995 0 0.08265" size="0.067952 0.048002 0.034652" rgba="0.7 0.7 0.72 1"/>
       <site name="imu" pos="0.0767 0.0301 -0.0266" size="0.004"/>
+      <camera name="head_camera" pos="0.0979 0 0.0918" xyaxes="0 -1 0 0 0 1"/>
+      <camera name="tof_camera" pos="0.0889995897 0.0200003416 0.0918" xyaxes="-0.0697560058 -0.997564083 0 0 0 1" fovy="45"/>
+      <geom name="tof_8x8_board" type="box" pos="0.087603 0.020098 0.0918" size="0.001 0.005 0.005" quat="0.999390835 -0 0 -0.0348992623" rgba="0.12 0.34 0.22 1" contype="0" conaffinity="0"/>
+      <geom name="tof_8x8_window" type="box" pos="0.0888000769 0.0200142928 0.0918" size="0.0002 0.0025 0.0025" quat="0.999390835 -0 0 -0.0348992623" rgba="0.04 0.05 0.05 1" contype="0" conaffinity="0"/>
       <body name="left_thigh" pos="0 0.0812 0">
         <joint name="left_hip" type="hinge" axis="0 1 0" range="-1.56817833 2.35706715" limited="true" frictionloss="0.001"/>
         <inertial pos="-0.04782 0.009059 0.008213" mass="0.085" fullinertia="2.9887695e-05 0.000228113828 0.000208817688 6.265732e-06 1.4890775e-05 -1.829323e-06"/>

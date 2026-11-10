@@ -1,0 +1,11 @@
+# Camera 2K placement from the nested Camera Assembly in cad/robot_v1_3.step.
+schema_version: 1
+model: RB v1.3
+camera:
+  name: head_camera
+  parent_link: body_link
+  resolution_px: [640, 480] # user-confirmed RGB output size
+  position_body_m: [0.0979, 0.0, 0.0918] # camera's forward face, in the body_link CAD frame
+  xyaxes_body: [0.0, -1.0, 0.0, 0.0, 0.0, 1.0] # optical axis +X, image up +Z
+  product_path: [Robot Head POC, Camera Assembly, Camera 2K]
+  # shortcut: the STEP has no optical-center or FOV data; refine when the camera spec is available.

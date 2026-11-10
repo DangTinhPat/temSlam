@@ -44,6 +44,7 @@ class NativeBackend:
         self._reader: Optional[threading.Thread] = None
         self._lock = threading.Lock()
         self._viewer_process: Optional[subprocess.Popen[str]] = None
+        self._camera_process: Optional[subprocess.Popen[str]] = None
         self._command_socket: Optional[socket.socket] = None
         self._command_port = 37681
         self._ready = threading.Event()
@@ -116,6 +117,7 @@ class NativeBackend:
                 if not self._ready.wait(timeout=2.0):
                     raise RuntimeError("native runner did not open command transport")
                 self._open_mujoco_viewer(model)
+                self._open_camera_view(model)
             except Exception:
                 self.stop()
                 raise
@@ -139,6 +141,14 @@ class NativeBackend:
             stderr=subprocess.STDOUT, text=True, bufsize=1, env=viewer_env)
         os.set_blocking(self._viewer_process.stdin.fileno(), False)
 
+    def _open_camera_view(self, model_path: Path) -> None:
+        script = self.root / "vision/camera_viewer.py"
+        self._camera_process = subprocess.Popen(
+            [sys.executable, str(script), "--model", str(model_path)],
+            cwd=self.root, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, text=True, bufsize=1)
+        os.set_blocking(self._camera_process.stdin.fileno(), False)
+
     def _sync_mujoco_viewer(self) -> None:
         if not self.viewer_running or self._viewer_process.stdin is None:
             return
@@ -146,12 +156,40 @@ class NativeBackend:
             line = "VIEW|" + "|".join(
                 f"{key}={value}" for key, value in self.view.items()) + "\n"
             packet = line.encode("ascii")
-            # Atomic nonblocking snapshots: a busy renderer must not stall GUI input.
             if len(packet) <= 4096:
                 os.write(self._viewer_process.stdin.fileno(), packet)
         except (BrokenPipeError, OSError):
-            # A busy or closed viewer only drops a debug frame.
             return
+
+    def _sync_camera_view(self) -> None:
+        process = self._camera_process
+        if process is None or process.poll() is not None or process.stdin is None:
+            return
+        try:
+            line = "VIEW|" + "|".join(
+                f"{key}={value}" for key, value in self.view.items()) + "\n"
+            packet = line.encode("ascii")
+            if len(packet) <= 4096:
+                os.write(process.stdin.fileno(), packet)
+        except (BrokenPipeError, OSError):
+            return
+
+    def _close_camera_view(self) -> None:
+        process = self._camera_process
+        self._camera_process = None
+        if process is None:
+            return
+        if process.stdin is not None:
+            process.stdin.close()
+        try:
+            process.wait(timeout=1.0)
+        except subprocess.TimeoutExpired:
+            process.terminate()
+            try:
+                process.wait(timeout=1.0)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
 
     def _close_mujoco_viewer(self) -> None:
         process = self._viewer_process
@@ -215,6 +253,7 @@ class NativeBackend:
                 self.log.append(line)
         if view_changed:
             self._sync_mujoco_viewer()
+            self._sync_camera_view()
         return count
 
     def send(self, command: str) -> None:
@@ -238,6 +277,7 @@ class NativeBackend:
 
     def stop(self) -> None:
         self._close_mujoco_viewer()
+        self._close_camera_view()
         process = self.process
         if process is None:
             return

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RB · ToF placement</title>
+  <style>
+    :root { color-scheme: dark; font: 14px/1.45 system-ui, sans-serif; background: #101418; color: #e9eef2; }
+    * { box-sizing: border-box; }
+    body { margin: 0; height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 350px; }
+    #view { position: relative; min-width: 0; background: #151b20; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    header { position: absolute; inset: 16px 18px auto auto; max-width: 560px; text-align: right; pointer-events: none; }
+    h1 { margin: 0 0 5px; font-size: 18px; }
+    .hint { color: #aeb9c2; }
+    aside { overflow: auto; padding: 18px; border-left: 1px solid #293139; background: #171d22; }
+    h2 { margin: 20px 0 8px; font-size: 14px; color: #9fd8c1; }
+    h2:first-child { margin-top: 0; }
+    .row { display: grid; grid-template-columns: 72px 1fr 64px; gap: 8px; align-items: center; margin: 9px 0; }
+    label { color: #c2cbd2; }
+    input[type=range] { width: 100%; accent-color: #54d49b; }
+    input[type=number] { width: 100%; border: 1px solid #39434b; border-radius: 6px; padding: 6px; color: #f2f5f7; background: #101418; }
+    .xyz { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
+    .xyz label { display: block; font-size: 11px; margin-bottom: 3px; }
+    button { border: 1px solid #43534d; border-radius: 7px; padding: 9px 10px; color: #eaf5ef; background: #20372e; cursor: pointer; }
+    button:hover { background: #294b3c; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    #pose { white-space: pre-wrap; word-break: break-word; padding: 10px; border-radius: 7px; color: #cae4d7; background: #0d1215; font: 11px/1.5 ui-monospace, monospace; }
+    #state { color: #91a0aa; font-size: 12px; margin-top: 9px; }
+    .axis { color: #91a0aa; font-size: 12px; }
+    @media (max-width: 760px) { body { height: auto; min-height: 100vh; grid-template-columns: 1fr; grid-template-rows: 60vh auto; } aside { border-left: 0; border-top: 1px solid #293139; } }
+  </style>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <main id="view">
+    <header><h1>Chọn vị trí và hướng ToF trên đầu RB</h1><div class="hint">Kéo để xoay · lăn để zoom · bấm lên bề mặt đầu để đặt ToF. Đỏ = +X tiến, xanh lá = +Y trái, xanh dương = +Z lên.</div></header>
+  </main>
+  <aside>
+    <h2>Tâm quang học trong hệ body_link (m)</h2>
+    <div class="xyz">
+      <div><label for="px">X · tiến</label><input id="px" type="number" step="0.001"></div>
+      <div><label for="py">Y · trái</label><input id="py" type="number" step="0.001"></div>
+      <div><label for="pz">Z · lên</label><input id="pz" type="number" step="0.001"></div>
+    </div>
+    <h2>Hướng trục quang học (độ)</h2>
+    <div class="row"><label for="yaw">Yaw</label><input id="yaw" type="range" min="-180" max="180" step="1"><output id="yawv"></output></div>
+    <div class="row"><label for="pitch">Pitch</label><input id="pitch" type="range" min="-89" max="89" step="1"><output id="pitchv"></output></div>
+    <div class="row"><label for="roll">Roll</label><input id="roll" type="range" min="-180" max="180" step="1"><output id="rollv"></output></div>
+    <div class="axis">Yaw 0° points forward (+X), positive yaw turns left (+Y); positive pitch points up (+Z).</div>
+    <div class="buttons"><button id="reset">Về vị trí hiện tại</button><button id="copy">Copy pose JSON</button><button id="download">Tải JSON</button></div>
+    <h2>Pose đã chọn</h2>
+    <pre id="pose"></pre>
+    <div id="state">Đang tải mesh đầu RB…</div>
+  </aside>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+
+    const initial = { position: [0.089, 0.02, 0.0918], yaw: -4, pitch: 0, roll: 0 };
+    const view = document.querySelector('#view');
+    const state = document.querySelector('#state');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#151b20');
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.001, 10);
+    camera.up.set(0, 0, 1);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    view.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0.03, 0, 0.08);
+    controls.screenSpacePanning = true;
+    scene.add(new THREE.HemisphereLight(0xeaf3ff, 0x333b43, 2.1));
+    const key = new THREE.DirectionalLight(0xffffff, 2.1);
+    key.position.set(0.4, -0.5, 0.7); scene.add(key);
+    scene.add(new THREE.AxesHelper(0.1));
+    const grid = new THREE.GridHelper(0.4, 20, 0x3e5752, 0x29343a);
+    grid.rotation.x = Math.PI / 2; grid.position.z = 0.015; scene.add(grid);
+
+    let head;
+    let placement = structuredClone(initial);
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const sensor = new THREE.Group();
+    const board = new THREE.Mesh(new THREE.BoxGeometry(0.002, 0.01, 0.01), new THREE.MeshStandardMaterial({ color: 0x39a874, roughness: 0.48 }));
+    const windowMesh = new THREE.Mesh(new THREE.BoxGeometry(0.0004, 0.005, 0.005), new THREE.MeshStandardMaterial({ color: 0x111820, roughness: 0.25, metalness: 0.2 }));
+    windowMesh.position.x = 0.0012;
+    sensor.add(board, windowMesh);
+    scene.add(sensor);
+    const arrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(), 0.08, 0x73e6a8, 0.018, 0.009);
+    scene.add(arrow);
+    const marker = new THREE.Mesh(new THREE.SphereGeometry(0.0025, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffd166 }));
+    scene.add(marker);
+
+    const fields = ['px','py','pz','yaw','pitch','roll'].map(id => document.getElementById(id));
+    function poseData() {
+      const [x,y,z] = placement.position;
+      const yaw = THREE.MathUtils.degToRad(placement.yaw);
+      const pitch = THREE.MathUtils.degToRad(placement.pitch);
+      const roll = THREE.MathUtils.degToRad(placement.roll);
+      const direction = new THREE.Vector3(Math.cos(pitch)*Math.cos(yaw), Math.cos(pitch)*Math.sin(yaw), Math.sin(pitch)).normalize();
+      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1,0,0), direction);
+      q.premultiply(new THREE.Quaternion().setFromAxisAngle(direction, roll));
+      const right = new THREE.Vector3(0,-1,0).applyQuaternion(q);
+      const up = new THREE.Vector3(0,0,1).applyQuaternion(q);
+      const packageCenter = new THREE.Vector3(x,y,z).addScaledVector(direction,-0.0014);
+      return { parent_link: 'body_link', position_body_m: packageCenter.toArray().map(v => +v.toFixed(6)), optical_origin_body_m: [x,y,z].map(v => +v.toFixed(6)), direction_body: direction.toArray().map(v => +v.toFixed(6)), xyaxes_body: [...right.toArray(), ...up.toArray()].map(v => +v.toFixed(6)), yaw_deg: placement.yaw, pitch_deg: placement.pitch, roll_deg: placement.roll };
+    }
+    function update() {
+      fields.slice(0,3).forEach((el,i) => { el.value = placement.position[i].toFixed(6); });
+      fields.slice(3).forEach((el,i) => { el.value = placement[['yaw','pitch','roll'][i]]; document.getElementById(`${['yaw','pitch','roll'][i]}v`).value = `${placement[['yaw','pitch','roll'][i]]}°`; });
+      const data = poseData();
+      document.querySelector('#pose').textContent = JSON.stringify(data, null, 2);
+      const direction = new THREE.Vector3(...data.direction_body);
+      const opticalOrigin = new THREE.Vector3(...placement.position);
+      sensor.position.copy(opticalOrigin).addScaledVector(direction,-0.0014);
+      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1,0,0), direction);
+      q.premultiply(new THREE.Quaternion().setFromAxisAngle(direction, THREE.MathUtils.degToRad(placement.roll)));
+      sensor.quaternion.copy(q);
+      marker.position.copy(opticalOrigin);
+      arrow.position.copy(opticalOrigin).addScaledVector(direction, 0.009);
+      arrow.setDirection(direction);
+      arrow.setLength(0.08, 0.018, 0.009);
+    }
+    fields.slice(0,3).forEach((el,i) => el.addEventListener('input', () => { placement.position[i] = Number(el.value); update(); }));
+    fields.slice(3).forEach((el,i) => el.addEventListener('input', () => { placement[['yaw','pitch','roll'][i]] = Number(el.value); update(); }));
+    document.querySelector('#reset').addEventListener('click', () => { placement = structuredClone(initial); update(); });
+    document.querySelector('#copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(JSON.stringify(poseData(), null, 2)); state.textContent = 'Pose đã copy. Gửi JSON này để cập nhật model.'; }
+      catch { state.textContent = 'Không copy được tự động; hãy chọn và copy JSON ở khung bên trên.'; }
+    });
+    document.querySelector('#download').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(poseData(), null, 2)], {type:'application/json'});
+      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'rb-tof-pose.json'; link.click(); URL.revokeObjectURL(link.href);
+    });
+
+    let down;
+    renderer.domElement.addEventListener('pointerdown', e => { down = {x:e.clientX,y:e.clientY}; });
+    renderer.domElement.addEventListener('pointerup', e => {
+      if (!down || Math.hypot(e.clientX-down.x, e.clientY-down.y) > 4 || !head) return;
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.set(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
+      raycaster.setFromCamera(pointer,camera);
+      const hit = raycaster.intersectObject(head,false)[0];
+      if (hit) {
+        placement.position = hit.point.toArray();
+        state.textContent = 'Đã chọn điểm trên mesh đầu. Chỉnh yaw/pitch/roll để hướng ToF.';
+        update();
+      }
+      down = undefined;
+    });
+
+    new STLLoader().load('/model/assets/mesh_04_00.stl', geometry => {
+      geometry.scale(0.001,0.001,0.001);
+      geometry.computeVertexNormals();
+      head = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color:0x9aa8ad, roughness:0.78, metalness:0.08, side:THREE.DoubleSide }));
+      scene.add(head);
+      const bounds = new THREE.Box3().setFromObject(head);
+      const center = bounds.getCenter(new THREE.Vector3());
+      controls.target.copy(center);
+      camera.position.copy(center).add(new THREE.Vector3(0.22,-0.30,0.18));
+      camera.lookAt(center);
+      state.textContent = 'Mesh đầu đã tải. Bấm vào vỏ để chọn vị trí; pose xuất theo body_link, đơn vị mét.';
+      update();
+    }, undefined, error => { state.textContent = `Không tải được mesh đầu: ${error.message || error}`; });
+
+    function resize() {
+      const w = view.clientWidth, h = view.clientHeight;
+      renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(view); resize();
+    renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene,camera); });
+  </script>
+</body>
+</html>

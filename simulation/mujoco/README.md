@@ -11,4 +11,6 @@ cmake --build firmware/build -j8 --target rb1_sim
 
 Tham số mô hình mặc định và công cụ hiện hành vẫn dùng `model/dynamic.xml`.
 
-GUI lấy `simulation/scenarios/indoor_small_house.xml` làm model mặc định. Viewer tự chọn GTX 1650 bằng Mesa `DRI_PRIME=1` trên laptop hybrid này; đặt `DRI_PRIME=0` trước khi mở GUI nếu muốn dùng GPU tích hợp. Có thể chọn scene khác bằng `RB1_SIM_MODEL=/path/to/model.xml python3 gui/sim_gui.py`.
+GUI lấy `simulation/scenarios/indoor_small_house.xml` làm model mặc định. Viewer bật mesh CAD chi tiết của RB và bóng đổ cả trong nhà; texture của cảnh được chuyển đổi ở độ phân giải gốc. Có thể chọn scene khác bằng `RB1_SIM_MODEL=/path/to/model.xml python3 gui/sim_gui.py`.
+
+Viewer chạy riêng với runner vật lý. Trên máy hiện tại, renderer dùng RTX 3060; `DRI_PRIME` từ môi trường vẫn được giữ nếu người dùng đã đặt. Tùy chọn `--primitives` của `gui/rb1_gui/cad_viewer.py` vẫn cho phép xem robot bằng các khối đơn giản khi cần.

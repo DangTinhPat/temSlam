@@ -43,6 +43,24 @@ def load(name: str) -> dict:
 def fmt(values, digits=9) -> str:
     return " ".join(f"{float(v):.{digits}g}" for v in values)
 
+def quat_from_rotation(rotation):
+    """Return MuJoCo's w-x-y-z quaternion for a 3x3 rotation matrix."""
+    r = rotation
+    trace = float(np.trace(r))
+    if trace > 0:
+        s = math.sqrt(trace + 1.0) * 2
+        q = [s / 4, (r[2, 1] - r[1, 2]) / s, (r[0, 2] - r[2, 0]) / s, (r[1, 0] - r[0, 1]) / s]
+    else:
+        i = int(np.argmax(np.diag(r)))
+        j, k = (i + 1) % 3, (i + 2) % 3
+        s = math.sqrt(1.0 + r[i, i] - r[j, j] - r[k, k]) * 2
+        xyz = [0.0, 0.0, 0.0]
+        xyz[i] = s / 4
+        xyz[j] = (r[j, i] + r[i, j]) / s
+        xyz[k] = (r[k, i] + r[i, k]) / s
+        q = [(r[k, j] - r[j, k]) / s, *xyz]
+    return np.asarray(q) / np.linalg.norm(q)
+
 def body_part(mass, com, tensor):
     return {"m": mass, "c": np.asarray(com, float), "I": np.asarray(tensor, float)}
 
@@ -79,6 +97,8 @@ def build() -> str:
     TYRE_FRICTION = actuators["contact_friction"]["tyre"]
     BODY_FRICTION = actuators["contact_friction"]["body_shell"]
     imu = load("imu.yaml")["imu"]
+    camera = yaml.safe_load((ROOT / "vision/camera.yaml").read_text(encoding="utf-8"))["camera"]
+    tof = yaml.safe_load((ROOT / "vision/tof.yaml").read_text(encoding="utf-8"))["sensor"]
     blocks = load("cad_blocks.yaml")["components"]
     stator_m = float(actuators["wheel_assembly"]["motor_mass_kg"])
     spin_m = float(actuators["wheel_assembly"]["mass_kg"]) - stator_m
@@ -138,6 +158,29 @@ def build() -> str:
                      f'pos="{fmt((lo + hi) / 2)}" size="{fmt((hi - lo) / 2)}" rgba="0.7 0.7 0.72 1"/>')
     pos = imu["position_body_m"]
     lines.append(f'      <site name="imu" pos="{fmt(pos)}" size="0.004"/>')
+    lines.append(f'      <camera name="{camera["name"]}" pos="{fmt(camera["position_body_m"])}" '
+                 f'xyaxes="{fmt(camera["xyaxes_body"])}"/>')
+    tof_pos = np.asarray(tof["position_body_m"], float)
+    tof_axes = np.asarray(tof["xyaxes_body"], float).reshape(2, 3)
+    right, up = tof_axes
+    forward = -np.cross(right, up)
+    forward /= np.linalg.norm(forward)
+    right /= np.linalg.norm(right)
+    up /= np.linalg.norm(up)
+    if abs(np.dot(right, up)) > 1e-6:
+        raise ValueError("ToF camera right/up axes must be perpendicular")
+    tof_rotation = np.column_stack((forward, -right, up))
+    tof_quat = quat_from_rotation(tof_rotation)
+    tof_half = np.asarray(tof["board_size_m"], float) / 2
+    window_half = np.asarray(tof["window_size_m"], float) / 2
+    tof_camera_pos = tof_pos + forward * (tof_half[0] + 2 * window_half[0])
+    window_pos = tof_pos + forward * (tof_half[0] + window_half[0])
+    lines.append(f'      <camera name="tof_camera" pos="{fmt(tof_camera_pos)}" '
+                 f'xyaxes="{fmt(tof_axes.flatten())}" fovy="{float(tof["fovy_deg"]):g}"/>')
+    lines.append(f'      <geom name="{tof["name"]}_board" type="box" pos="{fmt(tof_pos)}" '
+                 f'size="{fmt(tof_half)}" quat="{fmt(tof_quat)}" rgba="0.12 0.34 0.22 1" contype="0" conaffinity="0"/>')
+    lines.append(f'      <geom name="{tof["name"]}_window" type="box" pos="{fmt(window_pos)}" '
+                 f'size="{fmt(window_half)}" quat="{fmt(tof_quat)}" rgba="0.04 0.05 0.05 1" contype="0" conaffinity="0"/>')
     for side, hip, knee, wheel, thigh, shin, wheel_part in legs:
         sign = 1.0 if side == "left" else -1.0
         lines += [

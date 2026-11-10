@@ -22,6 +22,7 @@ BAD = "#ff5c68"
 # knee stop and the supported straight-leg limit. The runner clamps to it anyway.
 MIN_BODY_HEIGHT_M = 0.0783
 MAX_BODY_HEIGHT_M = 0.2078
+MIDDLE_BODY_HEIGHT_M = 0.5 * (MAX_BODY_HEIGHT_M + MIN_BODY_HEIGHT_M)
 NATURAL_BODY_HEIGHT_M = MAX_BODY_HEIGHT_M
 SPAWN_POSE = (-0.9861111111111111, 1.9722222222222222,
               -0.9861111111111111, 1.9722222222222222)
@@ -186,7 +187,7 @@ class NativeDashboard:
         height_presets.pack(fill="x")
         for index, (label, height) in enumerate((
                 ("Cao nhất", MAX_BODY_HEIGHT_M),
-                ("Giữa", 0.5 * (MAX_BODY_HEIGHT_M + MIN_BODY_HEIGHT_M)),
+                ("Giữa", MIDDLE_BODY_HEIGHT_M),
                 ("Thấp nhất", MIN_BODY_HEIGHT_M))):
             ttk.Button(height_presets, text=label,
                        command=lambda h=height: self.send_height(h)).grid(
@@ -568,6 +569,7 @@ class NativeDashboard:
             return
         self.height_var.set(value)
         self.posture_var.set(_height_to_posture(value))
+        self._posture_preview(self.posture_var.get())
         # Send the latest target immediately.  The native core already owns
         # the adaptive capture/pending gate; duplicating that gate in Tk made
         # a button wait for station_hold after a previous pose had ended.
@@ -623,9 +625,14 @@ class NativeDashboard:
             if fields.get("mode") == "Fault" or phase == "Failed":
                 self.jump_status.set("Đứng dậy đã dừng: " + fields.get("fault_reason", "lỗi điều khiển"))
                 self._standup_active = False
-            elif fields.get("mode") == "Balancing":
-                self.jump_status.set("Đã bắt tâm — đang cân bằng và nâng lên độ cao tối đa")
+            elif (fields.get("mode") == "Balancing" and
+                  fields.get("height_settled") == "1" and
+                  fields.get("height_motion") == "0"):
+                self.jump_status.set("Đã đứng vững — đang hạ thân về mức giữa")
                 self._standup_active = False
+                self.send_height(MIDDLE_BODY_HEIGHT_M)
+            elif fields.get("mode") == "Balancing":
+                self.jump_status.set("Đã bắt tâm — chờ đứng vững hoàn toàn")
             else:
                 status = {
                     "Folding": "Bước 1: gập hip cho gối, bánh và mũi thân chạm sàn",

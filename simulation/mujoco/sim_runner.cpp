@@ -325,7 +325,7 @@ class RbV3Runner {
     config.tier.knee_follow_hz = 1.0F;
     config.tier.knee_follow_rate_rad_s = .6F;
     config.tier.sus_adaptive = true;
-    config.trim_acc = false;
+    config.trim_acc = true;  // Match firmware: adapt balance pitch from wheel-derived ground acceleration.
     {
       // The firmware's recovery tuning (StandUp::tunedRecovery); --standup-profile fw keeps the StandUp::Config
       // defaults.

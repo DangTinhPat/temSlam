@@ -301,6 +301,10 @@
       <geom name="body_2" type="box" pos="0.015 0 -0.02525" size="0.096648 0.071648 0.02475" rgba="0.7 0.7 0.72 1" contype="1" conaffinity="0" />
       <geom name="robot_head" type="box" pos="0.02995 0 0.08265" size="0.067952 0.048002 0.034652" rgba="0.7 0.7 0.72 1" contype="1" conaffinity="0" />
       <site name="imu" pos="0.0767 0.0301 -0.0266" size="0.004" />
+      <camera name="head_camera" pos="0.0979 0 0.0918" xyaxes="0 -1 0 0 0 1"/>
+      <camera name="tof_camera" pos="0.089 0.02 0.0918" xyaxes="-0.069756 -0.997564 0 0 0 1" fovy="45" />
+      <geom name="tof_8x8_board" type="box" pos="0.087603 0.020098 0.0918" size="0.001 0.005 0.005" quat="0.999390827 0 0 -0.034899497" rgba="0.12 0.34 0.22 1" contype="0" conaffinity="0" group="1" />
+      <geom name="tof_8x8_window" type="box" pos="0.0888 0.020014 0.0918" size="0.0002 0.0025 0.0025" quat="0.999390827 0 0 -0.034899497" rgba="0.04 0.05 0.05 1" contype="0" conaffinity="0" group="1" />
       <body name="left_thigh" pos="0 0.0812 0">
         <joint name="left_hip" type="hinge" axis="0 1 0" range="-1.56817833 2.35706715" limited="true" frictionloss="0.001" />
         <inertial pos="-0.04782 0.009059 0.008213" mass="0.085" fullinertia="2.9887695e-05 0.000228113828 0.000208817688 6.265732e-06 1.4890775e-05 -1.829323e-06" />
@@ -416,7 +420,7 @@
     <geom name="house_wall_collision_36_4" type="box" size="3.5 0.10000062 1.5" contype="2" conaffinity="1" rgba="0.1 0.1 0.1 0" group="3" friction="0.8 0.02 0.0001" pos="-6 -5.60000348 1.5" quat="1 0 0 0" />
     <geom name="house_wall_collision_36_5" type="box" size="7.071043 0.10000002 1.5" contype="2" conaffinity="1" rgba="0.1 0.1 0.1 0" group="3" friction="0.8 0.02 0.0001" pos="-2.42895699 3.19999993 1.5" quat="1 0 0 0" />
     <geom name="house_wall_collision_36_6" type="box" size="6 0.10000002 1.5" contype="2" conaffinity="1" rgba="0.1 0.1 0.1 0" group="3" friction="0.8 0.02 0.0001" pos="3.5 3.19999993 1.5" quat="1 0 0 0" />
-    <geom name="house_visual_37_0_0" type="mesh" mesh="house_aws_robomaker_residential_floorb_01_v0_p0" contype="0" conaffinity="0" group="0" pos="0 0 0.004" quat="1 0 0 0" material="house_mat_943cac901efd" />
+    <geom name="house_visual_37_0_0" type="mesh" mesh="house_aws_robomaker_residential_floorb_01_v0_p0" contype="0" conaffinity="0" group="0" pos="0 0 0" quat="1 0 0 0" material="house_mat_943cac901efd" />
     <geom name="house_visual_38_0_0" type="mesh" mesh="house_aws_robomaker_residential_foldingdoor_02_v0_p0" contype="0" conaffinity="0" group="0" pos="4.674231 2.46451 0" quat="1.3267949e-06 0 0 1" material="house_mat_14aec04f881c" />
     <geom name="house_collision_38_0" type="mesh" mesh="house_aws_robomaker_residential_foldingdoor_02_c0" contype="2" conaffinity="1" rgba="0.1 0.1 0.1 0" group="3" friction="0.8 0.02 0.0001" pos="4.674231 2.46451 0" quat="1.3267949e-06 0 0 1" />
     <geom name="house_visual_39_0_0" type="mesh" mesh="house_aws_robomaker_residential_foldingdoor_02_v0_p0" contype="0" conaffinity="0" group="0" pos="4.8912 -4.84968 0" quat="1 0 0 0" material="house_mat_14aec04f881c" />
