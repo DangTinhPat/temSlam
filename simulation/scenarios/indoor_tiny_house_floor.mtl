@@ -1,0 +1,7 @@
+newmtl wood_floor
+Ka 1 1 1
+Kd 1 1 1
+Ks 0 0 0
+d 1
+illum 1
+map_Kd ../assets/aws_robomaker_small_house/converted/textures/943cac901efd_aws_FloorB_01.png

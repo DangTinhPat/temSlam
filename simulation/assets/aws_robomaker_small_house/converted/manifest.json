@@ -3,8 +3,8 @@
   "world": "small_house.world",
   "model_instances": 87,
   "visual_mesh_parts": 85,
-  "visual_geoms": 108,
-  "collision_geoms": 92,
+  "visual_geoms": 110,
+  "collision_geoms": 1913,
   "textures": 66,
   "base_robot_model": "model/dynamic.xml"
 }

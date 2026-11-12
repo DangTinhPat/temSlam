@@ -1,0 +1,314 @@
+{
+  "session": "/home/dvt/temSlam/datasets/raw/tof-20261112-090937-766548",
+  "source": "Saved predicted depth; truth used only to identify floor pixels and evaluate error",
+  "window_s": [
+    60.1353,
+    86.6003
+  ],
+  "frames": [
+    {
+      "time_s": 60.8703,
+      "head_deg": -14.505629795106564,
+      "floor_supported": true,
+      "pixels": 69530,
+      "depth_true_pose": {
+        "median_cm": 0.3023009783532857,
+        "p95_abs_cm": 2.553115015835794
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.0005519810378940004,
+        "p95_abs_cm": 2.5215364632163033
+      }
+    },
+    {
+      "time_s": 64.8003,
+      "head_deg": -175.2368498095818,
+      "floor_supported": false,
+      "pixels": 85342,
+      "depth_true_pose": {
+        "median_cm": 1.2847295182145515,
+        "p95_abs_cm": 7.124142193954073
+      },
+      "depth_estimated_pose": {
+        "median_cm": 1.5314329751229385,
+        "p95_abs_cm": 7.484157236555107
+      }
+    },
+    {
+      "time_s": 65.6703,
+      "head_deg": -157.82179762658038,
+      "floor_supported": true,
+      "pixels": 88514,
+      "depth_true_pose": {
+        "median_cm": -0.24340197820748588,
+        "p95_abs_cm": 7.633517901206885
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.004143182258793676,
+        "p95_abs_cm": 8.041427758198965
+      }
+    },
+    {
+      "time_s": 66.6003,
+      "head_deg": -139.2132743563215,
+      "floor_supported": true,
+      "pixels": 88332,
+      "depth_true_pose": {
+        "median_cm": -0.18875117434755256,
+        "p95_abs_cm": 8.629504156329535
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.005147486417041158,
+        "p95_abs_cm": 8.956470116355586
+      }
+    },
+    {
+      "time_s": 67.8703,
+      "head_deg": -113.86963220429982,
+      "floor_supported": true,
+      "pixels": 87492,
+      "depth_true_pose": {
+        "median_cm": -0.04973186464723445,
+        "p95_abs_cm": 8.69884439278594
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.007073654775623106,
+        "p95_abs_cm": 8.847272852876111
+      }
+    },
+    {
+      "time_s": 70.0703,
+      "head_deg": -69.9019969215507,
+      "floor_supported": true,
+      "pixels": 87718,
+      "depth_true_pose": {
+        "median_cm": 0.1148681239927632,
+        "p95_abs_cm": 8.310714792044392
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.003848015476823341,
+        "p95_abs_cm": 8.18613740369286
+      }
+    },
+    {
+      "time_s": 71.0703,
+      "head_deg": -49.80842434209224,
+      "floor_supported": true,
+      "pixels": 83677,
+      "depth_true_pose": {
+        "median_cm": 0.1675294664538335,
+        "p95_abs_cm": 3.407456459059262
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.0013348039108906917,
+        "p95_abs_cm": 3.217810538325187
+      }
+    },
+    {
+      "time_s": 72.2003,
+      "head_deg": -27.21595363495021,
+      "floor_supported": true,
+      "pixels": 74606,
+      "depth_true_pose": {
+        "median_cm": 0.16903844726070816,
+        "p95_abs_cm": 2.6780336776209
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.0011371760695863542,
+        "p95_abs_cm": 2.6043141439913007
+      }
+    },
+    {
+      "time_s": 73.3353,
+      "head_deg": -4.530938784738648,
+      "floor_supported": true,
+      "pixels": 67206,
+      "depth_true_pose": {
+        "median_cm": 0.19520100242692295,
+        "p95_abs_cm": 2.1601705695167257
+      },
+      "depth_estimated_pose": {
+        "median_cm": -0.002311849839102542,
+        "p95_abs_cm": 2.339659197287118
+      }
+    },
+    {
+      "time_s": 74.0003,
+      "head_deg": 8.8551773153059,
+      "floor_supported": true,
+      "pixels": 66384,
+      "depth_true_pose": {
+        "median_cm": 0.17788844611631716,
+        "p95_abs_cm": 2.089447182957407
+      },
+      "depth_estimated_pose": {
+        "median_cm": -0.002534121937144973,
+        "p95_abs_cm": 2.232745542352452
+      }
+    },
+    {
+      "time_s": 75.5353,
+      "head_deg": 39.44487833532494,
+      "floor_supported": false,
+      "pixels": 73681,
+      "depth_true_pose": {
+        "median_cm": 0.9978903243247877,
+        "p95_abs_cm": 3.9768916031775516
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.8562699790857886,
+        "p95_abs_cm": 3.7728159198237106
+      }
+    },
+    {
+      "time_s": 76.0003,
+      "head_deg": 48.721466108949556,
+      "floor_supported": false,
+      "pixels": 74195,
+      "depth_true_pose": {
+        "median_cm": 1.0400774910758552,
+        "p95_abs_cm": 4.13194529895598
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.9190104883660483,
+        "p95_abs_cm": 3.9483518875300128
+      }
+    },
+    {
+      "time_s": 77.1353,
+      "head_deg": 71.3481423964609,
+      "floor_supported": true,
+      "pixels": 71048,
+      "depth_true_pose": {
+        "median_cm": 0.06366754644746564,
+        "p95_abs_cm": 2.02597292341276
+      },
+      "depth_estimated_pose": {
+        "median_cm": -0.00012646078858119525,
+        "p95_abs_cm": 2.0452401997391556
+      }
+    },
+    {
+      "time_s": 77.8003,
+      "head_deg": 84.84702804974309,
+      "floor_supported": true,
+      "pixels": 67921,
+      "depth_true_pose": {
+        "median_cm": 0.0024767280206394737,
+        "p95_abs_cm": 2.0535091114673527
+      },
+      "depth_estimated_pose": {
+        "median_cm": -0.0005697131850362913,
+        "p95_abs_cm": 2.049058000360096
+      }
+    },
+    {
+      "time_s": 79.2003,
+      "head_deg": 112.6944957664865,
+      "floor_supported": true,
+      "pixels": 70929,
+      "depth_true_pose": {
+        "median_cm": -0.05200204996064495,
+        "p95_abs_cm": 1.9739827047089198
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.00020302638608360457,
+        "p95_abs_cm": 1.969261001645618
+      }
+    },
+    {
+      "time_s": 80.2703,
+      "head_deg": 134.08071842753958,
+      "floor_supported": true,
+      "pixels": 78615,
+      "depth_true_pose": {
+        "median_cm": -0.16164774653281422,
+        "p95_abs_cm": 2.3255285765127316
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.0012675558610925064,
+        "p95_abs_cm": 2.2908153972392067
+      }
+    },
+    {
+      "time_s": 81.4003,
+      "head_deg": 156.70682175725582,
+      "floor_supported": true,
+      "pixels": 82325,
+      "depth_true_pose": {
+        "median_cm": -0.1854892774024175,
+        "p95_abs_cm": 4.180989223376358
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.0024431194466045802,
+        "p95_abs_cm": 4.448129468307711
+      }
+    },
+    {
+      "time_s": 82.5353,
+      "head_deg": 177.84839143978806,
+      "floor_supported": true,
+      "pixels": 84972,
+      "depth_true_pose": {
+        "median_cm": -0.23182649030770025,
+        "p95_abs_cm": 6.415740687137532
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.0035577663499791745,
+        "p95_abs_cm": 6.632731427982671
+      }
+    },
+    {
+      "time_s": 83.2003,
+      "head_deg": 150.28969445179058,
+      "floor_supported": true,
+      "pixels": 84163,
+      "depth_true_pose": {
+        "median_cm": -0.23606991211902462,
+        "p95_abs_cm": 2.2987621341638844
+      },
+      "depth_estimated_pose": {
+        "median_cm": 0.0017094798220984586,
+        "p95_abs_cm": 2.230569388815482
+      }
+    },
+    {
+      "time_s": 84.7353,
+      "head_deg": 80.87643052948648,
+      "floor_supported": true,
+      "pixels": 69019,
+      "depth_true_pose": {
+        "median_cm": 0.0372721067719739,
+        "p95_abs_cm": 1.9415422766013533
+      },
+      "depth_estimated_pose": {
+        "median_cm": -0.00041797130197751553,
+        "p95_abs_cm": 1.946762015579263
+      }
+    },
+    {
+      "time_s": 85.8003,
+      "head_deg": 32.94598995249454,
+      "floor_supported": true,
+      "pixels": 74525,
+      "depth_true_pose": {
+        "median_cm": 0.24296407622121097,
+        "p95_abs_cm": 2.1349393273673187
+      },
+      "depth_estimated_pose": {
+        "median_cm": 5.4794203593888646e-05,
+        "p95_abs_cm": 2.1651385653990918
+      }
+    }
+  ],
+  "aggregate": {
+    "depth_true_pose": {
+      "median_cm": 0.10231855528958916,
+      "p95_abs_cm": 4.74963594146921
+    },
+    "depth_estimated_pose": {
+      "median_cm": 0.0038041500909677395,
+      "p95_abs_cm": 4.830491674647602
+    }
+  }
+}

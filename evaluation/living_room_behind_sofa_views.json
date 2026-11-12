@@ -1,0 +1,77 @@
+{
+  "previous": {
+    "session": "datasets/raw/tof-20261112-090937-766548",
+    "keyframes_behind_sofa": 0,
+    "frames": []
+  },
+  "perimeter": {
+    "session": "datasets/raw/tof-20261112-094256-483079",
+    "keyframes_behind_sofa": 8,
+    "frames": [
+      {
+        "file": "keyframes/00200.npz",
+        "time_s": 700.47,
+        "x": -5.39982,
+        "y": -2.9294,
+        "head_deg": -9.666772032108711e-05,
+        "valid_depth_pixels": 155781
+      },
+      {
+        "file": "keyframes/00201.npz",
+        "time_s": 703.67,
+        "x": -5.4,
+        "y": -2.57227,
+        "head_deg": -0.00021308071217797264,
+        "valid_depth_pixels": 194211
+      },
+      {
+        "file": "keyframes/00202.npz",
+        "time_s": 707.0,
+        "x": -5.39999,
+        "y": -2.57611,
+        "head_deg": -131.3969841151468,
+        "valid_depth_pixels": 187378
+      },
+      {
+        "file": "keyframes/00203.npz",
+        "time_s": 711.0,
+        "x": -5.40001,
+        "y": -2.53951,
+        "head_deg": -121.93057542399536,
+        "valid_depth_pixels": 171910
+      },
+      {
+        "file": "keyframes/00204.npz",
+        "time_s": 714.8,
+        "x": -5.39998,
+        "y": -2.62844,
+        "head_deg": -46.058415572960996,
+        "valid_depth_pixels": 176485
+      },
+      {
+        "file": "keyframes/00205.npz",
+        "time_s": 724.8,
+        "x": -5.40005,
+        "y": -2.50685,
+        "head_deg": 154.04657871446338,
+        "valid_depth_pixels": 137576
+      },
+      {
+        "file": "keyframes/00206.npz",
+        "time_s": 732.47,
+        "x": -5.39995,
+        "y": -2.45829,
+        "head_deg": -0.00015478168356561624,
+        "valid_depth_pixels": 200891
+      },
+      {
+        "file": "keyframes/00207.npz",
+        "time_s": 735.935,
+        "x": -5.39999,
+        "y": -2.04428,
+        "head_deg": -8.268411237312424e-05,
+        "valid_depth_pixels": 215410
+      }
+    ]
+  }
+}

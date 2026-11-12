@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import deque
+import json
 import math
 import os
 from pathlib import Path
@@ -12,6 +13,7 @@ import subprocess
 import sys
 import threading
 import time
+import datetime
 from typing import Dict, Optional
 
 def workspace_root() -> Path:
@@ -45,8 +47,12 @@ class NativeBackend:
         self._lock = threading.Lock()
         self._viewer_process: Optional[subprocess.Popen[str]] = None
         self._camera_process: Optional[subprocess.Popen[str]] = None
+        self._map_process = None
+        self.map_session: Optional[Path] = None
+        self._map_dropped = 0
         self._command_socket: Optional[socket.socket] = None
-        self._command_port = 37681
+        self._command_port = int(os.environ.get("RB1_SIM_PORT", "37681"))
+        self.live_scan = None
         self._ready = threading.Event()
 
     def runner_path(self) -> Path:
@@ -77,8 +83,8 @@ class NativeBackend:
             if self.running:
                 return
             runner = self.runner_path()
-            # RB1_SIM_MODEL=<xml>: another model (e.g. the rough terrain, tools/build_rough_terrain.py)
-            default_model = self.root / "simulation/scenarios/indoor_small_house.xml"
+            # RB1_SIM_MODEL=<xml> overrides the official SLAM house scene.
+            default_model = self.root / "simulation/scenarios/indoor_tiny_house.xml"
             if not default_model.is_file():
                 default_model = self.root / "model/dynamic.xml"
             model = Path(os.environ.get("RB1_SIM_MODEL") or default_model)
@@ -89,9 +95,13 @@ class NativeBackend:
             self._command_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self._ready.clear()
             command = [str(runner), "--model", str(model), "--rate", str(self.rate_hz),
-                       "--command-port", str(self._command_port), "--realtime"]
+                       "--command-port", str(self._command_port)]
+            speed_factor = os.environ.get("RB1_SIM_SPEED_FACTOR")
+            command += ["--speed-factor", speed_factor] if speed_factor else ["--realtime"]
             # Start keyframe: "home" (lying, limp until STANDUP) or "spawn_extended" (ENABLE balances it).
             command += ["--start-key", self.start_key]
+            if os.environ.get("RB1_LIVE_SLAM") == "1":
+                command += ["--capture-sync"]
             # RB1_SIM_NOISE=<scale>: synthetic sensor noise (the runner default is none: a noiseless robot sits
             # unnaturally still).
             if os.environ.get("RB1_SIM_NOISE"):
@@ -116,8 +126,13 @@ class NativeBackend:
             try:
                 if not self._ready.wait(timeout=2.0):
                     raise RuntimeError("native runner did not open command transport")
-                self._open_mujoco_viewer(model)
-                self._open_camera_view(model)
+                self._open_map_view()
+                if os.environ.get("RB1_LIVE_SLAM") == "1":
+                    sys.path.insert(0, str(self.root / "technology/scan3d_fusion/live"))
+                    from session import LiveSession
+                    self.live_scan = LiveSession(self.root, self.map_session)
+                    if os.environ.get("RB1_HEADLESS") != "1":
+                        self._open_mujoco_viewer(model)
             except Exception:
                 self.stop()
                 raise
@@ -141,8 +156,38 @@ class NativeBackend:
             stderr=subprocess.STDOUT, text=True, bufsize=1, env=viewer_env)
         os.set_blocking(self._viewer_process.stdin.fileno(), False)
 
+    def _open_map_view(self) -> None:
+        executable = self.runner_path().parent / "rb_tof_mapper"
+        if not executable.is_file():
+            raise RuntimeError("Native ToF mapper missing; rebuild rb1_sim")
+        self.map_session = self.root / "datasets/raw" / (
+            "tof-" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f"))
+        self.map_session.mkdir(parents=True, exist_ok=True)
+        self._map_process = subprocess.Popen(
+            [sys.executable, str(self.root / "technology/scan3d_fusion/viewer/tof_map_viewer.py"),
+             "--mapper", str(executable), "--runner-command", json.dumps(self.process.args),
+             "--session", str(self.map_session), "--headless"], cwd=self.root, stdin=subprocess.PIPE,
+            text=True, bufsize=1)
+        os.set_blocking(self._map_process.stdin.fileno(), False)
+
+    def _close_map_view(self) -> None:
+        process = self._map_process
+        self._map_process = None
+        if process is None:
+            return
+        try:
+            process.stdin.close()
+            process.wait(timeout=3)
+        except (OSError, subprocess.TimeoutExpired):
+            process.terminate()
+            try:
+                process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+
     def _open_camera_view(self, model_path: Path) -> None:
-        script = self.root / "vision/camera_viewer.py"
+        script = self.root / "technology/scan3d_fusion/sensor/camera_viewer.py"
         self._camera_process = subprocess.Popen(
             [sys.executable, str(script), "--model", str(model_path)],
             cwd=self.root, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
@@ -215,6 +260,44 @@ class NativeBackend:
         if process is None or process.stdout is None:
             return
         for line in process.stdout:
+            if line.startswith("CAPTURE|"):
+                if self.map_session is not None and self.map_session.is_dir():
+                    packet = self._parse(line.strip())
+                    with (self.map_session / "live_capture.jsonl").open("a") as stream:
+                        stream.write(json.dumps(packet) + "\n")
+                    target = self.map_session / "live_capture.json"
+                    tmp = target.with_suffix(".tmp")
+                    tmp.write_text(json.dumps(packet))
+                    tmp.replace(target)
+                continue
+            if line.startswith(("TOFMAP ", "MAPRESET")):
+                camera = self._camera_process
+                if camera is not None and camera.poll() is None:
+                    try:
+                        packet = line.encode("ascii")
+                        if len(packet) <= 4096:
+                            os.write(camera.stdin.fileno(), packet)
+                    except (OSError, ValueError):
+                        pass
+                mapper = self._map_process
+                if mapper is not None and mapper.poll() is None:
+                    try:
+                        packet = line.encode("ascii")
+                        if len(packet) > 4096:
+                            raise OSError("ToF packet exceeds atomic pipe size")
+                        os.write(mapper.stdin.fileno(), packet)
+                    except (OSError, ValueError):
+                        self._map_dropped += 1
+                        if self._map_dropped % 15 == 1:
+                            self.log.append(f"ToF map stream dropped {self._map_dropped} frames")
+                continue
+            if line.startswith("VIEW|"):
+                mapper = self._map_process
+                if mapper is not None and mapper.poll() is None:
+                    try:
+                        os.write(mapper.stdin.fileno(), line.encode("ascii"))
+                    except (OSError, ValueError):
+                        pass
             if line.startswith("READY|"):
                 self._ready.set()
             line = line.rstrip("\n")
@@ -276,6 +359,11 @@ class NativeBackend:
             pass
 
     def stop(self) -> None:
+        self.send("STOP")
+        if self.live_scan is not None:
+            self.live_scan.close()
+            self.live_scan = None
+        self._close_map_view()
         self._close_mujoco_viewer()
         self._close_camera_view()
         process = self.process

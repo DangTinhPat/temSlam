@@ -1,0 +1,15 @@
+{
+  "source": "datasets/maps/tof-draft-20261110-121041/sensors.log",
+  "output": "datasets/processed/odometry/rb-odom-replay-w5xw201p",
+  "frames": 7656,
+  "valid_frames": 7534,
+  "slip_frames": 0,
+  "seconds": 241.48833583298256,
+  "final_pose": [
+    -0.16013677167996554,
+    -4.309724707087035,
+    -13.161490862819438
+  ],
+  "covariance_finite_psd": true,
+  "unsupported_motion_excluded": true
+}

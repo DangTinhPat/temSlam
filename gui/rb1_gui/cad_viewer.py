@@ -53,28 +53,33 @@ class RbModel:
     def __init__(self, model_path: Path, start_key: str, meshes: bool = True):
         model_path = Path(model_path).resolve()
         spec = mujoco.MjSpec.from_file(str(model_path))
-        self.house_scene = any(geom.name.startswith("house_visual_") for geom in spec.geoms)
+        world_geoms = {geom.name for geom in spec.worldbody.geoms}
+        self.house_scene = any(name.startswith(("house_visual_", "env_")) for name in world_geoms)
         self.meshes = (meshes and PARTS.is_dir()
                        and (PARTS / "left_thigh.stl").is_file())
         if self.meshes:
             # The CAD parts below use model/assets as meshdir. Preserve the scene's own mesh/texture paths first.
             for mesh in spec.meshes:
-                if mesh.name.startswith("house_") and mesh.file:
+                if mesh.file:
                     mesh_path = Path(mesh.file)
-                    if not mesh_path.is_absolute():
-                        mesh.file = str((model_path.parent / mesh_path).resolve())
+                    scene_asset = model_path.parent / mesh_path
+                    if not mesh_path.is_absolute() and scene_asset.is_file():
+                        mesh.file = str(scene_asset.resolve())
             for texture in spec.textures:
-                if texture.name.startswith("house_tex_") and texture.file:
+                if texture.file:
                     texture_path = Path(texture.file)
                     if not texture_path.is_absolute():
                         texture.file = str((model_path.parent / texture_path).resolve())
             spec.meshdir = str(ASSETS)
             for geom in spec.geoms:        # hide collision proxies; keep house visuals and CAD meshes visible
-                if geom.name == "ground":
+                if geom.name in world_geoms:
+                    if geom.group == 3:
+                        geom.group = 1
                     continue
                 geom.group = 1 if geom.name.startswith(("house_visual_", "tof_8x8_")) else 3
             self._add_cad(spec)
-        self._ground_grid(spec)
+        if not self.house_scene:
+            self._ground_grid(spec)
         self._lighting(spec)
         self.model = spec.compile()
         self.data = mujoco.MjData(self.model)
@@ -127,9 +132,11 @@ class RbModel:
             geom.group = 1
 
         link = spec.body("body_link")
+        head = spec.body("head_link") or link
         for index, color in BODY_MESHES.items():
             add_mesh(f"m{index}", f"mesh_{index:02d}_00.stl")
-            add_geom(link, f"m{index}", COLORS[color], (0, 0, 0))
+            add_geom(head if index == 4 else link, f"m{index}", COLORS[color],
+                     (.025, 0, .0616) if index == 4 and head is not link else (0, 0, 0))
         for side in ("left", "right"):
             add_mesh(f"{side}_body", f"rb_parts/{side}_body.stl")
             add_geom(link, f"{side}_body", COLORS["motor"], (0, 0, 0))
@@ -165,8 +172,15 @@ class RbModel:
 
     def apply(self, values):
         q = self.data.qpos
-        for index, key in enumerate(("x", "y", "z", "qw", "qx", "qy", "qz", "lh", "lk", "lw", "rh", "rk", "rw")):
+        for index, key in enumerate(("x", "y", "z", "qw", "qx", "qy", "qz")):
             q[index] = float(values.get(key, q[index]))
+        for key, joint_name in (("lh", "left_hip"), ("lk", "left_knee"), ("lw", "left_wheel"),
+                                ("rh", "right_hip"), ("rk", "right_knee"), ("rw", "right_wheel"),
+                                ("hj", "head_yaw")):
+            joint = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, joint_name)
+            if joint >= 0:
+                address = self.model.jnt_qposadr[joint]
+                q[address] = float(values.get(key, q[address]))
         mujoco.mj_forward(self.model, self.data)
         if self.meshes:
             self._linkage()

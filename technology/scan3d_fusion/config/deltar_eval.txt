@@ -1,0 +1,12 @@
+--data_path_eval technology/scan3d_fusion/model/deltar/data/demo
+--filenames_file_eval technology/scan3d_fusion/model/deltar/data/demo/data.json
+--input_height 480
+--input_width 640
+--max_depth 10
+--min_depth 0.001
+--n_bins 256
+--min_depth_eval 0.001
+--max_depth_eval 10
+--zone_sample_num 16
+--weight_path technology/scan3d_fusion/model/deltar/weights/nyu.pt
+--save_dir datasets/processed/scan3d_fusion/pretrained_demo

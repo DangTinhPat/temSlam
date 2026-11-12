@@ -1,0 +1,16 @@
+# Isolated Python 3.8 GPU runtime for the DELTAR reference implementation.
+torch==1.12.1+cu113
+torchvision==0.13.1+cu113
+numpy==1.23.5
+Pillow==9.3.0
+h5py==3.7.0
+einops==0.6.0
+timm==0.5.4
+tqdm==4.64.1
+PyYAML==6.0
+opencv-python==4.6.0.66
+scipy==1.9.3
+mujoco==3.1.6
+gdown==5.2.0
+scikit-image==0.21.0
+trimesh==4.5.3

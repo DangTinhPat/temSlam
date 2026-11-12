@@ -97,8 +97,8 @@ def build() -> str:
     TYRE_FRICTION = actuators["contact_friction"]["tyre"]
     BODY_FRICTION = actuators["contact_friction"]["body_shell"]
     imu = load("imu.yaml")["imu"]
-    camera = yaml.safe_load((ROOT / "vision/camera.yaml").read_text(encoding="utf-8"))["camera"]
-    tof = yaml.safe_load((ROOT / "vision/tof.yaml").read_text(encoding="utf-8"))["sensor"]
+    camera = yaml.safe_load((ROOT / "technology/scan3d_fusion/config/camera.yaml").read_text(encoding="utf-8"))["camera"]
+    tof = yaml.safe_load((ROOT / "technology/scan3d_fusion/config/tof.yaml").read_text(encoding="utf-8"))["sensor"]
     blocks = load("cad_blocks.yaml")["components"]
     stator_m = float(actuators["wheel_assembly"]["motor_mass_kg"])
     spin_m = float(actuators["wheel_assembly"]["mass_kg"]) - stator_m

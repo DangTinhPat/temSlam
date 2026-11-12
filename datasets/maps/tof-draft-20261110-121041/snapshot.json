@@ -1,0 +1,43 @@
+{
+  "saved_at": "2026-11-10T12:10:50.838216+07:00",
+  "source_session": "datasets/raw/tof-20261110-120210-716655",
+  "simulation_time_s": 510.4,
+  "frames": 7656,
+  "resolution_m": 0.05,
+  "origin_m": [
+    -8,
+    -8
+  ],
+  "width": 320,
+  "height": 320,
+  "occupied_cells": 1899,
+  "free_cells": 32425,
+  "snapshot_method": "Replay of a fixed, complete prefix of the live sensor log; live simulation continues.",
+  "mapper_sha256": "bdee29b4a35b2519d5e3699bb7e4f8dc8806d762f1ab9767a781ab8f387c9e10",
+  "scene_sha256": "81c36fc05809fd7fd0141c94fba08871e8f0a8a73eb9c52eae24b97efae603e1",
+  "sha256": {
+    "map.pgm": "22d96a099402dec819a6ff610073f513c16f9899cb36615859c5b16a557fa097",
+    "map.png": "d9164db5f1c1a89a697dd018b920aaba212013cda9921bf64bde3dd99f073147",
+    "metadata.json": "66fa865662bad6b1215e0ccbd3a82f7a9c834eecf93cddd19cfc9884223ebaba",
+    "preview.png": "00f994dc87cb3a1f1ddbd73063f03f417092b1083e5a974a9372c766f44a85a3",
+    "sensors.log": "ea4fbeebe1ea500e5c69357f02bfe71042f24b884e966087107488b7da3979d6",
+    "state.json": "4405076524490d09601d5d4cb8eb5fbb6f98e9e86ebf778770a7e6b565f6372d",
+    "tof.yaml": "e384ba77aaeb405f27c41d23fba11781f4cde299aa524ba61003debc289135eb",
+    "trajectory.csv": "c906cd77ba3cec3db663de6e05da4e9e7713def4f051674db688b801d23d6b83",
+    "map.ply": "6324e40d652573a47ad2043b0282ecafe53294a3165ca54822f4599e64cd8c3d",
+    "map-3d.png": "e2a88789db43377643adec2fa9f3926856ca9a8ca086425a0534511ed836b64d",
+    "3d-state.json": "9d68f8bedd0166bec7918fb0a51fdd853addaf102a5e5682c63b6a637fa8fd3d",
+    "README.md": "0caf35f6b45b0bee06f759034c8db770b3d04b6f6de43850d0ce22132ac8c585"
+  },
+  "3d_export": {
+    "format": "PLY point cloud",
+    "occupied_voxels": 5997,
+    "voxel_xy_m": 0.05,
+    "voxel_z_m": 0.05,
+    "z_range_m": [
+      0.05,
+      0.8
+    ],
+    "color": "height gradient"
+  }
+}

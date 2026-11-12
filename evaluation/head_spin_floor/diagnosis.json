@@ -1,0 +1,224 @@
+[
+  {
+    "index": 4,
+    "time": 55.0003,
+    "head_deg": -118.4830883706932,
+    "floor_supported": true,
+    "pixels": 87769,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.9115401116775168,
+      "p95_abs_cm": 8.33093534955156
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": 0.0030205165148705637,
+      "p95_abs_cm": 7.146936884526478
+    },
+    "fitted_floor_normal_error_deg": 0.48687043903832455
+  },
+  {
+    "index": 5,
+    "time": 55.8003,
+    "head_deg": -154.66250834422902,
+    "floor_supported": true,
+    "pixels": 88052,
+    "predicted_depth_true_pose": {
+      "median_cm": 1.2155484557850926,
+      "p95_abs_cm": 7.41482541406832
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": 0.0027976181178973603,
+      "p95_abs_cm": 4.560672877933153
+    },
+    "fitted_floor_normal_error_deg": 2.4323882863738446
+  },
+  {
+    "index": 6,
+    "time": 57.2703,
+    "head_deg": -162.29717096434726,
+    "floor_supported": true,
+    "pixels": 88173,
+    "predicted_depth_true_pose": {
+      "median_cm": 1.5166615118560156,
+      "p95_abs_cm": 6.433062363826404
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": 8.016494415508113e-05,
+      "p95_abs_cm": 2.676154790468465
+    },
+    "fitted_floor_normal_error_deg": 4.297369402763925
+  },
+  {
+    "index": 7,
+    "time": 60.4703,
+    "head_deg": -98.23246805958938,
+    "floor_supported": true,
+    "pixels": 87628,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.7767559929081667,
+      "p95_abs_cm": 8.61812395365127
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": 0.003748736732751834,
+      "p95_abs_cm": 7.778316216895484
+    },
+    "fitted_floor_normal_error_deg": 0.3565928592645456
+  },
+  {
+    "index": 8,
+    "time": 69.6703,
+    "head_deg": 85.66750361237044,
+    "floor_supported": true,
+    "pixels": 67829,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.4916382516808204,
+      "p95_abs_cm": 2.0914500794032023
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": -0.0030396539610177964,
+      "p95_abs_cm": 2.8758115828378035
+    },
+    "fitted_floor_normal_error_deg": 1.0490401034332875
+  },
+  {
+    "index": 9,
+    "time": 70.8003,
+    "head_deg": 108.23745707816381,
+    "floor_supported": true,
+    "pixels": 69089,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.6189786186168944,
+      "p95_abs_cm": 1.98388023763206
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": -0.003846990300102049,
+      "p95_abs_cm": 2.959478446646799
+    },
+    "fitted_floor_normal_error_deg": 1.0031316103913615
+  },
+  {
+    "index": 10,
+    "time": 72.0003,
+    "head_deg": 132.36585574671304,
+    "floor_supported": true,
+    "pixels": 77979,
+    "predicted_depth_true_pose": {
+      "median_cm": 1.0415755820773227,
+      "p95_abs_cm": 3.1138868092464635
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": -0.0012020773414056496,
+      "p95_abs_cm": 2.099861627781477
+    },
+    "fitted_floor_normal_error_deg": 1.982382734045472
+  },
+  {
+    "index": 11,
+    "time": 73.0703,
+    "head_deg": 153.69592854384334,
+    "floor_supported": true,
+    "pixels": 83224,
+    "predicted_depth_true_pose": {
+      "median_cm": 1.1814973055219766,
+      "p95_abs_cm": 3.6689681220911345
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": -0.0005411577506581056,
+      "p95_abs_cm": 2.3814934848180886
+    },
+    "fitted_floor_normal_error_deg": 2.2420645268522637
+  },
+  {
+    "index": 12,
+    "time": 73.8003,
+    "head_deg": 168.3710965505291,
+    "floor_supported": true,
+    "pixels": 84888,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.9453021865307942,
+      "p95_abs_cm": 4.631967301028743
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": -0.0007357262336832315,
+      "p95_abs_cm": 3.311699495251962
+    },
+    "fitted_floor_normal_error_deg": 0.8493352371546885
+  },
+  {
+    "index": 13,
+    "time": 75.3353,
+    "head_deg": 134.5006964913705,
+    "floor_supported": true,
+    "pixels": 79171,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.9700783211035208,
+      "p95_abs_cm": 2.850228781910137
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": -0.000677521613184906,
+      "p95_abs_cm": 2.2220899793033433
+    },
+    "fitted_floor_normal_error_deg": 1.617114758870007
+  },
+  {
+    "index": 14,
+    "time": 76.4003,
+    "head_deg": 86.88904963158933,
+    "floor_supported": false,
+    "pixels": 67603,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.6082445672526804,
+      "p95_abs_cm": 2.176908926458975
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": 6.130233337195628,
+      "p95_abs_cm": 9.376532909233294
+    }
+  },
+  {
+    "index": 15,
+    "time": 77.2703,
+    "head_deg": 47.708935093394366,
+    "floor_supported": false,
+    "pixels": 75913,
+    "predicted_depth_true_pose": {
+      "median_cm": 1.0507525339072954,
+      "p95_abs_cm": 4.0113812640352995
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": 8.047432272323723,
+      "p95_abs_cm": 14.400973375249023
+    }
+  },
+  {
+    "index": 16,
+    "time": 78.0703,
+    "head_deg": 11.263719998697342,
+    "floor_supported": true,
+    "pixels": 68365,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.25101296131666007,
+      "p95_abs_cm": 2.1582941312171666
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": -0.005703623580030626,
+      "p95_abs_cm": 2.7851336336085253
+    },
+    "fitted_floor_normal_error_deg": 1.705690131905928
+  },
+  {
+    "index": 17,
+    "time": 79.1353,
+    "head_deg": -0.0010145764748838077,
+    "floor_supported": true,
+    "pixels": 74426,
+    "predicted_depth_true_pose": {
+      "median_cm": 0.6973316433430978,
+      "p95_abs_cm": 4.0402144767908235
+    },
+    "predicted_depth_estimated_pose": {
+      "median_cm": -0.0008433882883532307,
+      "p95_abs_cm": 3.4388225601348
+    },
+    "fitted_floor_normal_error_deg": 0.7586398255666553
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "source": "simulated plane-based calibration; camera points to ToF frame",
+  "camera_to_tof": {
+    "rotation_matrix": [
+      [
+        0.9975423224900268,
+        -0.005476263360731831,
+        0.06985216804657741
+      ],
+      [
+        0.005405407011823934,
+        0.9999846666353897,
+        0.001203357447033642
+      ],
+      [
+        -0.06985768688011297,
+        -0.0008228205835495354,
+        0.9975566282422504
+      ]
+    ],
+    "translation_m": [
+      0.020234585159571133,
+      6.820034171808665e-05,
+      -0.010372326723077198
+    ]
+  },
+  "validation_errors": {
+    "rotation_deg": 0.3173418067091,
+    "translation_mm": 0.9117206515199745,
+    "point_to_plane_abs_median_before_m": 0.022962245550483984,
+    "point_to_plane_abs_median_after_m": 0.0035794090157593716,
+    "point_to_plane_rmse_after_m": 0.007370933504115689,
+    "optimizer_success": true,
+    "optimizer_message": "`ftol` termination condition is satisfied."
+  }
+}

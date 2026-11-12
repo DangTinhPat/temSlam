@@ -1,0 +1,26 @@
+{
+  "purpose": "Compare perimeter and dense fixed scan routes; areas are estimated-map grid areas, not ground-truth coverage percentages.",
+  "runs": {
+    "perimeter": {
+      "session": "/home/dvt/temSlam/datasets/raw/tof-20261111-182111-736574",
+      "success": true,
+      "wall_seconds": 242.56432880999637,
+      "keyframes": 313,
+      "floor_support_before_obstacle_filter_m2": 32.88250000000001,
+      "support_rejected_by_blocked_mask_m2": 14.392500000000004,
+      "accepted_observed_floor_m2": 18.490000000000002,
+      "inferred_floor_m2": 3.5600000000000005
+    },
+    "dense": {
+      "session": "/home/dvt/temSlam/datasets/raw/tof-20261111-184619-486515",
+      "success": true,
+      "wall_seconds": 469.9511776099971,
+      "keyframes": 450,
+      "floor_support_before_obstacle_filter_m2": 38.830000000000005,
+      "support_rejected_by_blocked_mask_m2": 24.972500000000004,
+      "accepted_observed_floor_m2": 13.857500000000003,
+      "inferred_floor_m2": 1.4025000000000003
+    }
+  },
+  "conclusion": "Dense route increases floor measurement support, but final accepted floor decreases because more supported cells overlap the accumulated obstacle/drop mask. Do not interpret denser routing alone as a solution for floor completion."
+}

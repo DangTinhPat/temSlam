@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "input": "TOFMAP",
+  "runner_command": [
+    "/tmp/temslam-pc-check/bin/rb1_sim",
+    "--model",
+    "/home/dvt/temSlam/simulation/scenarios/indoor_small_house.xml",
+    "--rate",
+    "3000",
+    "--command-port",
+    "37681",
+    "--realtime",
+    "--start-key",
+    "home",
+    "--imu-model",
+    "1",
+    "--imu-unit",
+    "648"
+  ],
+  "calibration": "# ToF 8x8 module placement on the left side of the RB head cover.\nschema_version: 1\nsensor:\n  name: tof_8x8\n  parent_link: body_link\n  position_body_m: [0.087603, 0.020098, 0.0918] # module center; +Y is robot-left.\n  xyaxes_body: [-0.069756, -0.997564, 0.0, 0.0, 0.0, 1.0] # optical axis yaw -4 deg from +X.\n  board_size_m: [0.002, 0.01, 0.01] # full X/Y/Z dimensions; generic render placeholder\n  window_size_m: [0.0004, 0.005, 0.005]\n  fovy_deg: 45\n  min_range_m: 0.02\n  max_range_m: 4.0\n  frame_rate_hz: 15\n  noise:\n    near_accuracy_m: 0.014 # 20\u2013200 mm, 8x8 gray target at 5 kLux\n    far_accuracy_fraction: 0.08 # 200\u20134000 mm, 8x8 gray target at 5 kLux\n    corner_extra_fraction: 0.04\n    sigma_fraction_of_bound: 0.1666666667 # half the previous simulated jitter\n  # shortcut: package dimensions are generic because the exact ToF board CAD was not supplied; replace with vendor CAD when available.\n",
+  "mapping": "encoder/gyro odometry; 5cm voxel; observed free slices, not clearance",
+  "command": [
+    "/tmp/temslam-pc-check/bin/rb_tof_mapper",
+    "/home/dvt/temSlam/datasets/raw/tof-20261110-120210-716655"
+  ]
+}

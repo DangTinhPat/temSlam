@@ -38,3 +38,11 @@ target_include_directories(rb1_sim PRIVATE "${MUJOCO_ROOT}/include" "${CMAKE_CUR
 target_link_libraries(rb1_sim PRIVATE rb1_control rb1_core rb1_hal
   "${MUJOCO_LIBRARY}" Threads::Threads dl)
 set_target_properties(rb1_sim PROPERTIES BUILD_RPATH "${MUJOCO_ROOT}")
+
+execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../technology/scan3d_fusion/mapping/tof_only/generate_tof_calibration.py ${CMAKE_CURRENT_BINARY_DIR}/tof_calibration.hpp COMMAND_ERROR_IS_FATAL ANY)
+target_include_directories(rb1_sim PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../technology/scan3d_fusion/mapping/native tof_mapping)
+add_dependencies(rb1_sim rb_tof_mapper)
+
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../technology/scan3d_fusion/config/tof.yaml ${CMAKE_CURRENT_SOURCE_DIR}/../../technology/scan3d_fusion/mapping/tof_only/generate_tof_calibration.py)

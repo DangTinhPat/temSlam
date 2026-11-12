@@ -1,0 +1,14 @@
+*.pyc
+**/__pycache__/
+.env
+.idea/
+.vscode/
+wandb/
+checkpoints/
+weights/
+tmp/
+data/
+data/demo/
+
+__pycache__/
+*.pyc

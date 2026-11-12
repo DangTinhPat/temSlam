@@ -3,3 +3,12 @@ __pycache__/
 firmware/esp32/include/rb1/esp32/WifiSecrets.hpp
 firmware/.pio/
 firmware/build/
+/build/
+/datasets/raw/tof-*/
+/datasets/processed/sofa_clay/
+/datasets/processed/ball_clay/
+/datasets/processed/scan3d_fusion/
+# Generated replay inputs and logs remain local; evaluation summaries live in evaluation/.
+/datasets/processed/odometry/
+/datasets/processed/route_validation/
+/datasets/maps/*/sensors.log

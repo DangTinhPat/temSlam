@@ -159,51 +159,36 @@ def source_model_paths(source: Path, world_path: Path) -> tuple[ET.Element, list
     return world, instances
 
 
-def wall_collision_boxes(path: Path, scale: tuple[float, float, float]) -> list[tuple[np.ndarray, np.ndarray]]:
-    mesh = scene_mesh(path, scale)
-    panels = []
-    for part in mesh.split(only_watertight=False):
-        bounds = part.bounds
-        size = bounds[1] - bounds[0]
-        horizontal = size[:2]
-        thin_axis = int(np.argmin(horizontal))
-        long_axis = 1 - thin_axis
-        if size[2] < 1.0 or size[long_axis] < 0.55 or size[thin_axis] > 0.08:
+def wall_collision_meshes(path: Path, scale: tuple[float, float, float]) -> list[trimesh.Trimesh]:
+    """Thin convex prisms preserve openings in the source's non-convex wall surfaces."""
+    return surface_prisms(scene_mesh(path, scale))
+
+
+def surface_prisms(mesh: trimesh.Trimesh) -> list[trimesh.Trimesh]:
+    parts = []
+    faces = [[0, 2, 1], [3, 4, 5], [0, 1, 4], [0, 4, 3],
+             [1, 2, 5], [1, 5, 4], [2, 0, 3], [2, 3, 5]]
+    for triangle in mesh.triangles:
+        normal = np.cross(triangle[1] - triangle[0], triangle[2] - triangle[0])
+        length = np.linalg.norm(normal)
+        if length < 1e-8:
             continue
-        panels.append([bounds[0].copy(), bounds[1].copy(), thin_axis, long_axis])
-
-    # The source mesh models wall faces as separate thin surfaces. Pair close, overlapping faces
-    # into one finite-thickness box so MuJoCo has stable collisions without filling room interiors.
-    groups: list[list] = []
-    for panel in sorted(panels, key=lambda p: (p[2], p[3], p[0][p[2]])):
-        lo, hi, thin_axis, long_axis = panel
-        match = None
-        for group in groups:
-            glo, ghi, gthin, glong = group[0], group[1], group[2], group[3]
-            overlap = min(hi[long_axis], ghi[long_axis]) - max(lo[long_axis], glo[long_axis])
-            z_overlap = min(hi[2], ghi[2]) - max(lo[2], glo[2])
-            if (thin_axis == gthin and long_axis == glong and
-                    abs((lo[thin_axis] + hi[thin_axis] - glo[thin_axis] - ghi[thin_axis]) / 2) < 0.28 and
-                    overlap > 0.5 * min(size_of(lo, hi, long_axis), size_of(glo, ghi, long_axis)) and
-                    z_overlap > 0.5 * min(hi[2] - lo[2], ghi[2] - glo[2])):
-                match = group
-                break
-        if match is None:
-            groups.append([lo.copy(), hi.copy(), thin_axis, long_axis])
-        else:
-            match[0] = np.minimum(match[0], lo)
-            match[1] = np.maximum(match[1], hi)
-
-    boxes = []
-    for lo, hi, thin_axis, _ in groups:
-        size = hi - lo
-        size[thin_axis] = max(size[thin_axis], 0.08)
-        boxes.append(((lo + hi) / 2, size / 2))
-    return boxes
+        # One millimetre either side gives open source surfaces finite collision thickness.
+        offset = normal / length * .001
+        parts.append(trimesh.Trimesh(vertices=np.vstack((triangle - offset, triangle + offset)),
+                                    faces=faces, process=False))
+    return parts
 
 
-def size_of(lo: np.ndarray, hi: np.ndarray, axis: int) -> float:
-    return float(hi[axis] - lo[axis])
+def convex_collision_parts(mesh: trimesh.Trimesh) -> list[trimesh.Trimesh]:
+    # MuJoCo convexifies each geom: split furniture to preserve the gaps between its parts.
+    mesh = mesh.copy()
+    mesh.merge_vertices(merge_tex=True, merge_norm=True, digits_vertex=5)
+    parts = []
+    for part in mesh.split(only_watertight=False, repair=False):
+        part.fix_normals()
+        parts.extend([part] if part.is_convex else surface_prisms(part))
+    return parts
 
 
 def add_texture_asset(root: ET.Element, texture_path: Path, cache: dict[Path, tuple[str, str]]) -> tuple[str, str]:
@@ -360,6 +345,16 @@ def build(source: Path, base_model: Path, output: Path) -> dict:
             visual_meshes = added_visual_groups[model_name][visual_index]
             local_pose = floats(child_text(item, "pose"), 6, (0, 0, 0, 0, 0, 0))
             pos, quat = world_pose(base_pose, local_pose)
+            if not visual_meshes:
+                sphere = item.find("geometry/sphere")
+                if sphere is None:
+                    raise ValueError(f"{model_name}: unsupported visual geometry; would create an invisible obstacle")
+                attrs = {"name": f"house_visual_{instance_index}_{visual_index}_0", "type": "sphere",
+                         "size": child_text(sphere, "radius"), "rgba": diffuse_rgba(item),
+                         "contype": "0", "conaffinity": "0", "group": "0"}
+                attrs.update(pose_attrs(pos, quat))
+                ET.SubElement(worldbody, "geom", attrs)
+                visual_count += 1
             for part_index, (mesh_name, material_name) in enumerate(visual_meshes):
                 attrs = {"name": f"house_visual_{instance_index}_{visual_index}_{part_index}", "type": "mesh",
                          "mesh": mesh_name, "contype": "0", "conaffinity": "0", "group": "0"}
@@ -383,36 +378,39 @@ def build(source: Path, base_model: Path, output: Path) -> dict:
                 dae_path = source / "models" / model_name / "meshes" / Path(uri).name
                 mesh_scale = floats(child_text(mesh_node, "scale"), 3, (1.0, 1.0, 1.0))
                 if model_name == "aws_robomaker_residential_HouseWallB_01":
-                    for box_index, (box_pos, box_halfsize) in enumerate(wall_collision_boxes(dae_path, mesh_scale)):
-                        wall_pos = pos + rotate(quat, box_pos)
-                        wall_quat = quat
-                        attrs = {"name": f"house_wall_collision_{instance_index}_{box_index}", "type": "box",
-                                 "size": " ".join(f"{x:.8g}" for x in box_halfsize),
-                                 "contype": "2", "conaffinity": "1", "rgba": "0.1 0.1 0.1 0",
-                                 "group": "3", "friction": "0.8 0.02 0.0001"}
-                        attrs.update(pose_attrs(wall_pos, wall_quat))
+                    for part_index, mesh in enumerate(wall_collision_meshes(dae_path, mesh_scale)):
+                        mesh_name = f"house_wall_c{collision_index}_p{part_index}"
+                        if mesh_name not in collision_mesh_assets:
+                            ET.SubElement(asset, "mesh", {"name": mesh_name,
+                                "vertex": " ".join(f"{v:.9g}" for v in mesh.vertices.flat),
+                                "face": " ".join(str(v) for v in mesh.faces.flat)})
+                            collision_mesh_assets.add(mesh_name)
+                        attrs = {"name": f"house_wall_collision_{instance_index}_{part_index}", "type": "mesh",
+                                 "mesh": mesh_name, "contype": "2", "conaffinity": "1",
+                                 "rgba": "0.1 0.1 0.1 0", "group": "3", "friction": "0.8 0.02 0.0001"}
+                        attrs.update(pose_attrs(pos, quat))
                         ET.SubElement(worldbody, "geom", attrs)
                         collision_count += 1
                     continue
                 if model_name == "aws_robomaker_residential_FloorB_01":
                     continue  # the RB model already has a contact plane; this mesh is visual only
-                mesh = scene_mesh(dae_path, mesh_scale)
-                mesh_name = f"house_{safe_name(model_name)}_c{collision_index}"
-                if mesh_name not in collision_mesh_assets:
-                    rel_mesh = Path("../assets/aws_robomaker_small_house/converted/meshes") / f"{mesh_name}.obj"
-                    write_obj(mesh, CONVERTED / "meshes" / f"{mesh_name}.obj")
-                    ET.SubElement(asset, "mesh", {"name": mesh_name, "file": rel_mesh.as_posix(), "inertia": "shell"})
-                    collision_mesh_assets.add(mesh_name)
-                geom_name = f"house_collision_{instance_index}_{collision_index}"
-                if geom_name in collision_geom_names:
-                    raise ValueError(f"duplicate collision geom name: {geom_name}")
-                collision_geom_names.add(geom_name)
-                attrs = {"name": geom_name, "type": "mesh", "mesh": mesh_name, "contype": "2",
-                         "conaffinity": "1", "rgba": "0.1 0.1 0.1 0", "group": "3",
-                         "friction": "0.8 0.02 0.0001"}
-                attrs.update(pose_attrs(pos, quat))
-                ET.SubElement(worldbody, "geom", attrs)
-                collision_count += 1
+                for part_index, mesh in enumerate(convex_collision_parts(scene_mesh(dae_path, mesh_scale))):
+                    mesh_name = f"house_{safe_name(model_name)}_c{collision_index}_p{part_index}"
+                    if mesh_name not in collision_mesh_assets:
+                        ET.SubElement(asset, "mesh", {"name": mesh_name,
+                            "vertex": " ".join(f"{v:.9g}" for v in mesh.vertices.flat),
+                            "face": " ".join(str(v) for v in mesh.faces.flat)})
+                        collision_mesh_assets.add(mesh_name)
+                    geom_name = f"house_collision_{instance_index}_{collision_index}_{part_index}"
+                    if geom_name in collision_geom_names:
+                        raise ValueError(f"duplicate collision geom name: {geom_name}")
+                    collision_geom_names.add(geom_name)
+                    attrs = {"name": geom_name, "type": "mesh", "mesh": mesh_name, "contype": "2",
+                             "conaffinity": "1", "rgba": "0.1 0.1 0.1 0", "group": "3",
+                             "friction": "0.8 0.02 0.0001"}
+                    attrs.update(pose_attrs(pos, quat))
+                    ET.SubElement(worldbody, "geom", attrs)
+                    collision_count += 1
             else:
                 sphere = geometry.find("sphere")
                 if sphere is not None:

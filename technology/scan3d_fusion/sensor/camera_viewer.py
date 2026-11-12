@@ -14,7 +14,7 @@ import mujoco
 import numpy as np
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def fields(line: bytes) -> dict[str, str]:
@@ -33,10 +33,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=Path, required=True)
     model = mujoco.MjModel.from_xml_path(str(parser.parse_args().model))
-    rgb_config = yaml.safe_load((ROOT / "vision/camera.yaml").read_text(encoding="utf-8"))["camera"]
+    rgb_config = yaml.safe_load((ROOT / "technology/scan3d_fusion/config/camera.yaml").read_text(encoding="utf-8"))["camera"]
     rgb_width, rgb_height = map(int, rgb_config["resolution_px"])
     depth_width, depth_height = rgb_width // 2, rgb_height // 2
-    tof_config = yaml.safe_load((ROOT / "vision/tof.yaml").read_text(encoding="utf-8"))["sensor"]
+    tof_config = yaml.safe_load((ROOT / "technology/scan3d_fusion/config/tof.yaml").read_text(encoding="utf-8"))["sensor"]
     tof_min_range = float(tof_config["min_range_m"])
     tof_max_range = float(tof_config["max_range_m"])
     tof_period = 1.0 / float(tof_config["frame_rate_hz"])
@@ -94,20 +94,39 @@ def main() -> int:
 
     pending = b""
     input_fd = sys.stdin.fileno()
+    measured_tof = None
     last_tof_update = float("-inf")
     while open_window:
         if select.select([input_fd], [], [], 0.02)[0]:
             chunk = os.read(input_fd, 65536)
             if not chunk:
                 break
-            line, pending = latest_view(pending + chunk)
+            complete = (pending + chunk).split(b"\n")
+            pending = complete.pop()
+            if len(pending) > 65536:
+                pending = b""
+            for record in complete:
+                if record.startswith(b"TOFMAP "):
+                    parts = record.split()
+                    if len(parts) in (76, 77):
+                        try:
+                            offset = 13 if len(parts) == 77 else 12
+                            measured_tof = (float(parts[1]), [float(v) or None for v in parts[offset:]])
+                        except ValueError:
+                            pass
+            line = next((v for v in reversed(complete) if v.startswith(b"VIEW|")), None)
             if line is not None:
                 values = fields(line)
                 try:
-                    for index, key in enumerate(
-                            ("x", "y", "z", "qw", "qx", "qy", "qz",
-                             "lh", "lk", "lw", "rh", "rk", "rw")):
+                    for index, key in enumerate(("x", "y", "z", "qw", "qx", "qy", "qz")):
                         data.qpos[index] = float(values[key])
+                    for key, name in (("lh", "left_hip"), ("lk", "left_knee"), ("lw", "left_wheel"),
+                                      ("rh", "right_hip"), ("rk", "right_knee"), ("rw", "right_wheel"),
+                                      ("hj", "head_yaw")):
+                        joint = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)
+                        if joint >= 0:
+                            address = model.jnt_qposadr[joint]
+                            data.qpos[address] = float(values.get(key, data.qpos[address]))
                     mujoco.mj_forward(model, data)
                     renderer.update_scene(data, camera=camera)
                     rgb_frame = renderer.render()
@@ -117,7 +136,7 @@ def main() -> int:
                     sim_time = float(values["t"])
                     status.configure(text=f"RGB {rgb_width}x{rgb_height} · t={sim_time:.2f} s")
 
-                    if sim_time - last_tof_update >= tof_period:
+                    if sim_time - last_tof_update >= tof_period and measured_tof is not None:
                         renderer.enable_depth_rendering()
                         renderer.update_scene(data, camera=camera)
                         depth = renderer.render().copy()
@@ -157,30 +176,7 @@ def main() -> int:
                                  f"depth {depth_width}×{depth_height} · "
                                  f"valid {int(np.count_nonzero(valid_depth))}/{depth.size} px · "
                                  f"t={sim_time:.2f} s")
-                        rotation = data.cam_xmat[tof_camera_id].reshape(3, 3)
-                        origin = data.cam_xpos[tof_camera_id].copy()
-                        forward, right, up = -rotation[:, 2], rotation[:, 0], rotation[:, 1]
-                        half_fov = np.tan(np.deg2rad(tof_fovy) / 2)
-                        depths = []
-                        for row in range(8):
-                            for column in range(8):
-                                u = (2 * (column + 0.5) / 8 - 1) * half_fov
-                                v = (1 - 2 * (row + 0.5) / 8) * half_fov
-                                direction = forward + u * right + v * up
-                                direction /= np.linalg.norm(direction)
-                                distance = mujoco.mj_ray(model, data, origin, direction,
-                                                         None, True, body_id, None)
-                                if tof_min_range <= distance <= tof_max_range:
-                                    accuracy = (float(tof_noise["near_accuracy_m"]) if distance <= 0.2
-                                                else distance * float(tof_noise["far_accuracy_fraction"]))
-                                    if row in (0, 7) and column in (0, 7):
-                                        accuracy += distance * float(tof_noise["corner_extra_fraction"])
-                                    sigma = accuracy * float(tof_noise["sigma_fraction_of_bound"])
-                                    error = float(np.clip(noise_rng.normal(0.0, sigma), -accuracy, accuracy))
-                                    depths.append(float(np.clip(distance + error,
-                                                                tof_min_range, tof_max_range)))
-                                else:
-                                    depths.append(None)
+                        tof_time, depths = measured_tof
 
                         cell = 40
                         tof_image = Image.new("RGB", (8 * cell, 8 * cell), "#111318")
@@ -204,7 +200,7 @@ def main() -> int:
                         tof_label.image = photo
                         tof_status.configure(
                             text=f"ToF 8x8 | {tof_min_range:g}-{tof_max_range:g} m | "
-                                 f"FOV {tof_fovy:g} deg | 15 Hz | t={sim_time:.2f} s")
+                                 f"FOV {tof_fovy:g} deg | 15 Hz | t={tof_time:.2f} s")
                         last_tof_update = sim_time
                 except (KeyError, TypeError, ValueError, RuntimeError):
                     pass

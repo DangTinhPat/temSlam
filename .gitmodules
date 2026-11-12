@@ -1,0 +1,9 @@
+[submodule "prj_reference/Calib_DELTAR"]
+	path = prj_reference/Calib_DELTAR
+	url = https://github.com/eugenelyj/Calib_DELTAR.git
+[submodule "prj_reference/cuVSLAM"]
+	path = prj_reference/cuVSLAM
+	url = https://github.com/nvidia-isaac/cuVSLAM.git
+[submodule "prj_reference/deltar"]
+	path = prj_reference/deltar
+	url = https://github.com/zju3dv/deltar.git

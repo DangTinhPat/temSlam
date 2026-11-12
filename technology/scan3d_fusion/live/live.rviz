@@ -1,0 +1,52 @@
+Panels:
+- Class: rviz_common/Displays
+  Name: Displays
+Visualization Manager:
+  Class: ''
+  Displays:
+  - Class: rviz_default_plugins/Marker
+    Enabled: true
+    Name: Bề mặt đất sét (live mesh)
+    Topic:
+      Durability Policy: Transient Local
+      Reliability Policy: Reliable
+      Value: /rgb_tof/clay_mesh
+  - Axis: Z
+    Class: rviz_default_plugins/PointCloud2
+    Color Transformer: AxisColor
+    Enabled: false
+    Name: Scan point cloud
+    Size (Pixels): 3
+    Style: Points
+    Topic:
+      Durability Policy: Volatile
+      Reliability Policy: Reliable
+      Value: /scan3d/cloud
+  - Class: rviz_default_plugins/Marker
+    Enabled: true
+    Name: Trajectory and status
+    Topic:
+      Durability Policy: Volatile
+      Reliability Policy: Reliable
+      Value: /scan3d/info
+  Global Options:
+    Background Color: 30; 35; 43
+    Fixed Frame: map
+    Frame Rate: 30
+  Tools:
+  - Class: rviz_default_plugins/MoveCamera
+  - Class: rviz_default_plugins/FocusCamera
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 5.0
+      Focal Point:
+        X: 1.5
+        Y: 0
+        Z: 0
+      Name: Live RGB-ToF scan
+      Pitch: 0.5
+      Yaw: -1.5
+Window Geometry:
+  Height: 850
+  Width: 1150

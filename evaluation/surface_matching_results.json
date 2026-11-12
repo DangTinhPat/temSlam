@@ -1,0 +1,13 @@
+{
+  "original": {
+    "rmse_xy_m": 0.2767232829582314,
+    "p95_xy_m": 0.5707093183441387,
+    "max_xy_m": 0.7429828531750913
+  },
+  "refined": {
+    "rmse_xy_m": 0.0989527005238398,
+    "p95_xy_m": 0.19320001373250825,
+    "max_xy_m": 0.3124350978667966
+  },
+  "evaluation": "Same 451 frames; rigid XY alignment without scale; truth only for evaluation, never surface matching."
+}

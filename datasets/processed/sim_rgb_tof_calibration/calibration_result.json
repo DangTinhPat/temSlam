@@ -1,0 +1,312 @@
+{
+  "method": "simulated RGB-D raycast points to ToF fitted planes; robust SE(3) least squares",
+  "model": "simulation/scenarios/indoor_tiny_house.xml",
+  "seed": 21,
+  "tof_noise_scale": 1.0,
+  "samples_per_pose": 6,
+  "observations": [
+    {
+      "target": "east_wall_front_1",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "east_wall_front_2",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "east_wall_front_3",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "east_wall_front_4",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "east_wall_front_5",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "east_wall_front_6",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "east_wall_oblique_left_1",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_left_2",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_left_3",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_left_4",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_left_5",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_left_6",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_right_1",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_right_2",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_right_3",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_right_4",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_right_5",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "east_wall_oblique_right_6",
+      "tof_zones": 40,
+      "camera_points": 2042
+    },
+    {
+      "target": "west_wall_1",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "west_wall_2",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "west_wall_3",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "west_wall_4",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "west_wall_5",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "west_wall_6",
+      "tof_zones": 40,
+      "camera_points": 2048
+    },
+    {
+      "target": "north_wall_front_1",
+      "tof_zones": 40,
+      "camera_points": 1797
+    },
+    {
+      "target": "north_wall_front_2",
+      "tof_zones": 40,
+      "camera_points": 1797
+    },
+    {
+      "target": "north_wall_front_3",
+      "tof_zones": 40,
+      "camera_points": 1797
+    },
+    {
+      "target": "north_wall_front_4",
+      "tof_zones": 40,
+      "camera_points": 1797
+    },
+    {
+      "target": "north_wall_front_5",
+      "tof_zones": 40,
+      "camera_points": 1797
+    },
+    {
+      "target": "north_wall_front_6",
+      "tof_zones": 40,
+      "camera_points": 1797
+    },
+    {
+      "target": "north_wall_oblique_1",
+      "tof_zones": 27,
+      "camera_points": 1228
+    },
+    {
+      "target": "north_wall_oblique_2",
+      "tof_zones": 27,
+      "camera_points": 1228
+    },
+    {
+      "target": "north_wall_oblique_3",
+      "tof_zones": 27,
+      "camera_points": 1228
+    },
+    {
+      "target": "north_wall_oblique_4",
+      "tof_zones": 27,
+      "camera_points": 1228
+    },
+    {
+      "target": "north_wall_oblique_5",
+      "tof_zones": 27,
+      "camera_points": 1228
+    },
+    {
+      "target": "north_wall_oblique_6",
+      "tof_zones": 27,
+      "camera_points": 1228
+    },
+    {
+      "target": "south_wall_west_1",
+      "tof_zones": 10,
+      "camera_points": 434
+    },
+    {
+      "target": "south_wall_west_2",
+      "tof_zones": 10,
+      "camera_points": 434
+    },
+    {
+      "target": "south_wall_west_3",
+      "tof_zones": 10,
+      "camera_points": 434
+    },
+    {
+      "target": "south_wall_west_4",
+      "tof_zones": 10,
+      "camera_points": 434
+    },
+    {
+      "target": "south_wall_west_5",
+      "tof_zones": 10,
+      "camera_points": 434
+    },
+    {
+      "target": "south_wall_west_6",
+      "tof_zones": 10,
+      "camera_points": 434
+    },
+    {
+      "target": "ground_1",
+      "tof_zones": 64,
+      "camera_points": 3072
+    },
+    {
+      "target": "ground_2",
+      "tof_zones": 64,
+      "camera_points": 3072
+    },
+    {
+      "target": "ground_3",
+      "tof_zones": 64,
+      "camera_points": 3072
+    },
+    {
+      "target": "ground_4",
+      "tof_zones": 64,
+      "camera_points": 3072
+    },
+    {
+      "target": "ground_5",
+      "tof_zones": 64,
+      "camera_points": 3072
+    },
+    {
+      "target": "ground_6",
+      "tof_zones": 64,
+      "camera_points": 3072
+    }
+  ],
+  "camera_to_tof": {
+    "rotation_matrix": [
+      [
+        0.9975423224900268,
+        -0.005476263360731831,
+        0.06985216804657741
+      ],
+      [
+        0.005405407011823934,
+        0.9999846666353897,
+        0.001203357447033642
+      ],
+      [
+        -0.06985768688011297,
+        -0.0008228205835495354,
+        0.9975566282422504
+      ]
+    ],
+    "translation_m": [
+      0.020234585159571133,
+      6.820034171808665e-05,
+      -0.010372326723077198
+    ]
+  },
+  "simulation_truth_for_validation_only": {
+    "rotation_matrix": [
+      [
+        0.9975640829813741,
+        1.5018763278059744e-16,
+        0.06975600580258375
+      ],
+      [
+        -1.6653345369377346e-16,
+        0.9999999999999999,
+        -1.1102230246251565e-16
+      ],
+      [
+        -0.06975600580258372,
+        3.235528087811673e-17,
+        0.997564082981374
+      ]
+    ],
+    "translation_m": [
+      0.01933076535498605,
+      -1.474514954580286e-17,
+      -0.010273873583780761
+    ]
+  },
+  "errors": {
+    "rotation_deg": 0.3173418067091,
+    "translation_mm": 0.9117206515199745,
+    "point_to_plane_abs_median_before_m": 0.022962245550483984,
+    "point_to_plane_abs_median_after_m": 0.0035794090157593716,
+    "point_to_plane_rmse_after_m": 0.007370933504115689,
+    "optimizer_success": true,
+    "optimizer_message": "`ftol` termination condition is satisfied."
+  },
+  "limitations": [
+    "Uses synthetic local camera depth points and ToF planes; does not validate visual odometry.",
+    "Known MuJoCo extrinsics are used only as a hidden validation reference, not as optimizer input.",
+    "Scene geom IDs provide plane correspondence labels; real captures need manual or automatic plane association.",
+    "ToF is one noisy ray per zone, not the sensor's measured depth distribution."
+  ]
+}

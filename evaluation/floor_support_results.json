@@ -1,0 +1,19 @@
+{
+  "session": "/home/dvt/temSlam/datasets/raw/tof-20261111-172000-640913",
+  "replayed_frames": 12,
+  "supported_frames": 10,
+  "corrected_pixels": 42707,
+  "floor_samples": 1336,
+  "before": {
+    "plane_rms_m": 0.0223921139270841,
+    "plane_p95_m": 0.04887866502511565,
+    "true_floor_rms_m": 0.032271022348311904
+  },
+  "after": {
+    "plane_rms_m": 0.02114338554833566,
+    "plane_p95_m": 0.050572206331676306,
+    "true_floor_rms_m": 0.030714227330637143
+  },
+  "obstacle_samples": 281,
+  "obstacle_changed": 0
+}

@@ -1,0 +1,18 @@
+{
+  "keyframes": 483,
+  "estimated_poses_unchanged": true,
+  "all_keyframes_fusion_only": true,
+  "no_finite_floor_plane": true,
+  "no_floor_completion": true,
+  "input_h5_depth_all_zero": true,
+  "exact_recomputed_fusion_frames": [
+    0,
+    80,
+    160,
+    240,
+    320,
+    482
+  ],
+  "valid_depth_pixels": 76867901,
+  "tests_passed": 12
+}

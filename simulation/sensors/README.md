@@ -1,3 +1,3 @@
 # Simulated sensors
 
-Đặt mô hình và cấu hình cảm biến ở đây: frame, tần số, timestamp, hiệu chuẩn, nhiễu, bias, độ trễ và dropout. Mỗi lần chạy cần lưu cấu hình cùng seed. Sensor adapter không được đọc pose thật của robot.
+ToF-only adapter và mã sinh calibration nằm trong [technology/scan3d_fusion/mapping/tof_only](../../technology/scan3d_fusion/mapping/tof_only/). Calibration dùng chung ở `technology/scan3d_fusion/config/tof.yaml`. Sensor adapter không được đọc pose thật của robot.

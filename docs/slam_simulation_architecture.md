@@ -7,7 +7,7 @@ Tạo vòng lặp kín để RB giữ thăng bằng, di chuyển trong môi trư
 ## Các lớp và quyền truy cập dữ liệu
 
 ```text
-model/ ──► simulation/world + robot plant ──► simulated sensors ──► slam/ ──► pose/map estimate
+model/ ──► simulation/world + robot plant ──► simulated sensors ──► technology/scan3d_fusion/mapping/ ──► pose/map estimate
                         │                                           │
                         └──► evaluation/ground truth                └──► evaluation/metrics
 ```
@@ -16,7 +16,7 @@ model/ ──► simulation/world + robot plant ──► simulated sensors ─�
 | --- | --- | --- |
 | `model/` | Mô tả hình học, khối lượng và cảm biến gắn trên RB | Không áp dụng |
 | `simulation/` | Tích hợp plant, thế giới, kịch bản, clock và mô hình cảm biến | Chỉ bộ ghi ground truth riêng được đọc trạng thái thật |
-| `slam/` | Tiền xử lý cảm biến, odometry/visual odometry, backend và bản đồ | Không |
+| `technology/scan3d_fusion/mapping/` | Sensor adapter, ToF odometry mapper, route và viewer bridge | Không |
 | `datasets/` | Lưu dữ liệu cảm biến và metadata của lần chạy | Tách ground truth khỏi tập đầu vào |
 | `evaluation/` | Đồng bộ kết quả ước lượng với quỹ đạo/bản đồ thật và tính metric | Có |
 | `firmware/` | Bộ điều khiển hiện tại và mã phần cứng | Không phải module SLAM |
@@ -31,7 +31,7 @@ model/ ──► simulation/world + robot plant ──► simulated sensors ─�
 
 ## Ranh giới hiện tại
 
-Hiện repo đã có plant MuJoCo, XML robot, IMU mô phỏng và runner điều khiển trong `simulation/mujoco/`. Runner vẫn liên kết tới thư viện `firmware/control`; mã controller không bị thay đổi. Chưa có world/scenario SLAM, camera/LiDAR giả lập, recorder chuẩn, transport cảm biến hoặc SLAM backend. Các mục đó cần được thêm trong lớp mô phỏng/SLAM, không bằng cách sửa controller.
+Hiện có cảnh indoor Small House, lõi ToF-only trong `technology/scan3d_fusion/mapping/tof_only/`, luồng record `TOFMAP` và cầu nối GUI/RViz trong `technology/scan3d_fusion/mapping/native/`. GUI tự mở map viewer, ghi sensor log và cho replay không cần MuJoCo. Lõi mapping không liên kết firmware/MuJoCo/ROS. Đây là mapping theo odometry; scan matching và loop closure chưa triển khai. Xem `evaluation/tof_mapping_results.md` để biết phạm vi kiểm tra và các giới hạn.
 
 ## Trình tự phát triển đề xuất
 
@@ -45,7 +45,7 @@ Hiện repo đã có plant MuJoCo, XML robot, IMU mô phỏng và runner điều
 
 - `simulation/scenarios/`: cấu hình từng thí nghiệm, không chứa thuật toán SLAM.
 - `simulation/sensors/`: cấu hình và implementation sensor model.
-- `slam/`: code SLAM và adapter input/output, không import API MuJoCo.
+- `technology/scan3d_fusion/`: source, cấu hình, model vision và mapper ToF; ngoại trừ adapter mô phỏng, lõi mapper không import API MuJoCo.
 - `datasets/raw/`: log cảm biến bất biến sau khi ghi; không commit dữ liệu lớn nếu chưa cần.
 - `datasets/processed/`: dữ liệu dẫn xuất/cache, có thể tái tạo từ raw.
 - `evaluation/`: script đọc estimate và ground truth ngoại tuyến.

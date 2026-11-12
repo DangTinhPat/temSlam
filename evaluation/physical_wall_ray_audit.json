@@ -1,0 +1,552 @@
+[
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "south_wall_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "north_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "west_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "east_wall",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_south",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_x_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_west",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "partition_y_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_east",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  },
+  {
+    "wall": "living_room_partition_north",
+    "distance": 0.2999999999999999,
+    "pass_check": true
+  }
+]

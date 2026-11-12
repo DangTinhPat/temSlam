@@ -1,0 +1,39 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Fixed Frame: map
+    Frame Rate: 30
+    Background Color: 38; 42; 48
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Ground grid
+      Enabled: true
+      Plane: XY
+      Plane Cell Count: 20
+      Cell Size: 1
+      Reference Frame: <Fixed Frame>
+    - Class: rviz_default_plugins/MarkerArray
+      Name: House geometry (unmapped)
+      Enabled: true
+      Topic: /environment
+  Tools:
+    - Class: rviz_default_plugins/Interact
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 15
+      Focal Point: {X: 0, Y: 0, Z: 0.7}
+      Pitch: 0.9
+      Yaw: 0.8
+      Name: House orbit
+Window Geometry:
+  Width: 1200
+  Height: 900
+  X: 0
+  Y: 40

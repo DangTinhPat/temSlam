@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+import os
 import argparse
 from pathlib import Path
+import sys
 import time
 import tkinter as tk
 from tkinter import ttk
 
 from .backend import NativeBackend, START_POSES
 from .motion_api import MotionAPI, MotionLimits
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "technology/scan3d_fusion/mapping"))
+from fixed_scan_route import FixedScanRoute
 
 BG = "#16181d"
 CARD = "#22252e"
@@ -59,6 +64,9 @@ class NativeDashboard:
         # Retain this dashboard's existing command limits.
         self.motion = MotionAPI(
             backend, limits=MotionLimits(max_linear_m_s=DRIVE_MAX_M_S, max_yaw_rad_s=1.5))
+        self.scan_route = FixedScanRoute(
+            backend, Path(os.environ.get("RB1_SCAN_ROUTE") or
+                          backend.root / "technology/scan3d_fusion/mapping/native/fixed_scan_route.json"))
         self.enabled = False
         self.estop = False
         self.drive = (0.0, 0.0)
@@ -88,6 +96,27 @@ class NativeDashboard:
         self._build()
         self._bind_keys()
         self.tick()
+        if os.environ.get("RB1_AUTO_SCAN") == "1":
+            self.root.after(2000, self.start_standup)
+            self.root.after(4000, self._auto_start_scan)
+
+    def _auto_start_scan(self):
+        session = self.backend.live_scan
+        if session is None:
+            self.root.after(500, self._auto_start_scan)
+            return
+        failure = session.failure_reason()
+        if failure:
+            self.scan_status.set("Không thể bắt đầu quét · " + failure)
+            return
+        fields = self.backend.telemetry
+        if (session.ready() and self.enabled and not self.estop and
+                fields.get("height_settled") == "1" and
+                fields.get("height_motion") == "0" and
+                fields.get("drive_ready") == "1"):
+            self.toggle_scan_route()
+            return
+        self.root.after(500, self._auto_start_scan)
 
     def _style(self):
         style = ttk.Style()
@@ -130,9 +159,9 @@ class NativeDashboard:
         # interesting behaviour - how level the body stays while accelerating,
         # and how hard a reversal is - only shows up well above the old fixed
         # 0.10 m/s. The top of the range is the runner's own DRIVE clamp.
-        self.speed = tk.DoubleVar(value=0.30)
+        self.speed = tk.DoubleVar(value=0.10 if os.environ.get("RB1_LIVE_SLAM") == "1" else 0.30)
         self.yaw = tk.DoubleVar(value=0.35)
-        self.speed_readout = tk.StringVar(value="0.30 m/s")
+        self.speed_readout = tk.StringVar(value=f"{self.speed.get():.2f} m/s")
         pad = ttk.Frame(drive, style="Card.TFrame")
         pad.pack(pady=4)
         buttons = (("▲", 0, 1, 1, 0), ("◄", 1, 0, 0, 1),
@@ -199,7 +228,12 @@ class NativeDashboard:
         skill = ttk.LabelFrame(toolbar, text="Đứng dậy / thử nhiễu", style="Card.TLabelframe", padding=6)
         skill.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(8, 0))
         self.jump_status = tk.StringVar(value="")
+        self.scan_status = tk.StringVar(value=self.scan_route.status)
         ttk.Button(skill, text="Đứng dậy (từ nằm)", command=self.start_standup).pack(side="left", padx=2)
+        self.scan_button = ttk.Button(skill, text="Quét map tự động", command=self.toggle_scan_route)
+        self.scan_button.pack(side="left", padx=2)
+        ttk.Label(skill, textvariable=self.scan_status, style="Card.TLabel").pack(
+            side="left", padx=(8, 6))
         ttk.Label(skill, text="  Đẩy thân:", style="Card.TLabel").pack(side="left", padx=(10, 2))
         for label, force in (("◄ 2 N", -2.0), ("► 2 N", 2.0), ("◄ 5 N", -5.0), ("► 5 N", 5.0)):
             ttk.Button(skill, text=label, width=7,
@@ -210,6 +244,8 @@ class NativeDashboard:
         body = ttk.Frame(outer, style="Card.TFrame", padding=18)
         body.pack(fill="both", expand=True)
         self.viewer_status = tk.StringVar(value="Đang khởi động native MuJoCo viewer…")
+        if os.environ.get("RB1_LIVE_SLAM") == "1":
+            tk.Label(self.root, textvariable=self.viewer_status, wraplength=900, anchor="w").pack(side="bottom", fill="x")
         ttk.Label(
             body,
             text="MuJoCo 3-D viewer (mô hình CAD của RB) mở trong cửa sổ riêng.\n"
@@ -409,6 +445,11 @@ class NativeDashboard:
             self.drive = (speed if self.drive[0] > 0.0 else -speed, self.drive[1])
 
     def set_drive(self, forward: float, yaw: float) -> bool:
+        if (forward or yaw) and self.backend.live_scan is not None and not self.backend.live_scan.ready():
+            self.jump_status.set("Chờ GPU và tracking sẵn sàng trước khi di chuyển")
+            return False
+        if (forward != 0.0 or yaw != 0.0) and self.scan_route.active:
+            self.scan_route.stop("Đã hủy tuyến quét theo lệnh điều khiển tay")
         if self.enabled and not self.estop:
             fields = self.backend.telemetry
             if "drive_ready" in fields:
@@ -611,6 +652,8 @@ class NativeDashboard:
         self.jump_status.set(f"Đã đẩy thân {force_n:+.0f} N trong 0.1 s")
 
     def stop_skill(self):
+        if self.scan_route.active:
+            self.scan_route.stop()
         self._standup_active = False
         self._cancel_pending_posture()
         self.show_started_s = None
@@ -618,6 +661,12 @@ class NativeDashboard:
     def tick(self):
         self.backend.drain()
         fields = self.backend.telemetry
+        if self.scan_route.active:
+            self.scan_status.set(self.scan_route.update(self.enabled, self.estop))
+        else:
+            self.scan_status.set(self.scan_route.status)
+        if hasattr(self, "scan_button"):
+            self.scan_button.configure(text="Dừng quét" if self.scan_route.active else "Tiếp tục quét" if self.scan_route.last_checkpoint else "Quét map tự động")
         if not self.backend.running or self.estop:
             self._standup_active = False
         elif self._standup_active:
@@ -661,6 +710,8 @@ class NativeDashboard:
             else "MuJoCo 3-D viewer closed (control process may still be running)"
             if self.backend.running else
             "Nhấn Start SIM để mở MuJoCo 3-D viewer")
+        if self.backend.live_scan is not None:
+            self.viewer_status.set(self.backend.live_scan.status())
         def num(key, fmt="{:.3f}"):
             try:
                 return fmt.format(float(fields[key]))
@@ -676,10 +727,29 @@ class NativeDashboard:
             f"wheel torque L={num('wheel_tq_l')} N·m   leg iq hip/knee L={num('leg_iq_lh', '{:.2f}')} / {num('leg_iq_lk', '{:.2f}')} A\n"
             f"body height={self.backend.view.get('body_height', '--')} m   loop={fields.get('loop_hz', '--')} Hz"
         )
-        if (self.enabled and self.backend.running and not self.estop and
-                not self._drive_stop_latched):
-            self.motion.command_velocity(*self.drive)
+        self._update_manual_drive()
         self.root.after(20, self.tick)
+
+    def _update_manual_drive(self):
+        if (self.enabled and self.backend.running and not self.estop and
+                not self._drive_stop_latched and not self.scan_route.active):
+            self.motion.command_velocity(*self.drive)
+
+    def toggle_scan_route(self):
+        if self.scan_route.active:
+            self.scan_route.stop()
+        else:
+            if self.backend.live_scan is not None and not self.backend.live_scan.ready():
+                failure = self.backend.live_scan.failure_reason()
+                self.scan_status.set(
+                    "Tracking lỗi · " + failure if failure else
+                    "Chờ tracking · " + self.backend.live_scan.status())
+                return
+            self.drive = (0.0, 0.0)
+            self._drive_stop_latched = True
+            self.motion.stop()
+            self.scan_route.start(self.enabled, self.estop)
+        self.scan_status.set(self.scan_route.status)
 
     def close(self):
         self.disable()
@@ -694,7 +764,10 @@ def parse_options(argv=None):
 def main(argv=None):
     options = parse_options(argv)
     root = tk.Tk()
-    NativeDashboard(root, NativeBackend(rate_hz=options.rate))
+    dashboard = NativeDashboard(root, NativeBackend(rate_hz=options.rate))
+    if os.environ.get("RB1_LIVE_SLAM") == "1":
+        root.title("RB · MuJoCo + Live SLAM + RViz")
+        root.after(200, dashboard.toggle)
     root.mainloop()
 
 if __name__ == "__main__":

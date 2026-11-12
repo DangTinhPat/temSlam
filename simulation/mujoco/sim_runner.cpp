@@ -8,6 +8,8 @@
 #include "rb1/control/RobotController.hpp"
 #include "SimActuatorBus.hpp"
 #include "Mpu6500Model.hpp"
+#include "../../technology/scan3d_fusion/mapping/tof_only/tof_sensor.hpp"
+#include <iomanip>
 
 #include <algorithm>
 #include <array>
@@ -47,6 +49,8 @@ struct Options {
   unsigned noise_seed = 1;
   bool allow_model_mismatch = false;  // explicit plant-only robustness experiments
   bool realtime = false;
+  double speed_factor = 0.0;  // paced simulated-time / wall-time ratio; 0 = unpaced
+  bool capture_sync = false;
   bool lqr_prediction = true;
   bool gyro_hip_lead = true;
   std::string control_spec;  // explicit simulation-only A/B tuning overrides
@@ -107,7 +111,8 @@ Options parseOptions(int argc, char** argv) {
       if (i + 1 >= argc) throw std::invalid_argument("missing value for " + arg);
       return argv[++i];
     };
-    if (arg == "--model") out.model = next();
+    if (arg == "--capture-sync") out.capture_sync = true;
+    else if (arg == "--model") out.model = next();
     else if (arg == "--rate") out.physics_hz = number(next(), "--rate");
     else if (arg == "--sensor-rate") out.sensor_hz = number(next(), "--sensor-rate");
     else if (arg == "--state-hz") out.state_hz = number(next(), "--state-hz");
@@ -127,6 +132,10 @@ Options parseOptions(int argc, char** argv) {
       out.command_port = static_cast<std::uint16_t>(port);
     } else if (arg == "--run-for") out.run_for_s = number(next(), "--run-for");
     else if (arg == "--realtime") out.realtime = true;
+    else if (arg == "--speed-factor") {
+      out.speed_factor = number(next(), "--speed-factor");
+      if (out.speed_factor <= 0.0) throw std::invalid_argument("invalid --speed-factor");
+    }
     else if (arg == "--no-lqr-prediction") out.lqr_prediction = false;
     else if (arg == "--virtual-hip-lead") out.gyro_hip_lead = false;
     else if (arg == "--control") out.control_spec = next();
@@ -200,7 +209,7 @@ Options parseOptions(int argc, char** argv) {
                    "[--sensor-noise SCALE] [--noise-seed UINT] [--allow-model-mismatch] "
                    "[--state-hz HZ] [--control key=val,...] "
                    "[--no-lqr-prediction] [--virtual-hip-lead] [--at SEC:CMD] "
-                   "[--realtime] [--run-for SEC]\n";
+                   "[--realtime | --speed-factor X] [--run-for SEC]\n";
       std::exit(0);
     } else throw std::invalid_argument("unknown option: " + arg);
   }
@@ -209,6 +218,7 @@ Options parseOptions(int argc, char** argv) {
     throw std::invalid_argument("invalid --sensor-noise");
   if (out.physics_hz < 1000.0 || out.physics_hz > 4000.0 ||
       out.sensor_hz <= 0.0 || out.sensor_hz > out.physics_hz || out.run_for_s < 0.0 ||
+      out.speed_factor < 0.0 || (out.speed_factor > 0.0 && out.realtime) ||
       out.state_hz <= 0.0 || out.state_hz > out.sensor_hz ||
       out.wheel_delay_s < 0 || out.wheel_delay_s > .1 || out.wheel_lag_s < 0 || out.wheel_lag_s > .12 ||
       out.wheel_torque <= 0.0 || out.wheel_torque > (out.wheel_torque_whatif ? 2.0 : 0.20))
@@ -257,7 +267,9 @@ class RbV3Runner {
     std::cout << "READY|backend=mujoco_rb_v3|model=RB_v1.3|controller=RobotController"
               << "|leg_actuator=" << (options_.leg_pos ? "driver_pos" : "current_delta_i") << "|physics_hz=" << options_.physics_hz
               << "|control_hz=" << options_.sensor_hz
-              << "|ground_truth_to_controller=0|wheel_regular_limit_nm=" << options_.wheel_torque
+              << "|ground_truth_to_controller=0|speed_factor="
+              << (options_.speed_factor > 0.0 ? options_.speed_factor : options_.realtime ? 1.0 : 0.0)
+              << "|wheel_regular_limit_nm=" << options_.wheel_torque
               << "|wheel_peak_limit_nm=" << (options_.wheel_torque_override ? options_.wheel_torque : 0.20)
               << "|mass_kg=" << geometry::total_mass_kg
               << "|plant_mass_kg=" << mj_getTotalmass(model_)
@@ -276,9 +288,10 @@ class RbV3Runner {
     while (!quit_) {
       step();
       if (options_.run_for_s > 0.0 && sim_time_s_ >= options_.run_for_s) break;
-      if (options_.realtime) {
+      if (options_.speed_factor > 0.0 || options_.realtime) {
         const auto deadline = wall_start + std::chrono::duration_cast<
-            std::chrono::steady_clock::duration>(std::chrono::duration<double>(sim_time_s_));
+            std::chrono::steady_clock::duration>(std::chrono::duration<double>(
+                sim_time_s_ / (options_.speed_factor > 0.0 ? options_.speed_factor : 1.0)));
         std::this_thread::sleep_until(deadline);
       }
     }
@@ -316,8 +329,7 @@ class RbV3Runner {
     // lead excites the fast loaded joint loop; its old 60 ms position-servo
     // tuning does not transfer to this current/impedance actuator model.
     config.tier.lead_s = 0.0F;
-    config.tier.plan_accel_m_s2 = .9F;
-    config.tier.plan_jerk_m_s3 = 10.0F;
+    // Keep default drive shaping: the former 10 m/s³ jerk override rocked the body on STOP.
     config.tier.hip_advance_s = config.tier.preview_s;
     config.tier.height_exp = .15F;
     config.tier.body_damping_s = .08F;
@@ -554,6 +566,11 @@ class RbV3Runner {
     body_id_ = id(model_, mjOBJ_BODY, "body_link");
     left_wheel_body_ = id(model_, mjOBJ_BODY, "left_wheel");
     right_wheel_body_ = id(model_, mjOBJ_BODY, "right_wheel");
+    head_joint_ = mj_name2id(model_, mjOBJ_JOINT, "head_yaw");
+    head_qpos_ = head_joint_ >= 0 ? model_->jnt_qposadr[head_joint_] : -1;
+    head_actuator_ = mj_name2id(model_, mjOBJ_ACTUATOR, "head_yaw_servo");
+    if ((head_qpos_ >= 0) != (head_actuator_ >= 0))
+      throw std::runtime_error("head yaw joint and servo must be defined together");
     gyro_sensor_ = id(model_, mjOBJ_SENSOR, "imu_gyro");
     const int imu_site = id(model_, mjOBJ_SITE, "imu");
     for (const auto binding : {std::pair<int, int>{accel_sensor_, mjSENS_ACCELEROMETER},
@@ -564,8 +581,9 @@ class RbV3Runner {
           model_->sensor_objid[binding.first] != imu_site)
         throw std::runtime_error("RB IMU must measure acceleration/gyro at its site");
     }
-    if (model_->nq != 13 || model_->nv != 12 || model_->nu != 6 ||
-        model_->nbody != 8 || (!options_.allow_model_mismatch &&
+    const bool articulated_head = head_qpos_ >= 0;
+    if (model_->nq != (articulated_head ? 14 : 13) || model_->nv != (articulated_head ? 13 : 12) ||
+        model_->nu != (articulated_head ? 7 : 6) || model_->nbody != (articulated_head ? 9 : 8) || (!options_.allow_model_mismatch &&
           std::abs(mj_getTotalmass(model_) - geometry::total_mass_kg) > 1.0e-4))
       throw std::runtime_error("RB MJCF joint or mass contract mismatch");
   }
@@ -692,6 +710,12 @@ class RbV3Runner {
       const float drive_max = static_cast<float>(options_.drive_max);
       command_.forward_m_s = std::clamp(std::isfinite(forward) ? forward : 0.0F, -drive_max, drive_max);
       command_.yaw_rad_s = std::clamp(std::isfinite(yaw) ? yaw : 0.0F, -1.5F, 1.5F);
+    } else if (op == "HEAD") {
+      double angle = 0.0;
+      if (head_qpos_ >= 0 && (stream >> angle) && std::isfinite(angle)) {
+        head_target_ = std::clamp(angle, -4.71238898, 4.71238898);
+        data_->ctrl[head_actuator_] = head_target_;
+      } else std::cout << "ERROR|command=HEAD|reason=head_yaw_unavailable_or_invalid" << std::endl;
     } else if (op == "HEIGHT") {
       float body_height = 0.0F;
       stream >> body_height;
@@ -717,10 +741,17 @@ class RbV3Runner {
   }
 
   void reset() {
+    mapping_sensor_=TofSensor(options_.noise_seed);
+    mapping_next_=0; mapping_yaw_=mapping_gyro_bias_=mapping_roll_=0;
+    mapping_roll_zero_=mapping_home_roll_=mapping_home_still_s_=0;
+    mapping_bias_samples_=0;mapping_wheel_seeded_=false;
+    std::cout << "MAPRESET" << std::endl;
     controller_ = RobotController(simulationControllerConfig(options_));
     estimator_.reset();
     estimator_mode_set_ = false;
     mj_resetDataKeyframe(model_, data_, id(model_, mjOBJ_KEY, options_.start_key.c_str()));
+    head_target_ = 0.0;
+    if (head_actuator_ >= 0) data_->ctrl[head_actuator_] = 0.0;
     mj_forward(model_, data_);
     // The controller starts from the straight (fully extended) pose, as the firmware does at power-up.
     const float knee = rb1::control::LegHeight::kKneeMaxRad;
@@ -862,6 +893,7 @@ class RbV3Runner {
       in.legs_ready = in.legs_ready && std::abs(previous_leg_target_[i] + hipCadOffset(i) - q) < 0.08F;
     }
 
+    emitTofMapping(in, gyro, accel);
     RobotController::Command cmd{};
     cmd.start = start_pending_ && in.sensors_ok;
     if (cmd.start) start_pending_ = false;
@@ -1032,6 +1064,7 @@ class RbV3Runner {
       data_->ctrl[joints_[index].actuator] = active && output_.wheels_enabled
           ? wheel.computeTorqueNm(physical_velocity) : 0.0;
     }
+    if (head_actuator_ >= 0) data_->ctrl[head_actuator_] = head_target_;
     // A controller stop cannot suspend gravity or contact dynamics.
     data_->xfrc_applied[6 * body_id_] = sim_time_s_ < push_until_s_ ? push_force_n_ : 0.0F;
     if (physics_started_) mj_step(model_, data_);
@@ -1166,8 +1199,65 @@ class RbV3Runner {
            geometry::wheel_radius_m;
   }
 
-  void emitView() {
-    std::cout << "VIEW|t=" << sim_time_s_ << "|x=" << data_->qpos[0]
+  void emitTofMapping(const RobotController::Input& in,
+                      const std::array<float,3>& gyro, const std::array<float,3>& accel) {
+    // Integrate measured gyro at the source sampling rate, not at GUI frame rate.
+    const double dt=in.dt_s;
+    const double wheel_yaw=geometry::wheel_radius_m / geometry::axle_spacing_m *
+        ((in.wheel_pos_rad[1]+in.hip_rad[1]+in.knee_rad[1])-
+         (in.wheel_pos_rad[0]+in.hip_rad[0]+in.knee_rad[0]));
+    const double wheel_rate=mapping_wheel_seeded_?(wheel_yaw-mapping_prev_wheel_yaw_)/dt:0;
+    mapping_prev_wheel_yaw_=wheel_yaw;mapping_wheel_seeded_=true;
+    const double speed=geometry::wheel_radius_m*.5*(in.wheel_rad_s[0]+in.wheel_rad_s[1]);
+    if (physics_started_ && std::abs(wheel_rate)<.08 && std::abs(speed)<.06 && std::abs(in.pitch_rate_rad_s)<.15) {
+      ++mapping_bias_samples_;
+      const double a=mapping_bias_samples_<200?1.0/mapping_bias_samples_:std::min(dt/5.0,1.0);
+      mapping_gyro_bias_+=a*(gyro[2]-wheel_rate-mapping_gyro_bias_);
+    }
+    mapping_yaw_+=(gyro[2]-mapping_gyro_bias_)*dt;
+    mapping_roll_+=gyro[0]*dt;
+    const double an=std::sqrt(accel[0]*accel[0]+accel[1]*accel[1]+accel[2]*accel[2]);
+    if(std::abs(an-9.80665)<.5) mapping_roll_+=std::min(dt/.5,1.0)*
+        (std::atan2(accel[1],accel[2])-mapping_roll_);
+    const auto& config=controller_.config();
+    const bool home=config.imu_home_zero && output_.state==RobotController::State::Idle &&
+        in.sensors_ok && in.legs_measured && std::abs(in.pitch_rate_rad_s)<.05 &&
+        std::abs(speed)<.01 && std::abs(gyro[0])<.15 && std::abs(an-9.80665)<.5 &&
+        std::abs(.5*(in.hip_rad[0]+in.hip_rad[1])-geometry::home_hip_rad)<config.imu_home_pose_tol_rad &&
+        std::abs(.5*(in.knee_rad[0]+in.knee_rad[1])-geometry::home_knee_rad)<config.imu_home_pose_tol_rad;
+    if(home) {
+      mapping_home_roll_=mapping_home_still_s_==0?mapping_roll_:
+          mapping_home_roll_+dt/(.05+dt)*(mapping_roll_-mapping_home_roll_);
+      mapping_home_still_s_+=dt;
+    } else mapping_home_still_s_=0;
+    // Same known level home pose as the controller's pitch zero; never learn tilt while driving.
+    if(standup_pending_ && home && mapping_home_still_s_>=config.imu_home_still_s &&
+        std::abs(mapping_home_roll_)<=config.imu_home_zero_max_rad)
+      mapping_roll_zero_=mapping_home_roll_;
+    if(sim_time_s_<mapping_next_) return;
+    mapping_next_+=tof::period;
+    auto ranges=mapping_sensor_.sample(model_,data_);
+    const double pitch=in.pitch_rad-controller_.imuPitchOffset();
+    const double roll=mapping_roll_-mapping_roll_zero_;
+    double left=geometry::wheel_radius_m*(in.wheel_pos_rad[0]+pitch+in.hip_rad[0]+in.knee_rad[0]);
+    double right=geometry::wheel_radius_m*(in.wheel_pos_rad[1]+pitch+in.hip_rad[1]+in.knee_rad[1]);
+    const auto l=rb1::core::WholeBodyModel::legHeight(in.hip_rad[0]+rb1::control::LegHeight::hangHipCad(),in.knee_rad[0]);
+    const auto r=rb1::core::WholeBodyModel::legHeight(in.hip_rad[1]+rb1::control::LegHeight::hangHipCad(),in.knee_rad[1]);
+    const double ax=.5*(l.x_m+r.x_m), az=.5*(l.height_m+r.height_m);
+    const bool valid=in.sensors_ok && output_.state==RobotController::State::Balancing &&
+        std::abs(pitch)<.45 && std::abs(roll)<.15;
+    std::ostringstream line;
+    line<<std::setprecision(9)<<"TOFMAP "<<sim_time_s_<<' '<<valid<<' '<<left<<' '<<right<<' '
+        <<mapping_yaw_<<' '<<pitch<<' '<<roll<<' '<<ax<<' '<<az<<' '
+        <<geometry::wheel_radius_m<<' '<<geometry::axle_spacing_m<<' '
+        <<(head_qpos_ >= 0 ? data_->qpos[head_qpos_] : 0.0);
+    for(double v:ranges) line<<' '<<v;
+    std::cout<<line.str()<<std::endl;
+    if(options_.capture_sync) emitView("CAPTURE");
+  }
+
+  void emitView(const char* prefix="VIEW") {
+    std::cout << prefix << "|t=" << sim_time_s_ << "|x=" << data_->qpos[0]
               << "|physics_t=" << data_->time
               << "|y=" << data_->qpos[1] << "|z=" << data_->qpos[2]
               << "|qw=" << data_->qpos[3] << "|qx=" << data_->qpos[4]
@@ -1178,9 +1268,16 @@ class RbV3Runner {
               << "|lw=" << data_->qpos[joints_[2].qpos]
               << "|rh=" << data_->qpos[joints_[3].qpos]
               << "|rk=" << data_->qpos[joints_[4].qpos]
-              << "|rw=" << data_->qpos[joints_[5].qpos] << std::endl;
+              << "|rw=" << data_->qpos[joints_[5].qpos]
+              << "|hj=" << (head_qpos_ >= 0 ? data_->qpos[head_qpos_] : 0.0) << std::endl;
   }
 
+  TofSensor mapping_sensor_{1};
+  double mapping_next_=0, mapping_yaw_=0, mapping_gyro_bias_=0, mapping_roll_=0;
+  double mapping_roll_zero_=0, mapping_home_roll_=0, mapping_home_still_s_=0;
+  double mapping_prev_wheel_yaw_=0;
+  bool mapping_wheel_seeded_=false;
+  unsigned mapping_bias_samples_=0;
   Options options_;
   mjModel* model_ = nullptr;
   mjData* data_ = nullptr;
@@ -1221,6 +1318,8 @@ class RbV3Runner {
   std::array<float, 2> standup_ff_rate_{}, standup_ff_prev_{};  // [hip, knee] common path rate (POS stand-up feed-forward)
   int accel_sensor_ = -1, gyro_sensor_ = -1, body_id_ = -1;
   int left_wheel_body_ = -1, right_wheel_body_ = -1;
+  int head_joint_ = -1, head_qpos_ = -1, head_actuator_ = -1;
+  double head_target_ = 0.0;
   std::uint64_t socket_port_ = 0;
   int socket_ = -1;
   double sim_time_s_ = 0.0, next_control_s_ = 0.0, next_telemetry_s_ = 0.0,

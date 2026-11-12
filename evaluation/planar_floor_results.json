@@ -1,0 +1,15 @@
+{
+  "source_keyframes": 483,
+  "before_area_m2": 18.1375,
+  "after_area_m2": 45.017500000000005,
+  "before_hole_components": 46,
+  "after_hole_components": 0,
+  "floor_components": 1,
+  "floor_euler_number": 1,
+  "floor_faces": 36014,
+  "max_plane_error_m": 5.417159624871116e-23,
+  "observed_area_m2": 16.070000000000004,
+  "inferred_area_m2": 28.947500000000005,
+  "estimated_poses_unchanged": true,
+  "cad_geometry_used": false
+}

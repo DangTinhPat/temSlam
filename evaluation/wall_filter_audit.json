@@ -1,0 +1,268 @@
+{
+  "frames": [
+    {
+      "index": 0,
+      "time_s": 32.47,
+      "wall_pixels": 151984,
+      "behind_8cm": 8,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.082353286743164
+    },
+    {
+      "index": 15,
+      "time_s": 63.2003,
+      "wall_pixels": 154728,
+      "behind_8cm": 217,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.14454981422424318
+    },
+    {
+      "index": 31,
+      "time_s": 95.5353,
+      "wall_pixels": 143576,
+      "behind_8cm": 770,
+      "behind_20cm": 22,
+      "max_depth_overshoot_m": 0.21711776447296138
+    },
+    {
+      "index": 46,
+      "time_s": 121.2,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 62,
+      "time_s": 154.47,
+      "wall_pixels": 18435,
+      "behind_8cm": 5333,
+      "behind_20cm": 112,
+      "max_depth_overshoot_m": 0.24188337135314963
+    },
+    {
+      "index": 77,
+      "time_s": 189.0,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 93,
+      "time_s": 230.735,
+      "wall_pixels": 83904,
+      "behind_8cm": 26,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.08538973212242129
+    },
+    {
+      "index": 108,
+      "time_s": 279.87,
+      "wall_pixels": 161322,
+      "behind_8cm": 2394,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.19123937082290654
+    },
+    {
+      "index": 124,
+      "time_s": 335.935,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 139,
+      "time_s": 391.6,
+      "wall_pixels": 30899,
+      "behind_8cm": 5719,
+      "behind_20cm": 32,
+      "max_depth_overshoot_m": 0.2450404434204101
+    },
+    {
+      "index": 155,
+      "time_s": 456.335,
+      "wall_pixels": 125249,
+      "behind_8cm": 8031,
+      "behind_20cm": 3161,
+      "max_depth_overshoot_m": 1.0203276138305664
+    },
+    {
+      "index": 171,
+      "time_s": 534.07,
+      "wall_pixels": 44756,
+      "behind_8cm": 773,
+      "behind_20cm": 70,
+      "max_depth_overshoot_m": 0.3640655527114869
+    },
+    {
+      "index": 186,
+      "time_s": 631.67,
+      "wall_pixels": 44020,
+      "behind_8cm": 1076,
+      "behind_20cm": 1,
+      "max_depth_overshoot_m": 0.20315998554229742
+    },
+    {
+      "index": 202,
+      "time_s": 707.0,
+      "wall_pixels": 18365,
+      "behind_8cm": 3913,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.1575695743560792
+    },
+    {
+      "index": 217,
+      "time_s": 793.6,
+      "wall_pixels": 119706,
+      "behind_8cm": 1061,
+      "behind_20cm": 61,
+      "max_depth_overshoot_m": 0.4130244007110595
+    },
+    {
+      "index": 233,
+      "time_s": 888.2,
+      "wall_pixels": 148886,
+      "behind_8cm": 105,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.19867358016967773
+    },
+    {
+      "index": 248,
+      "time_s": 984.27,
+      "wall_pixels": 40978,
+      "behind_8cm": 2272,
+      "behind_20cm": 180,
+      "max_depth_overshoot_m": 0.3163620953559876
+    },
+    {
+      "index": 264,
+      "time_s": 1088.6,
+      "wall_pixels": 32451,
+      "behind_8cm": 8,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.12892261123657223
+    },
+    {
+      "index": 279,
+      "time_s": 1193.54,
+      "wall_pixels": 59473,
+      "behind_8cm": 1356,
+      "behind_20cm": 78,
+      "max_depth_overshoot_m": 0.30462854623794566
+    },
+    {
+      "index": 295,
+      "time_s": 1280.6,
+      "wall_pixels": 90675,
+      "behind_8cm": 973,
+      "behind_20cm": 687,
+      "max_depth_overshoot_m": 1.4249725465774534
+    },
+    {
+      "index": 310,
+      "time_s": 1411.6,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 326,
+      "time_s": 1507.74,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 342,
+      "time_s": 1618.27,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 357,
+      "time_s": 1727.0,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 373,
+      "time_s": 1847.74,
+      "wall_pixels": 125187,
+      "behind_8cm": 2279,
+      "behind_20cm": 374,
+      "max_depth_overshoot_m": 0.39902260398864753
+    },
+    {
+      "index": 388,
+      "time_s": 1955.4,
+      "wall_pixels": 59727,
+      "behind_8cm": 68,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.09207125091552726
+    },
+    {
+      "index": 404,
+      "time_s": 2088.67,
+      "wall_pixels": 719,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": -1.6629702358245848
+    },
+    {
+      "index": 419,
+      "time_s": 2209.07,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 435,
+      "time_s": 2356.54,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 450,
+      "time_s": 2473.54,
+      "wall_pixels": 97749,
+      "behind_8cm": 96,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.14138532638549783
+    },
+    {
+      "index": 466,
+      "time_s": 2631.27,
+      "wall_pixels": 0,
+      "behind_8cm": 0,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0
+    },
+    {
+      "index": 482,
+      "time_s": 2770.74,
+      "wall_pixels": 166437,
+      "behind_8cm": 12,
+      "behind_20cm": 0,
+      "max_depth_overshoot_m": 0.08333367919921875
+    }
+  ],
+  "wall_pixels": 1919226,
+  "kept_wall_pixels": 1803614,
+  "behind_8cm_after": 30131,
+  "behind_20cm_after": 3098,
+  "behind_8cm": 36490,
+  "behind_20cm": 4778,
+  "ray_checks": 2048,
+  "rays_hit_wall": 859
+}

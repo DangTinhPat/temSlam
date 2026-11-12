@@ -1,0 +1,31 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+Visualization Manager:
+  Class: ""
+  Global Options:
+    Fixed Frame: map
+    Frame Rate: 30
+    Background Color: 30; 35; 43
+  Displays:
+    - Class: rviz_default_plugins/Marker
+      Name: DELTAR reconstructed clay surface
+      Enabled: true
+      Topic:
+        Value: /rgb_tof/clay_mesh
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/FocusCamera
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 3.5
+      Focal Point: {X: -2.3, Y: -2.3, Z: 0.5}
+      Pitch: 0.5
+      Yaw: -1.5
+      Name: Reconstructed sofa
+Window Geometry:
+  Width: 1150
+  Height: 850

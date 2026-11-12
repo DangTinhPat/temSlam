@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "waypoints": 184,
+  "wall_seconds": 183.08327185700182,
+  "actual_xy_bounds_m": [
+    [
+      -5.4663,
+      -4.69363
+    ],
+    [
+      1.10461,
+      1.10499
+    ]
+  ],
+  "behind_sofa_samples": 187,
+  "behind_sofa_head_range_deg": [
+    -177.59170634756944,
+    175.94903634892938
+  ]
+}

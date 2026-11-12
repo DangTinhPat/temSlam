@@ -1,5 +1,12 @@
-# SLAM layer
+# SLAM
 
-Đặt frontend, backend, odometry, localization, mapping và adapter dữ liệu trong khu vực này. Module SLAM chỉ được phụ thuộc vào message/log cảm biến và cấu hình sensor; không phụ thuộc `mujoco`, `firmware/` hay API lấy trạng thái thật của plant.
+Vision, ToF mapping, DELTAR, calibration, mesh reconstruction and RViz tooling are
+organized in [technology/scan3d_fusion](../technology/scan3d_fusion/README.md).
 
-Sensor suite và backend chưa được chốt. Khi chốt, tạo package/source tree cụ thể theo thư viện được chọn thay vì dựng sẵn các node rỗng.
+This workspace currently contains two independent paths:
+
+- ToF-only native occupancy mapping from encoder/gyro odometry and 8×8 range data.
+- RGB + ToF depth completion and TSDF mesh reconstruction using known simulated poses.
+
+The second path is not a complete camera tracking or SLAM implementation. The simulator,
+RB model, GUI and generated datasets remain in their workspace-level directories.
