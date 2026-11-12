@@ -1,264 +1,465 @@
-# Vision + ToF SLAM Toolkit (Scan3D Fusion)
+# Scan3D Fusion — Pipeline RGB–ToF SLAM của RB
 
-Thư mục này gom bộ công cụ vision và SLAM đang có trong workspace: cấu hình RGB/ToF, preview cảm biến, hiệu chuẩn mô phỏng, DELTAR và checkpoint pretrained, dựng mesh RGB+ToF, mapper ToF-only, tuyến quét và công cụ xem RViz. Scene MuJoCo, CAD robot và dashboard vẫn dùng từ workspace chung.
+Cập nhật: **12/11/2026**.
 
-Pipeline mesh RGB+ToF mặc định dùng pose mô phỏng đã biết. Nhánh [cuVSLAM RGB-D](mapping/cuvslam/README.md) bổ sung tracking, SLAM/loop closure và lưu map native trên GPU; TSDF nhận pose cuối qua `--trajectory`. Có cả replay dữ liệu đã ghi và [profile trực tiếp MuJoCo + RViz](live/README.md), khởi chạy bằng `./run_vision.sh`. Controller vẫn chạy độc lập với xử lý ảnh. Mapper ToF-only riêng vẫn dùng odometry encoder/gyro và occupancy voxel, chưa có scan matching hoặc loop closure.
+Bộ công cụ này giúp RB dùng **camera RGB và ToF 8×8** để ước lượng chuyển động,
+quét môi trường và dựng bản đồ bề mặt 3D dạng “đất sét”. Hệ thống hiện chạy trong
+MuJoCo trên PC có GPU NVIDIA; **điều khiển và core SLAM không dùng ROS**.
+ROS/RViz chỉ phục vụ hiển thị.
 
-## Sơ đồ xử lý
+Đây là prototype đang được kiểm chứng. Mesh nhìn liền mạch hoặc đẹp không tự
+chứng minh độ chính xác của depth, pose hay khả năng navigation.
+
+## Mục lục
+
+- [1. Ba công nghệ chính làm gì?](#1-ba-công-nghệ-chính-làm-gì)
+- [2. Sơ đồ toàn luồng](#2-sơ-đồ-toàn-luồng)
+- [3. Các bước xử lý](#3-các-bước-xử-lý)
+- [4. Chúng ta đã có VIO chưa?](#4-chúng-ta-đã-có-vio-chưa)
+- [5. Dữ liệu nào được phép tạo bản đồ?](#5-dữ-liệu-nào-được-phép-tạo-bản-đồ)
+- [6. Cấu hình và tuyến quét hiện tại](#6-cấu-hình-và-tuyến-quét-hiện-tại)
+- [7. Cách chạy trên PC hiện tại](#7-cách-chạy-trên-pc-hiện-tại)
+- [8. Dữ liệu đầu ra và cách kiểm tra](#8-dữ-liệu-đầu-ra-và-cách-kiểm-tra)
+- [9. Kết quả mới nhất và các giới hạn](#9-kết-quả-mới-nhất-và-các-giới-hạn)
+- [10. Bố cục mã nguồn](#10-bố-cục-mã-nguồn)
+- [11. Kiểm tra và tài liệu chi tiết](#11-kiểm-tra-và-tài-liệu-chi-tiết)
+
+## 1. Ba công nghệ chính làm gì?
+
+Có ba câu hỏi phải giải quyết để dựng bản đồ:
+
+| Câu hỏi | Khối trả lời | Đầu ra |
+|---|---|---|
+| Bề mặt trong ảnh cách camera bao xa? | **DELTAR + bộ kiểm tra ToF** | Ảnh depth dày, căn theo ảnh RGB |
+| Camera đang ở đâu và nhìn hướng nào? | **cuVSLAM + wheel/IMU odometry + động học robot** | Pose camera theo thời gian |
+| Ghép các góc nhìn thành bề mặt như thế nào? | **TSDF + Marching Cubes** | Mesh 3D |
+
+### DELTAR: suy ra khoảng cách theo pixel
+
+DELTAR nhận ảnh RGB, thống kê khoảng cách của 64 vùng ToF và thông tin vị trí
+các vùng đó trên ảnh. Checkpoint pretrained NYU chạy trên GPU để dự đoán depth
+dày; luồng hiện tại đưa kết quả về kích thước 640×480.
+
+ToF chỉ có 64 vùng đo. Vì vậy, **640×480 pixel depth không phải 640×480 phép đo
+ToF độc lập**: phần chi tiết được mạng suy luận từ RGB và ràng buộc ToF.
+DELTAR không tự tìm vị trí camera và không tự ghép cả căn phòng.
+
+### cuVSLAM: ước lượng chuyển động và vị trí
+
+cuVSLAM hiện chạy ở **chế độ RGB-D**, nhận chuỗi ảnh RGB và depth fusion.
+Nó theo dõi đặc trưng qua các frame để ước lượng pose camera và duy trì map
+SLAM nội bộ. Adapter dùng release `17.0.1+cu12` trong môi trường riêng.
+
+Có tích hợp chức năng SLAM/loop closure của thư viện không đồng nghĩa đã kiểm
+chứng đóng vòng chính xác trên phòng hiện tại. Map database cuVSLAM cũng không
+phải mesh “đất sét” được hiển thị.
+
+### TSDF: tích lũy hình học thành bề mặt
+
+TSDF chia không gian thành các ô thể tích gọi là **voxel**. Mỗi frame depth được
+đưa vào thể tích theo pose camera; nhiều quan sát đóng góp vào cùng bề mặt.
+Marching Cubes trích bề mặt thành các tam giác để xuất mesh.
+
+Ví dụ: DELTAR cung cấp hình học ghế sofa nhìn từ từng góc, khối định vị xác định
+chỗ đặt từng góc nhìn, TSDF ghép chúng thành bề mặt chung. Cả depth lẫn pose đều
+phải đủ tốt để ghế không bị phồng, lệch hoặc có hai lớp.
+
+## 2. Sơ đồ toàn luồng
 
 ```mermaid
-flowchart LR
-    A[RGB 640x480] --> D[DELTAR pretrained]
-    B[ToF 8x8 mean và sigma] --> D
-    B --> E[Hiệu chỉnh bias và lọc depth]
-    D --> E
-    C[Calibration RGB-ToF] --> E
-    F[Pose camera từng khung] --> G[Chiếu depth vào tọa độ 3D]
-    E --> G
-    G --> H[TSDF trên CUDA]
-    H --> I[Marching Cubes và làm mịn]
-    I --> J[PLY / STL / OBJ]
-    J --> K[RViz hoặc preview]
+flowchart TD
+    A[RGB 640×480] --> D[DELTAR pretrained trên GPU]
+    B[ToF 8×8: mean, sigma, mask] --> D
+    C[Calibration và vùng chiếu ToF trên RGB] --> D
+    D --> E[Căn bias và kiểm tra phù hợp ToF]
+    B --> E
+    E --> F[Depth fusion]
+
+    A --> G[cuVSLAM RGB-D]
+    F --> G
+    H[Encoder bánh + gyro/IMU] --> I[Local odometry thân robot]
+    J[Encoder cổ + động học thân/chân] --> K[Mount camera theo thời gian]
+    G --> L[Pose camera sau correction visual có gate]
+    I --> L
+    K --> L
+
+    F --> M[TSDF trên GPU]
+    L --> M
+    M --> N[Marching Cubes, lọc và làm mịn mesh]
+    N --> O[Mesh và bridge hiển thị RViz]
 ```
 
-1. **Capture:** MuJoCo tạo RGB, đo phân bố khoảng cách giả lập trên 8×8 vùng ToF, và lưu pose cùng intrinsics cho mỗi khung. Trong chế độ handheld, cả cụm camera–ToF được di chuyển và nghiêng như một thiết bị cầm tay.
-2. **DELTAR:** checkpoint pretrained nhận RGB, mean/sigma ToF, mask và rectangle của từng vùng; xuất depth dày theo pixel. Depth chuẩn MuJoCo chỉ được giữ lại để chấm điểm ngoại tuyến, không đưa vào mạng.
-3. **Ràng buộc ToF:** depth được căn bias cục bộ theo vùng đo ToF rồi loại các pixel mâu thuẫn với ToF. Đây là bước hiệu chỉnh gần đúng, không phải tối ưu loss RGB/ToF/depth qua nhiều khung như bài báo.
-4. **Fusion hình học:** mỗi depth đã lọc được chiếu theo pose vào một thể tích TSDF. Sau khi tích lũy nhiều khung, Marching Cubes trích bề mặt, lọc thành phần nhỏ và làm mịn nhẹ.
-5. **Hiển thị:** xuất mesh và có thể mở mesh trong RViz. ROS không tham gia suy luận hay fusion.
+Luồng trên là cập nhật live. **Finalize sau quét** bổ sung bước surface matching
+để chỉnh pose rồi dựng lại TSDF; chi tiết ở bước 7 bên dưới.
 
-Mapper ToF-only có nhánh riêng: adapter MuJoCo ghi frame 8×8 và odometry cảm biến; C++ mapper cập nhật occupancy voxel/map xám; GUI dashboard ghi log và mở map; ROS bridge tùy chọn hiển thị map và point cloud trong RViz.
+## 3. Các bước xử lý
 
-## Mối liên hệ với DELTAR và ToF-SLAM
+### Bước 1 — Thu nhận và đồng bộ
 
-- [DELTAR](https://zju3dv.github.io/deltar/) là mạng hợp nhất ảnh màu và tín hiệu ToF thưa để dự đoán depth dày.
-- [ToF-SLAM của ZJU](https://zju3dv.github.io/tof_slam/) dùng DELTAR làm depth supervision trung gian. Phương pháp bài báo còn tối ưu biểu diễn cảnh SDF đa mức và pose camera từ RGB, depth dự đoán, tín hiệu vùng ToF; lọc ToF theo thời gian; dùng tối ưu coarse-to-fine và local/global BA.
-- Vì vậy, **DELTAR không tự tạo pose hay bản đồ SLAM**. Baseline trong repo dùng pose ground truth mô phỏng để cô lập và kiểm tra bước dựng mesh.
-- Trang ToF-SLAM ghi mã nguồn “Coming”; implementation hiện tại của workspace là bản tái dựng một phần, không phải mã chính thức của tác giả.
+MuJoCo mô phỏng vật lý robot, render RGB và tạo số đo ToF theo từng vùng.
+Encoder bánh, gyro/IMU và góc cổ được ghi cùng timestamp mô phỏng.
 
-## Phần cứng và cấu hình cảm biến
+Worker ghép snapshot ảnh với packet odometry có sai lệch tối đa **20 ms**.
+Chỉ dùng packet odometry hợp lệ khi robot đã cân bằng. Snapshot pose thật của
+simulator phục vụ renderer cảm biến, không được dùng làm pose ghép map live.
 
-- GPU máy phát triển: RTX 3060, VRAM 12 GB. Lần chạy handheld dùng khoảng 288 MiB VRAM cực đại khi fusion; inference DELTAR chạy CUDA.
-- RGB: 640×480. Focal length và tâm ảnh trong sequence được tính từ camera MuJoCo của model, không hard-code intrinsics của camera thương mại.
-- ToF giả lập: 8×8 vùng, FoV 45°, tầm 2 cm–4 m, 15 Hz; camera hướng lệch yaw −4° so với trục trước của robot.
-- Extrinsic camera–ToF dùng `technology/scan3d_fusion/config/sim_calibration.json`, là kết quả calibration mặt phẳng trong mô phỏng. Báo cáo fit: median point-to-plane giảm từ khoảng 23 mm xuống 3,6 mm; RMSE sau fit khoảng 7,4 mm. Đây chưa phải calibration phần cứng.
-- Mỗi vùng ToF được lấy từ 16×16 = 256 tia diện tích. Adapter chọn cụm gần có đủ tín hiệu rồi tính mean/std theo optical Z, thêm nhiễu theo cấu hình. Đây không phải mô hình photon, SPAD, histogram, xtalk hay phản xạ vật liệu của cảm biến thật.
+### Bước 2 — Hiệu chuẩn quan hệ camera–ToF
 
-## Bố cục mã nguồn
+Calibration xác định phép biến đổi giữa hệ trục camera và ToF, từ đó biết mỗi
+vùng ToF tương ứng khu vực nào trên ảnh RGB. Cấu hình hiện tại nằm trong
+[`config/sim_calibration.json`](config/sim_calibration.json).
+
+Đây là calibration trong mô phỏng. Khi chuyển sang phần cứng, phải đo lại
+intrinsic camera, extrinsic RGB–ToF, mount và đồng bộ cảm biến.
+
+### Bước 3 — Tạo và kiểm tra depth fusion
+
+DELTAR dự đoán depth từ RGB và ToF. Bộ xử lý dùng chung trong
+[`reconstruction/depth_support.py`](reconstruction/depth_support.py) sau đó:
+
+- Căn bias cục bộ theo số đo ToF.
+- Chiếu depth về đúng vùng ToF để kiểm tra tính phù hợp, bỏ giá trị mâu thuẫn.
+- Kiểm tra thêm phân bố depth liên tục ở vùng nhìn xiên để tránh bỏ quá nhiều
+  pixel hợp lệ chỉ vì một ô ToF chứa nhiều khoảng cách.
+- Giữ depth không hợp lệ ở trạng thái rỗng; không dựng mặt phẳng để thay thế.
+
+Đầu ra là RGB và depth cùng hệ pixel. Buffer/keyframe lưu depth `uint16` theo
+**milimét**; khi tích phân TSDF, depth được đổi sang **mét**.
+
+### Bước 4 — Ước lượng pose visual bằng cuVSLAM
+
+cuVSLAM xử lý RGB-D và xuất pose camera. Tracker nhận các frame fusion được
+xử lý; hệ thống chỉ lưu một phần thành **keyframe**, tức những góc nhìn đại diện
+để tích lũy map. Sau 3 frame khởi tạo, điều kiện giữ keyframe là chuyển động
+camera ít nhất 5 cm hoặc xoay khoảng 4,6° so với keyframe trước.
+
+Mất tracking thực sự sẽ dừng ghép và báo lỗi, không tự dùng pose thật MuJoCo
+để đi tiếp. Khoảng trễ timestamp đơn lẻ không tự được xem là mất tracking.
+
+### Bước 5 — Kết hợp odometry và động học camera
+
+Encoder hai bánh và gyro tạo local odometry x/y/yaw với covariance, có kiểm tra
+bất đồng/nghi trượt. IMU cung cấp thông tin nghiêng thân. Camera gắn trên đầu
+quay nên cần mount thay đổi theo thời gian để quy đổi pose camera và thân.
+
+`BodyLocalization` dùng pose visual để hiệu chỉnh hệ map so với odometry.
+Correction qua gate để chặn bước nhảy lớn; đây là fusion **bên ngoài cuVSLAM**,
+không đưa wheel/IMU factors vào bộ tối ưu nội bộ của thư viện.
+
+**Giả thiết hiện tại:** live dùng `level_floor=True`. Cao độ dựa vào bán kính bánh
+và động học trên nền ngang; roll/pitch theo IMU. Correction visual chỉ giữ X/Y/yaw
+sau căn hệ ban đầu, không sửa Z/roll/pitch. Đây là ràng buộc pose, không phải ép
+mesh sàn phẳng, nhưng chưa phù hợp định vị 6-DoF tổng quát trên dốc/bậc.
+
+Nếu visual correction bị gate từ chối, pose map tiếp tục dựa trên odometry và
+correction đã nhận trước đó. Tuy nhiên worker live hiện vẫn dừng khi cuVSLAM
+báo mất tracking; không có chế độ tự tiếp tục quét qua mất tracking.
+
+### Bước 6 — Cập nhật TSDF và mesh live
+
+Mỗi keyframe cung cấp depth fusion và pose camera cho TSDF. Khi đủ bằng chứng
+bề mặt, hệ thống trích mesh, lọc thành phần nhỏ và làm mịn Gaussian/Taubin.
+
+- Live/finalize: voxel tối thiểu **4 cm**, tự tăng khi thể tích lớn; `min_views=3`.
+- Mesh live được xem xét dựng lại mỗi ít nhất **5 giây** khi có keyframe mới;
+  thời gian xử lý thực tế có thể dài hơn.
+- Mỗi ô Marching Cubes phải đủ hỗ trợ ở cả 8 đỉnh. Vùng thiếu dữ liệu vẫn mở.
+- Có phục hồi zero crossing TSDF thô gần ngang bị Gaussian xóa khi đủ quan sát;
+  bước này không ép cao độ hoặc tạo depth mới.
+
+Mesh được xuất qua bridge sang RViz. ROS không tham gia suy luận, tracking hay
+TSDF. Các bộ lọc có thể dịch/làm mất chi tiết bề mặt; mesh không phải raw cloud.
+
+### Bước 7 — Finalize sau quét
+
+Luồng headless gọi finalize sau khi hoàn tất tuyến. Có thể gọi thủ công cho
+phiên đã dừng, có `live_sequence.json` và đầy đủ keyframe:
+
+```bash
+env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
+  technology/scan3d_fusion/live/workers.py finalize datasets/raw/PHIEN_CAN_XU_LY
+```
+
+Lệnh ghi lại các file kết quả cuối trong thư mục phiên; sao lưu chúng trước nếu
+cần giữ bản cũ. Không finalize khi phiên còn đang ghi dữ liệu.
+
+Finalize dùng **surface matching point-to-plane** trên các mặt gần đứng để
+chỉnh X/Y/yaw theo từng frame. Correction có giới hạn; mặt tường đơn thiếu
+ràng buộc thì không được dùng để sửa tùy ý. Bước này giữ nguyên cao độ/roll/pitch.
+
+Sau đó TSDF được dựng lại theo pose đã chỉnh, xuất `final_mesh.stl` và
+`final_mesh.ply`. Đây là tinh chỉnh tuần tự sau quét, **chưa phải pose graph toàn
+cục, matching 6-DoF realtime hay tối ưu depth đa khung**.
+
+## 4. Chúng ta đã có VIO chưa?
+
+**Chưa có VIO tích hợp trong tracker.** cuVSLAM đang nhận RGB-D, không nhận chuỗi
+mẫu gia tốc/gyro để cùng ước lượng trạng thái inertial bên trong tracker.
+
+Hiện có hai nhánh: wheel/IMU odometry và pose visual, kết hợp ở bên ngoài.
+Không nên gọi nhánh này là bộ VIO đầy đủ chỉ vì nó dùng cả camera và IMU.
+Camera ở đầu quay còn IMU ở thân; khi cổ quay, extrinsic camera–IMU thay đổi.
+Không thể coi chúng là một rig gắn cứng khi triển khai VIO thông thường.
+
+## 5. Dữ liệu nào được phép tạo bản đồ?
+
+| Nguồn | Được dùng vào việc gì trong luồng chính? |
+|---|---|
+| RGB + ToF và calibration | Tạo depth fusion, cung cấp hình học quan sát |
+| Encoder, gyro/IMU, động học robot | Ước lượng pose và mount camera |
+| Scene/pose thật MuJoCo | Render cảm biến; scene còn phục vụ lập tuyến thử và kiểm tra va chạm |
+| Depth/pose chuẩn của simulator | Đánh giá ngoại tuyến; không cấp vào map live/fusion đang kiểm chứng |
+| Mesh CAD tường/sàn/đồ vật | Không được chép vào map để vá phần thiếu |
+| Mặt phẳng suy diễn hoặc floor completion | Không nằm trong pipeline chính |
+
+Keyframe mới phải có `depth_source=deltar_tof_fusion`. Worker từ chối dữ liệu
+thiếu nguồn hoặc mang dấu `floor_plane` hữu hạn của bước ép sàn cũ. H5 của
+inference live dùng depth toàn zero làm placeholder cho loader DELTAR.
+
+Một số ví dụ capture/handheld **cũ** dùng pose mô phỏng đã biết để kiểm tra riêng
+reconstruction. Chúng không chứng minh SLAM tự định vị được; phải xem provenance
+và `pose_source` của từng phiên. ToF-SLAM tham khảo không phải implementation
+đầy đủ đang chạy ở đây: hiện tại dùng TSDF, chưa có tối ưu neural scene/pose
+đa khung như hệ đó.
+
+## 6. Cấu hình và tuyến quét hiện tại
+
+| Hạng mục | Cấu hình |
+|---|---|
+| RGB | 640×480, camera ở đầu RB |
+| ToF | 8×8 vùng, FoV cấu hình 45°, 15 Hz, tầm 0,02–4 m |
+| Mount ToF | Bên trái camera, lệch ngang khoảng 2 cm, yaw −4°; tọa độ trong `config/tof.yaml` |
+| Nhiễu ToF | `noise.sigma_fraction_of_bound: 0.0` — không thêm nhiễu ngẫu nhiên trong bài thử hiện tại |
+| Calibration | Extrinsic mô phỏng trong `config/sim_calibration.json` |
+| GPU phát triển | NVIDIA RTX 3060 |
+| Profile phòng khách | Thời gian mô phỏng ×5, scene phòng khách độc lập |
+| Tuyến cố định | 184 waypoint, 66 điểm lia, dài khoảng 96,3 m |
+| Đồng bộ lia/fusion | `scan_step_deg: 8`, chờ góc frame đã xử lý trước khi đầu đi tiếp |
+| Keyframe | Tối đa 4096/phiên |
+
+Không thêm nhiễu ToF **không có nghĩa depth không sai**. Một vùng 8×8 vẫn chứa
+nhiều khoảng cách khi nhìn xiên hoặc cắt qua sàn/tường; DELTAR vẫn có bias và
+lỗi suy luận. Mô hình ToF hiện là thống kê vùng mean/std gần đúng, chưa mô phỏng
+đầy đủ SPAD, photon histogram, vật liệu, ánh sáng mặt trời, multipath hoặc xtalk.
+
+Tuyến thử đi chu vi và các dải trong phòng; robot dừng, lia đầu quét đủ vòng,
+về hướng trước rồi đi tiếp. Bộ lập tuyến dùng scene đã biết để tránh vật cản.
+Đây là **tuyến cố định**, chưa phải exploration/navigation từ bản đồ SLAM.
+
+×5 tăng thời gian vật lý/controller/timestamp mô phỏng. GPU vẫn chạy theo năng
+lực thật; buffer lấy frame mới nhất có thể bỏ frame. Không cam kết xử lý đủ
+15 FPS hoặc hoàn tất toàn bộ tính toán nhanh gấp 5 lần.
+
+## 7. Cách chạy trên PC hiện tại
+
+Mọi lệnh bên dưới chạy từ **thư mục gốc repo**. Chỉ mở một phiên live/headless
+cùng lúc; script dùng khóa để tránh hai phiên điều khiển trùng nhau.
+
+### Môi trường
+
+Các launcher đang dùng môi trường đã cài trên máy:
+
+| Môi trường | Công việc |
+|---|---|
+| `/home/dvt/.venvs/deltar` | Python 3.8, DELTAR/PyTorch CUDA, render cảm biến và TSDF |
+| `/home/dvt/.venvs/cuvslam` | Python 3.12, cuVSLAM 17.0.1+cu12; gọi qua `mapping/cuvslam/run_python.sh` |
+| `/home/dvt/micromamba/envs/wheel-leg-ros` | Dashboard/launcher và ROS/RViz hiển thị |
+
+Dependencies nằm trong [`environment/requirements-gpu.txt`](environment/requirements-gpu.txt)
+và [`environment/requirements-cuvslam.txt`](environment/requirements-cuvslam.txt).
+Checkpoint DELTAR đang dùng là `model/deltar/weights/nyu.pt`. File lớn được giữ
+trên máy và loại khỏi Git; clone repo không tự bảo đảm có checkpoint hoặc dataset.
+
+Muốn dựng lại môi trường, xem [hướng dẫn model](model/deltar/README.md),
+[hướng dẫn cuVSLAM](mapping/cuvslam/README.md) và [README gốc repo](../../README.md)
+cho build simulator. Các đường dẫn launcher hiện phụ thuộc máy phát triển.
+
+### Mở phòng khách và quét live
+
+```bash
+technology/scan3d_fusion/live/run_living_room.sh
+```
+
+1. Chờ dashboard, MuJoCo và RViz khởi động.
+2. Bấm **Đứng dậy (từ nằm)**, chờ cân bằng và hoàn tất chuyển chiều cao.
+3. Chờ inference/tracking sẵn sàng, có ít nhất 3 keyframe hợp lệ.
+4. Dùng **Quét map tự động** để đi theo tuyến hoặc điều khiển tay khi sẵn sàng.
+5. Theo dõi trạng thái; Stop SIM giữ dữ liệu phiên. Mất tracking thì dừng,
+   kiểm tra log và tạo phiên mới, không tự nối hai hệ tọa độ khác gốc.
+
+Xem [live/README.md](live/README.md) cho thao tác điều khiển và xử lý phiên.
+Mở nhà đầy đủ thay cho phòng khách: `./run_vision.sh`.
+
+### Quét headless
+
+```bash
+/home/dvt/micromamba/envs/wheel-leg-ros/bin/python \
+  technology/scan3d_fusion/live/headless.py
+```
+
+Lệnh chạy phòng khách ×5, tự đứng dậy, hạ về chiều cao giữa, đi theo tuyến rồi
+finalize. Không mở cửa sổ; GPU vẫn render cảm biến qua EGL. Trong lượt này mesh
+chỉ dựng sau quét để giảm tải tracking. Theo dõi đường dẫn được in ở dòng
+`SESSION`; chỉ coi là thành công khi `headless_result.json` báo thành công.
+
+### Mở kết quả hiện tại trong RViz
+
+```bash
+technology/scan3d_fusion/viewer/run_clay_rviz.sh \
+  datasets/processed/scan3d_fusion/room-floor-preserved-20261112/final_mesh.stl
+```
+
+Đây là mở mesh đã lưu, không khởi chạy lượt SLAM mới.
+
+### Phát lại dữ liệu đã ghi
+
+```bash
+env -u PYTHONPATH MUJOCO_GL=egl OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 \
+  /home/dvt/.venvs/deltar/bin/python evaluation/replay_fusion_only.py \
+  datasets/raw/PHIEN_NGUON datasets/processed/scan3d_fusion/PHIEN_MOI
+```
+
+Thư mục đầu ra phải chưa tồn tại. Script giữ pose **ước lượng** đã lưu để đánh
+giá lại fusion/mesh, không chạy lại cuVSLAM từ đầu. Nếu nguồn đã có `inputs/`
+và `prediction/`, nó dùng lại dữ liệu đó để so bộ lọc; nếu nguồn là log simulator,
+nó render lại RGB/ToF và chạy DELTAR. Một số output liên kết về nguồn bằng symlink.
+
+Muốn chạy lại riêng tracking RGB-D và xuất trajectory cho TSDF, xem
+[`mapping/cuvslam/README.md`](mapping/cuvslam/README.md); không nhầm việc này
+với replay giữ nguyên pose.
+
+## 8. Dữ liệu đầu ra và cách kiểm tra
+
+Phiên mới nằm ở `datasets/raw/tof-YYYYMMDD-HHMMSS-.../`:
+
+| File/thư mục | Ý nghĩa |
+|---|---|
+| `sensors.log`, `odometry.jsonl` | Số đo và odometry bánh/IMU |
+| `live_capture.jsonl` | Snapshot cảm biến để ghép đúng timestamp |
+| `rgbd.npz` | Buffer RGB/depth fusion mới nhất |
+| `keyframes/` | Depth keyframe, nguồn depth và thống kê ToF |
+| `live_sequence.json` | Pose camera ước lượng dùng cho map live |
+| `cloud.npz` | Cloud hiển thị gom voxel 3 cm và trajectory; không thay depth đầy đủ của TSDF |
+| `mesh-*.stl`, `mesh.json` | Các revision mesh live và chỉ dẫn file hiện hành |
+| `cuvslam_map/` | Database SLAM, lưu khi tracker đóng theo luồng xử lý |
+| `route_state.json` | Trạng thái hiện tại của tuyến, không phải lịch sử đầy đủ |
+| `infer.log`, `slam.log`, `mesh.log`, `*_status.json` | Log và trạng thái từng worker |
+| `surface_sequence.json`, `surface_matching.json` | Pose và thống kê matching sau finalize |
+| `final_mesh.stl`, `final_mesh.ply`, `final_mesh.json` | Mesh cuối và metadata sau finalize |
+| `headless_result.json`, `result.png` | Kết quả tuyến và ảnh preview của lượt headless |
+
+File cuối không có nếu chưa finalize hoặc phiên thất bại trước bước đó. Runner
+offline `reconstruction/reconstruct.py` còn xuất OBJ; không mặc định mọi phiên
+live đều có OBJ. Giữ file nguồn nếu output dùng symlink.
+
+Khi xem bản đồ, kiểm tra **đồng thời hình học, pose và độ phủ**, không chỉ ảnh mesh:
+
+| Hiện tượng | Các thành phần cần kiểm tra |
+|---|---|
+| Sàn phẳng thật nhưng map gợn/phồng | Bias depth, ToF mixed zone, sai tilt/pose, tích phân và smoothing |
+| Tường kép, đồ vật bị kéo dài | Pose lệch, đồng bộ, mount khi cổ quay, correction/tracking |
+| Lỗ thủng hoặc bề mặt rời rạc | Thiếu góc nhìn, depth bị loại, min_views, zero crossing TSDF bị mất |
+| Đầu chờ lâu khi lia | Fusion chưa theo kịp, feedback cũ hoặc worker bị lỗi |
+| Map phẳng đẹp bất thường | Kiểm tra provenance: có ép phẳng, completion hay geometry chuẩn không |
+
+Các triệu chứng có thể có nhiều nguyên nhân. Cần đo đối chứng trước khi kết luận
+là do DELTAR, cuVSLAM hoặc TSDF.
+
+## 9. Kết quả mới nhất và các giới hạn
+
+Bản đối chiếu đang dùng là
+`datasets/processed/scan3d_fusion/room-floor-preserved-20261112/`:
+
+- **3.198 frame fusion**, voxel 4 cm, không ép phẳng hoặc floor completion.
+- Bổ sung góc từ snapshot đã ghi; pose bổ sung truyền từ anchor map ước lượng
+  bằng delta wheel/IMU và động học cổ. **Không phải lượt tracking mới độc lập
+  trên toàn bộ 3.198 frame.**
+- Cải thiện kiểm tra vùng xiên và khôi phục bề mặt TSDF bị Gaussian xóa khi đủ
+  hỗ trợ. Không tạo thêm depth, không lấy sàn CAD để vá.
+- Sàn vẫn có lồi lõm, mesh còn lỗ và vật thể chưa đầy đủ. Kiểm tra 32 frame đã
+  tham gia map cho vùng bên phải: RMS cao độ do depth khoảng 2,60 cm, phần do
+  pose khoảng 0,17 cm. Đây không phải test set độc lập hoặc kết quả phần cứng.
+
+**Thí nghiệm ép phẳng đã rút khỏi hiển thị chính:**
+`room-estimated-plane-preview-20261112` fit mặt phẳng từ mesh rồi dịch 25.524
+vertex về đó, tối đa 5,98 cm. Sàn phẳng của bản này là do giả thiết hình học,
+không chứng minh fusion chính xác. Nó không được tích hợp vào live/finalize.
+Các helper `floor_support.py`, `complete_floor.py` cũ cũng không được gọi trong
+pipeline chính; giữ lại để đối chiếu thí nghiệm.
+
+Những việc chưa được chứng minh hoặc chưa có:
+
+- Tracking/loop closure ổn định toàn tuyến live ×5 với cấu hình quét dày mới.
+- VIO tích hợp, fusion chặt wheel/IMU/visual, định vị tổng quát trên dốc/bậc.
+- Tối ưu neural scene/pose và local/global BA như hệ ToF-SLAM tham khảo.
+- Depth chính xác tại mọi pixel, mesh kín toàn bộ bề mặt hoặc sạch vật cản ảo.
+- Calibration và độ tin cậy trên phần cứng thật, navigation tự động an toàn.
+
+Báo cáo có điều kiện đo và giới hạn:
+[toàn phòng](../../evaluation/room_dense_results.md),
+[lỗ sát tường](../../evaluation/remaining_holes_results.md),
+[lồi lõm sàn](../../evaluation/uneven_floor_diagnosis.md).
+[CURRENT_STATUS.md](CURRENT_STATUS.md) giữ snapshot tổng hợp cùng ngày.
+
+## 10. Bố cục mã nguồn
 
 ```text
 technology/scan3d_fusion/
-├── config/             camera, ToF, extrinsic mô phỏng, DELTAR eval config
-├── environment/        package pin cho GPU / DELTAR
-├── sensor/             RGB/RGB-D/ToF preview
-├── calibration/        fit camera–ToF và web chọn vị trí ToF
-├── capture/            capture RGB + ToF từ MuJoCo
-├── model/deltar/       upstream model source, NYU checkpoint, demo H5, license
-├── inference/          DELTAR runner
-├── reconstruction/     lọc depth, TSDF, mesh, geometry checks
+├── README.md                  Hướng dẫn pipeline hiện tại
+├── CURRENT_STATUS.md          Snapshot trạng thái và kết quả
+├── config/                    Camera, ToF, calibration, DELTAR config
+├── environment/               Dependency cho các môi trường GPU
+├── calibration/               Calibration mô phỏng và công cụ đặt ToF
+├── capture/                   Capture RGB/ToF và ví dụ reconstruction
+├── sensor/                    Preview cảm biến
+├── model/deltar/               Mã model, checkpoint tại chỗ, license
+├── inference/                 Runner DELTAR offline
 ├── mapping/
-│   ├── odometry/       fusion encoder bánh + gyro, covariance, correction từ visual
-│   ├── cuvslam/        RGB-D SLAM GPU, replay, đánh giá trajectory và xuất pose cho TSDF
-│   ├── tof_only/       native mapper, ToF adapter, calibration generator
-│   ├── native/         CMake integration, route, RViz bridge/config, launch script
-│   └── fixed_scan_route.py
-└── viewer/             RViz/preview viewers cho mesh và native ToF map
+│   ├── odometry/              Wheel/IMU và correction từ visual
+│   ├── cuvslam/               Adapter RGB-D SLAM, replay và đánh giá pose
+│   ├── tof_only/              Mapper occupancy ToF-only riêng
+│   ├── native/                Tích hợp native, route JSON và bridge
+│   └── fixed_scan_route.py    Thực thi tuyến quét cố định
+├── reconstruction/
+│   ├── depth_support.py       Hiệu chỉnh/kiểm tra depth bằng ToF
+│   ├── reconstruct.py         TSDF và xuất mesh dùng chung
+│   ├── surface_matching.py    Matching pose sau quét
+│   └── render_mesh.py         Render mesh đã xuất thành ảnh
+├── live/                      Session, inference/tracking/mesh, headless
+└── viewer/                    Hiển thị mesh đã lưu trong RViz
 ```
 
-| Đường dẫn | Chức năng |
+Scene, CAD và controller vẫn ở workspace chung. `datasets/raw/` giữ log;
+`datasets/processed/` giữ kết quả; `evaluation/` giữ script và báo cáo đối chứng.
+
+**Nhánh ToF-only** dùng occupancy mapper C++ và wheel/IMU odometry, chưa có scan
+matching/loop closure riêng. Nó khác nhánh RGB–ToF/DELTAR/TSDF mô tả trong README
+này; xem [mapping/tof_only/README.md](mapping/tof_only/README.md).
+
+## 11. Kiểm tra và tài liệu chi tiết
+
+Kiểm tra reconstruction trên môi trường hiện tại:
+
+```bash
+env -u PYTHONPATH OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 \
+  /home/dvt/.venvs/deltar/bin/python -m unittest discover \
+  -s technology/scan3d_fusion/reconstruction -p 'test_*.py'
+```
+
+Các test gồm projection, pose rigid, kiểm tra depth, TSDF, surface matching và
+fixture của helper thí nghiệm cũ. Test helper cũ pass không có nghĩa helper đó
+đang được dùng. Unit test không thay cho benchmark toàn tuyến hoặc robot thật.
+
+| Tài liệu | Nội dung |
 |---|---|
-| `config/camera.yaml`, `config/tof.yaml` | Nguồn cấu hình cảm biến dùng cho mô hình robot, capture, calibration và mapper. |
-| `sensor/camera_viewer.py` | Preview RGB và RGB-D/ToF từ runner MuJoCo. |
-| `calibration/sim_plane_calibration.py` | Ước lượng extrinsic camera–ToF bằng mặt phẳng mô phỏng. |
-| `calibration/tof_placement/index.html` | Công cụ browser để xem mesh đầu RB và chọn pose ToF. |
-| `model/deltar/` | Mã DELTAR upstream, LICENSE, checkpoint NYU và demo data cần cho inference. |
-| `environment/requirements-gpu.txt` | Pin Python/PyTorch/CUDA và thư viện xử lý mesh. |
-| `capture/capture_mujoco.py` | Sinh capture RGB/ToF, zone rectangle, intrinsics và camera-to-world pose; có quỹ đạo sofa thấp, handheld nhiều độ cao, bóng và các góc cardinal. |
-| `inference/run_demo.py` | Nạp checkpoint DELTAR, tự chọn CUDA, chạy H5 và ghi PNG depth 16-bit theo mm. |
-| `config/sim_calibration.json` | Extrinsic camera-to-ToF ước lượng trong mô phỏng và sai số fit. |
-| `reconstruction/reconstruct.py` | Hiệu chỉnh/lọc depth, tích phân TSDF CUDA và xuất mesh. Có chế độ `--reference` riêng để tạo mesh depth chuẩn đánh giá. |
-| `reconstruction/render_mesh.py` | Render file mesh độc lập thành ảnh xem nhanh; không tái dựng scene. |
-| `reconstruction/test_geometry.py` | Kiểm tra projection vùng ToF, pose rigid của camera–ToF, hiệu chỉnh depth và hình học TSDF. |
-| `viewer/rviz_bridge.py` | Publish mesh qua Marker cho RViz. Tùy chọn `--compare-sofa` hiển thị sofa gốc cạnh mesh để so sánh. |
-| `viewer/clay.rviz` | Cấu hình RViz cho mesh đất sét. |
-| `viewer/run_clay_rviz.sh` | Mở RViz với mesh; có tùy chọn sofa tham chiếu. |
-| `mapping/tof_only/` | Mapper occupancy ToF-only C++17 và adapter sensor MuJoCo. |
-| `mapping/cuvslam/` | cuVSLAM RGB-D native GPU, loop closure, map database, replay và đánh giá pose; [hướng dẫn](mapping/cuvslam/README.md). |
-| `mapping/native/` | CMake integration, RViz map/point cloud, fixed scan route và lệnh mở RViz. |
-| `mapping/fixed_scan_route.py` | Logic tuyến quét cố định mà dashboard gọi. |
-| `viewer/tof_map_viewer.py`, `viewer/tof_map_3d_viewer.py` | Viewer map native được dashboard khởi chạy. |
+| [Live](live/README.md) | Điều khiển, worker, tuyến, headless và chẩn đoán |
+| [Calibration](calibration/README.md) | Phương pháp và kết quả calibration mô phỏng |
+| [Odometry](mapping/odometry/README.md) | Encoder/IMU, covariance, gate và mount |
+| [cuVSLAM adapter](mapping/cuvslam/README.md) | Release, cài đặt, replay, trajectory và kiểm thử pose |
+| [DELTAR](model/deltar/README.md) | Bộ model/checkpoint và cách chạy |
+| [DELTAR upstream](model/deltar/UPSTREAM_README.md) | Tài liệu tác giả trong snapshot tham chiếu |
+| [cuVSLAM tham chiếu](../../prj_reference/cuVSLAM/README.md) | Repo tham chiếu, phân biệt với adapter của RB |
 
-## Cài môi trường
-
-Các lệnh bên dưới chạy từ thư mục gốc repo. Môi trường DELTAR đã được chuẩn bị tại `/home/dvt/.venvs/deltar` bằng Python 3.8, PyTorch 1.12.1 + CUDA 11.3 và TorchVision 0.13.1. NYU checkpoint và demo H5 nằm trong `model/deltar/`; do dung lượng lớn, các file này được giữ tại chỗ nhưng loại khỏi Git bằng `.gitignore`.
-
-Nếu cần tạo lại môi trường:
-
-```bash
-micromamba create -y -p /home/dvt/.venvs/deltar python=3.8 pip
-env -u PYTHONPATH micromamba run -p /home/dvt/.venvs/deltar python -m pip install \
-  --extra-index-url https://download.pytorch.org/whl/cu113 \
-  -r technology/scan3d_fusion/environment/requirements-gpu.txt
-```
-
-Phụ thuộc xuất/làm mịn mesh được pin trong `environment/requirements-gpu.txt` (`scikit-image`, `trimesh`). Mapper native cần C++17, Python và PyYAML lúc configure. Preview dùng Tk/Pillow. RViz là tùy chọn, dùng môi trường ROS cục bộ `wheel-leg-ros`.
-
-## Quick start: ToF-only mapping
-
-The native mapper builds independently and replays sensor logs without ROS or MuJoCo:
-
-```bash
-cmake -S technology/scan3d_fusion/mapping/tof_only -B build/tof_only -DCMAKE_BUILD_TYPE=Release
-cmake --build build/tof_only -j2
-python technology/scan3d_fusion/mapping/tof_only/test_mapper.py build/tof_only/rb_tof_mapper
-build/tof_only/rb_tof_mapper /tmp/tof-map < datasets/raw/tof-SESSION/sensors.log
-```
-
-To collect a new map, build `rb1_sim` from the root instructions and start the GUI; it launches the mapper and records a new session under `datasets/raw/`. To show the latest map in RViz, run `technology/scan3d_fusion/mapping/native/run_tof_rviz.sh`. For a second point-cloud view, open `rviz2 -d technology/scan3d_fusion/mapping/native/rviz_pointcloud.rviz`.
-
-## Sensor preview and calibration
-
-The simulator dashboard can open `sensor/camera_viewer.py`; to start it directly, run `python technology/scan3d_fusion/sensor/camera_viewer.py` while `rb1_sim` is running. Re-estimate simulated RGB–ToF extrinsics with `MUJOCO_GL=egl python technology/scan3d_fusion/calibration/sim_plane_calibration.py`. To choose the ToF location on the RB head, serve the workspace root over HTTP and open `technology/scan3d_fusion/calibration/tof_placement/` in a browser; the page loads the robot CAD mesh from `model/assets/`.
-
-## Quick start: RGB + ToF mesh
-
-Tạo một thư mục run mới để không ghi đè kết quả trước. Ví dụ:
-
-```bash
-RUN="datasets/processed/sofa_clay/handheld-$(date +%Y%m%d-%H%M%S)"
-mkdir -p "$RUN"
-```
-
-Sinh 216 góc nhìn handheld. Quỹ đạo lấy tâm sofa từ scene hiện tại, chạy ba vòng ở bán kính 1,5 m và cao độ tâm camera khoảng 0,5 m, 1,1 m và 1,8 m, có chuyển cao độ giữa vòng và ngắm về sofa:
-
-```bash
-MUJOCO_GL=egl env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
-  technology/scan3d_fusion/capture/capture_mujoco.py \
-  --scan sofa-handheld --frames 216 --samples-per-pose 1 \
-  --output "$RUN/input"
-```
-
-Chạy DELTAR trên GPU:
-
-```bash
-env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
-  technology/scan3d_fusion/inference/run_demo.py \
-  --data-root "$RUN/input" \
-  --output "$RUN/prediction" \
-  --max-frames 0
-```
-
-Ghép depth thành bề mặt:
-
-```bash
-env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
-  technology/scan3d_fusion/reconstruction/reconstruct.py \
-  "$RUN/input" "$RUN/prediction" "$RUN/mesh"
-```
-
-Kết quả chính là `$RUN/mesh/clay.ply`, `clay.stl`, `clay.obj` và metadata `clay.json`. Tạo preview:
-
-```bash
-MUJOCO_GL=egl env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
-  technology/scan3d_fusion/reconstruction/render_mesh.py "$RUN/mesh/clay.obj" \
-  --output "$RUN/clay_preview.png"
-```
-
-Mở mesh trong RViz. Có thể thêm sofa gốc bên cạnh để đối chiếu kích thước/hình dạng:
-
-```bash
-technology/scan3d_fusion/viewer/run_clay_rviz.sh "$RUN/mesh/clay.stl"
-technology/scan3d_fusion/viewer/run_clay_rviz.sh "$RUN/mesh/clay.stl" --compare-sofa
-```
-
-Sofa gốc được lấy từ mesh `env_mesh_sofa` trong `simulation/scenarios/indoor_tiny_house.xml`; bridge chỉ dịch sofa tham chiếu 2,6 m sang bên trong khung hiển thị. Geometry tham chiếu không đi vào model, lọc ToF hay TSDF.
-
-### Các chế độ capture khác
-
-Quét sofa thấp, ngang tầm robot:
-
-```bash
-MUJOCO_GL=egl env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
-  technology/scan3d_fusion/capture/capture_mujoco.py --scan sofa --frames 72 \
-  --samples-per-pose 1 --output "$RUN/input-low"
-```
-
-Quét bóng đỏ nhỏ:
-
-```bash
-MUJOCO_GL=egl env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
-  technology/scan3d_fusion/capture/capture_mujoco.py --scan ball --frames 72 \
-  --samples-per-pose 1 --output "$RUN/ball-input"
-```
-
-Mọi capture này vẫn là pose tĩnh được đặt trong MuJoCo. Chế độ handheld giả lập chuyển động của cụm cảm biến; nó không chạy điều khiển RB, không nâng đầu robot tới 1,8 m và không chứng minh quỹ đạo đó va chạm-free.
-
-## Định dạng dữ liệu
-
-`input/` chứa:
-
-- `data.json`: danh sách capture cho loader DELTAR.
-- `sequence.json`: loại quỹ đạo, bounds thể tích, intrinsics `[fx, fy, cx, cy]`, kích thước ảnh, pose 4×4 `camera_to_world` và timestamp mỗi khung.
-- Mỗi H5 có RGB uint8, depth chuẩn MuJoCo để chấm điểm ngoại tuyến, `hist_data` 64×2 (mean, sigma), `fr` 64×4 (rectangle từng vùng trên ảnh) và `mask` 64 phần tử.
-
-`prediction/` chứa PNG depth 16-bit, đơn vị mm. Khi dựng mesh DELTAR, depth chuẩn trong H5 không được đọc; `--reference` là cờ riêng, chủ ý dùng depth chuẩn để tạo bản đối chứng.
-
-Quỹ đạo pose hiện lấy trực tiếp từ state của simulator để kiểm tra fusion. Do đó mesh đẹp trong ví dụ không có nghĩa hệ thống đã giải được pose từ cảm biến. Khi thay bằng dữ liệu cầm tay hoặc robot thật, phải cung cấp pose ước lượng đồng bộ từng khung và calibration được đo thật.
-
-## Cách hiệu chỉnh và hợp nhất bề mặt
-
-- ToF mean/std được chiếu qua extrinsic camera–ToF để lấy rectangle vùng RGB; rectangle không lấy từ depth chuẩn.
-- Với mỗi vùng hợp lệ, hệ thống so depth DELTAR đã chuyển sang optical-Z ToF, căn một bias cục bộ tối đa ±15 cm khi có tối thiểu 32 pixel hỗ trợ, rồi làm mềm correction theo ảnh.
-- Giữ pixel nếu ToF đo hỗ trợ nó trong ngưỡng `max(8 cm, 3 sigma)`. Pixel depth zero/NaN không được biến thành bề mặt.
-- TSDF GPU dùng voxel mặc định 1 cm, truncation 6 voxel, chỉ xét bề mặt có ít nhất 6 quan sát. Trường SDF được lọc Gaussian sigma 1 voxel trước Marching Cubes; sau đó Taubin smoothing chạy 6 vòng và bỏ thành phần nhỏ hơn 0,01 m².
-- Xuất mesh độc lập cho mỗi run. Luồng chính chỉ dựng từ depth DELTAR + ToF; không ép sàn từ IMU/chiều cao robot, không nối CAD hoặc tự phủ mặt khuất.
-
-Các con số này mô tả prototype hiện tại; phép căn bias vùng không thay cho hàm mất mát và tối ưu nhiều khung của bài báo ToF-SLAM.
-
-### Ràng buộc nguồn dữ liệu bản đồ
-
-ToF có thể lý tưởng hóa không nhiễu để thử nghiệm. Hình học map phải đến từ
-RGB + ToF fusion: DELTAR → căn/kiểm tra ToF → TSDF. IMU/encoder chỉ cung cấp
-pose. Luồng live/headless đã bỏ ép depth về mặt phẳng sàn và lấp lỗ bằng mô
-hình sàn. Tracking/meshing kiểm tra nhãn nguồn trong keyframe và từ chối dữ
-liệu đã ép sàn từ phiên cũ; phải chạy lại fusion thay vì đổi nhãn dữ liệu.
-
-Bản sàn kín `planar-floor-20261112` là thí nghiệm suy diễn đã loại khỏi luồng
-chính; không dùng để đánh giá chất lượng fusion. Xem [hướng dẫn phát lại](live/README.md#phát-lại-fusion-để-thay-dữ-liệu-đã-bị-ép-sàn)
-và [kiểm tra nguồn dữ liệu](../../evaluation/fusion_only_results.md).
-
-## Kiểm tra và kết quả đã đo
-
-Chạy kiểm tra hình học:
-
-```bash
-env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
-  technology/scan3d_fusion/reconstruction/test_geometry.py
-```
-
-Kiểm tra gồm: phép chiếu rectangle; camera ngắm đúng mục tiêu tại nhiều pose; camera và ToF giữ extrinsic cố định khi cụm quay/nghiêng; chọn cụm return gần; căn depth theo ToF; xử lý depth rỗng; tích phân mặt phẳng TSDF và từ chối pose sai.
-
-Kết quả sofa handheld gần nhất trong `datasets/processed/sofa_clay/handheld-20261111-111528/`:
-
-- 216 khung, DELTAR chạy CUDA RTX 3060.
-- Mesh: 84.310 vertices, 165.162 faces, voxel 1 cm; fusion khoảng 21,9 giây, peak memory fusion khoảng 288 MiB. Thời gian này không gồm inference.
-- Depth trước hiệu chỉnh: MAE 0,2422 m, RMSE 0,4613 m, AbsRel 0,1324 so với depth chuẩn mô phỏng. RMSE lớn cho thấy vẫn có depth outlier đáng kể.
-- So với điểm depth chuẩn được lấy mẫu từ các góc quan sát, tỉ lệ điểm có mesh trong 5 cm tăng từ 69,1% ở lượt quét thấp lên 89,5% ở lượt handheld. Đây là coverage một phía trên vùng nhìn thấy; không phải độ đầy đủ/toàn vẹn của sofa.
-- Mặt ngồi và mặt trên tay vịn hiện ra rõ hơn; đáy và phần tiếp xúc/che khuất còn rách hoặc thiếu.
-
-Các số trên là kết quả mô phỏng có pose ground truth, không phải độ chính xác trên sofa/cảm biến thật và không phải benchmark của bài báo.
-
-## Giới hạn và công việc còn thiếu
-
-1. **Pose:** mặc định mesh dùng pose MuJoCo; có thể chạy cuVSLAM replay và truyền `--trajectory` cho TSDF để dùng pose ước lượng. Tích hợp camera trực tiếp, encoder cổ và vòng điều khiển robot còn cần triển khai.
-2. **ToF:** mỗi ô được mô hình hóa bằng 256 tia và Gaussian mean/std gần đúng. Chưa mô phỏng photon/SPAD, histogram firmware, vật liệu, ánh sáng mặt trời, multipath/xtalk hay mất frame 15 Hz.
-3. **DELTAR:** checkpoint pretrained NYU được huấn luyện miền indoor khác. Độ chính xác trên RB/sofa mô phỏng còn hạn chế; sai số có thể tạo bề mặt phồng/rỗ.
-4. **Calibration:** extrinsic hiện tại là ước lượng bằng mặt phẳng mô phỏng; vị trí optical center/FOV của camera cũng lấy theo model mô phỏng. Cần intrinsic/extrinsic calibration thực trước khi dùng dữ liệu robot.
-5. **Mesh:** camera chỉ dựng được bề mặt nhìn thấy. Vùng khuất, vùng dưới gầm/áp sát sàn và phía sau vật thể cần thêm góc nhìn; voxel/smoothing có thể làm mất chi tiết nhỏ.
-6. **Không phải hệ thống neural ToF-SLAM đầy đủ:** chưa có implicit SDF grid tối ưu qua RGB + vùng ToF + depth DELTAR, temporal ToF filtering, tracking, local/global BA hoặc loop closure.
-
-## Nguồn tham khảo
-
-- Liu et al., [Multi-Modal Neural Radiance Field for Monocular Dense SLAM with a Light-Weight ToF Sensor, ICCV 2023](https://arxiv.org/abs/2308.14383); [project page](https://zju3dv.github.io/tof_slam/).
-- Li et al., [DELTAR: Depth Estimation from a Light-weight ToF Sensor and RGB Image](https://zju3dv.github.io/deltar/).
-- DELTAR code snapshot, license, checkpoint and demo inputs are grouped under `model/deltar/`. The original reference checkout remains in `prj_reference/deltar/`.
+Một số hướng dẫn con còn mô tả các lượt thử trước. Dùng README này cho kiến trúc
+hiện tại, đọc ngày và provenance trong báo cáo khi so sánh số liệu. Lần cập nhật
+tài liệu này không khởi chạy lại benchmark hoặc thay đổi thuật toán runtime.

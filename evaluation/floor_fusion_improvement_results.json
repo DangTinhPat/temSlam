@@ -1,0 +1,35 @@
+{
+  "baseline": {
+    "session": "datasets/processed/scan3d_fusion/fusion-only-20261112",
+    "evaluated_frames": 32,
+    "floor_pixels": 2953999,
+    "floor_retained_pixels": 1873603,
+    "floor_retained_fraction": 0.6342598626472115,
+    "depth_floor_height_mae_m": 0.01888074561601481,
+    "depth_floor_height_rmse_m": 0.027274257923196966,
+    "wall_retained_pixels": 1961052,
+    "wall_behind_10cm_pixels": 33341,
+    "wall_behind_10cm_fraction": 0.017001588943077493,
+    "mesh_near_floor_projected_triangle_area_m2": 29.52465791318727,
+    "mesh_near_floor_height_mae_m": 0.01720443669177759,
+    "mesh_near_floor_height_rmse_m": 0.022114430508002183,
+    "mesh_faces": 119672
+  },
+  "candidate": {
+    "session": "datasets/processed/scan3d_fusion/floor-improved-20261112",
+    "evaluated_frames": 32,
+    "floor_pixels": 2953999,
+    "floor_retained_pixels": 1917773,
+    "floor_retained_fraction": 0.649212474344101,
+    "depth_floor_height_mae_m": 0.018716354430001768,
+    "depth_floor_height_rmse_m": 0.02713855933024722,
+    "wall_retained_pixels": 1969760,
+    "wall_behind_10cm_pixels": 33341,
+    "wall_behind_10cm_fraction": 0.016926427585086508,
+    "mesh_near_floor_projected_triangle_area_m2": 33.58741869114442,
+    "mesh_near_floor_height_mae_m": 0.017253353704986898,
+    "mesh_near_floor_height_rmse_m": 0.02227183080791624,
+    "mesh_faces": 133751
+  },
+  "limitation": "Oracle is evaluation only. Pixel errors use true poses; mesh heights use estimated map coordinates. Near-floor triangle area can overlap and is not room coverage."
+}

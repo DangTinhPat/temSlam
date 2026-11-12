@@ -8,7 +8,7 @@ from pathlib import Path
 import h5py
 import numpy as np
 from PIL import Image
-from scipy.ndimage import binary_erosion, gaussian_filter
+from scipy.ndimage import gaussian_filter, binary_dilation
 from skimage.measure import marching_cubes
 import torch
 import trimesh
@@ -63,10 +63,36 @@ class TSDF:
     def mesh(self, min_views=6):
         weight = self.weights.cpu().numpy().reshape(self.shape)
         sums = self.sums.cpu().numpy().reshape(self.shape)
+        raw = sums/np.maximum(weight, 1)
         field = gaussian_filter(sums, 1)/np.maximum(gaussian_filter(weight, 1), 1e-6)
-        # Do not turn the boundary of unobserved space into a reconstructed surface.
-        observed = binary_erosion(weight >= min_views, structure=np.ones((3, 3, 3)))
-        if not observed.any() or not np.any((field < 0) & observed):
+        # Lewiner checks mask at the high corner: every corner of that cube must have real observations.
+        supported = weight >= min_views
+        cubes = np.ones(tuple(n-1 for n in self.shape),bool)
+        recovery_support=np.ones_like(cubes)
+        raw_negative=np.zeros_like(cubes);raw_positive=np.zeros_like(cubes)
+        smooth_negative=np.zeros_like(cubes);smooth_positive=np.zeros_like(cubes)
+        for x in (0,1):
+            for y in (0,1):
+                for z in (0,1):
+                    corner=(slice(x,x+cubes.shape[0]),slice(y,y+cubes.shape[1]),slice(z,z+cubes.shape[2]))
+                    cubes &= supported[corner]
+                    recovery_support &= weight[corner]>=2*min_views
+                    raw_negative |= raw[corner]<0;raw_positive |= raw[corner]>=0
+                    smooth_negative |= field[corner]<0;smooth_positive |= field[corner]>=0
+        gradient=np.gradient(raw)
+        norm_squared=sum(g*g for g in gradient)
+        horizontal=(norm_squared>1e-10) & (gradient[2]**2>=.81*norm_squared)
+        # Preserve well-observed near-horizontal surfaces in the Z-up map; leave steep wall speckle smoothed.
+        lost=(cubes & recovery_support & raw_negative & raw_positive & horizontal[1:,1:,1:]
+              & ~binary_dilation(cubes & smooth_negative & smooth_positive))
+        restore=np.zeros(self.shape,bool)
+        for x in (0,1):
+            for y in (0,1):
+                for z in (0,1):
+                    restore[x:x+cubes.shape[0],y:y+cubes.shape[1],z:z+cubes.shape[2]] |= lost
+        field[restore]=raw[restore]
+        observed=np.zeros(self.shape,bool);observed[1:,1:,1:]=cubes
+        if not (lost.any() or np.any(cubes & smooth_negative & smooth_positive)):
             raise RuntimeError("insufficient observed zero crossings for a surface")
         vertices, faces, _, _ = marching_cubes(field, 0, spacing=(self.voxel,)*3,
                                               mask=observed, allow_degenerate=False)
@@ -132,7 +158,8 @@ def main():
             "pose_source": sequence["pose_source"], "method": "projective TSDF; not neural ToF-SLAM",
             "frames": len(sequence["frames"]), "vertices": len(mesh.vertices), "faces": len(mesh.faces),
             "bounds_m": mesh.bounds.tolist(),
-            "min_views": 6, "sdf_smoothing_sigma_voxels": 1, "min_component_area_m2": .01,
+            "min_views": 6, "sdf_smoothing_sigma_voxels": 1, "recover_horizontal_crossings": True,
+            "min_component_area_m2": .01,
             "voxel_m": cli.voxel, "accepted_pixel_fraction": accepted/total,
             "fusion_mesh_seconds": time.monotonic()-start,
             "gpu": torch.cuda.get_device_name(), "peak_gpu_mib": torch.cuda.max_memory_allocated()/2**20}

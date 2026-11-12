@@ -50,6 +50,8 @@ def main():
                 point.pop('scan')
             else:
                 scans.append(xy)
+                # Every region needs overlapping fusion views, including the room perimeter.
+                point['scan_step_deg']=8
     points=[(p['x'],p['y']) for p in route['waypoints']]
     blocked=[i+1 for i,(a,b) in enumerate(zip(points,points[1:])) if not segment_clear(a,b,clear)]
     if relocated or blocked:

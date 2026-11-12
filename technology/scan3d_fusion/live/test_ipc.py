@@ -1,12 +1,30 @@
-import json,tempfile,unittest
+import json,tempfile,unittest,time
 from pathlib import Path
 import numpy as np
-from workers import write_json,write_npz,keep_keyframe,fusion_depth,FUSION_DEPTH_SOURCE,finalize
+from workers import write_json,write_npz,keep_keyframe,fusion_depth,FUSION_DEPTH_SOURCE,finalize,cloud_voxel_indices
 from session import LiveSession
 from types import SimpleNamespace
 from unittest.mock import patch
 
 class IpcTests(unittest.TestCase):
+    def test_fast_cloud_voxel_keys_preserve_the_same_points_and_order(self):
+        rng=np.random.default_rng(3)
+        cloud=rng.uniform(-4,4,(10000,3)).astype(np.float32)
+        cloud=np.concatenate((cloud,cloud[:1000],np.zeros((2,3),np.float32)))
+        _,expected=np.unique(np.floor(cloud/.03).astype(np.int32),axis=0,return_index=True)
+        np.testing.assert_array_equal(cloud_voxel_indices(cloud),expected)
+        self.assertEqual(len(cloud_voxel_indices(np.empty((0,3)))),0)
+
+    def test_scan_feedback_requires_recent_processed_head_angle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            live=LiveSession.__new__(LiveSession);live.session=Path(tmp)
+            self.assertIsNone(live.scan_feedback())
+            state=dict(wall_time=time.time(),sensor_time=10,head_yaw_rad=.5)
+            write_json(live.session/'slam_status.json',state)
+            self.assertEqual(live.scan_feedback()['head_yaw_rad'],.5)
+            state['wall_time']-=6;write_json(live.session/'slam_status.json',state)
+            self.assertIsNone(live.scan_feedback())
+
     def test_map_rejects_legacy_or_plane_modified_depth(self):
         depth=np.array([[0,1000],[1250,0]],np.uint16)
         sample=dict(depth=depth,depth_source=FUSION_DEPTH_SOURCE)

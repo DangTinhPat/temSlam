@@ -1,0 +1,68 @@
+{
+  "room-floor-preserved-20261112": {
+    "whole_room": {
+      "supported_xy_area_m2": 35.592,
+      "support_fraction": 0.8301612180922526,
+      "near_floor_height_rmse_m": 0.018426242684131962
+    },
+    "right_regions": [
+      {
+        "id": 1,
+        "supported_xy_area_m2": 0.49760000000000004,
+        "support_fraction": 0.9353383458646617,
+        "near_floor_height_rmse_m": 0.027801016051643774
+      },
+      {
+        "id": 2,
+        "supported_xy_area_m2": 0.17320000000000002,
+        "support_fraction": 0.8185255198487713,
+        "near_floor_height_rmse_m": 0.0398975860678161
+      },
+      {
+        "id": 3,
+        "supported_xy_area_m2": 0.5216000000000001,
+        "support_fraction": 0.7236403995560489,
+        "near_floor_height_rmse_m": 0.029192031048312913
+      },
+      {
+        "id": 4,
+        "supported_xy_area_m2": 0.2928,
+        "support_fraction": 0.8840579710144928,
+        "near_floor_height_rmse_m": 0.013796000245043941
+      }
+    ]
+  },
+  "room-multiview-20261112": {
+    "whole_room": {
+      "supported_xy_area_m2": 35.4576,
+      "support_fraction": 0.8270264218540081,
+      "near_floor_height_rmse_m": 0.023021708002798378
+    },
+    "right_regions": [
+      {
+        "id": 1,
+        "supported_xy_area_m2": 0.48760000000000003,
+        "support_fraction": 0.9165413533834587,
+        "near_floor_height_rmse_m": 0.022272260930423393
+      },
+      {
+        "id": 2,
+        "supported_xy_area_m2": 0.15760000000000002,
+        "support_fraction": 0.7448015122873346,
+        "near_floor_height_rmse_m": 0.034470892515043594
+      },
+      {
+        "id": 3,
+        "supported_xy_area_m2": 0.5044000000000001,
+        "support_fraction": 0.6997780244173141,
+        "near_floor_height_rmse_m": 0.027884752381561635
+      },
+      {
+        "id": 4,
+        "supported_xy_area_m2": 0.2832,
+        "support_fraction": 0.855072463768116,
+        "near_floor_height_rmse_m": 0.0156511794869643
+      }
+    ]
+  }
+}

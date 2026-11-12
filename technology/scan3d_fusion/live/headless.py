@@ -26,6 +26,7 @@ def main():
     last_phase = None
     success = False
     result = {'speed_factor': 5, 'headless': True, 'waypoints': len(route.waypoints)}
+    budget=1200+180*sum(bool(p.get('scan_step_deg')) for p in route.waypoints)
     try:
         backend.start()
         session = backend.map_session
@@ -65,8 +66,8 @@ def main():
                     if not success:
                         raise RuntimeError(route.status)
                     break
-            if time.monotonic()-begin > 1200:
-                raise TimeoutError('Headless scan exceeded 20 wall minutes')
+            if time.monotonic()-begin > budget:
+                raise TimeoutError('Headless scan exceeded its route capture budget')
             time.sleep(.01)
         if not success:
             raise RuntimeError('Simulator ended before route completion')

@@ -1,0 +1,28 @@
+{
+  "results": {
+    "room-dense-20261112": {
+      "floor_reference_pixels": 2953999,
+      "floor_mesh_pixels": 2922283,
+      "floor_mesh_fraction": 0.9892633680647827,
+      "floor_mesh_within_15cm_pixels": 2527351,
+      "floor_height_mae_m": 0.01626703941770303,
+      "floor_height_rmse_m": 0.023365366894536017,
+      "wall_reference_pixels": 4073805,
+      "wall_mesh_behind_10cm_pixels": 1326339,
+      "mesh_within_4m_but_reference_beyond_4m_pixels": 417155
+    },
+    "room-floor-preserved-20261112": {
+      "floor_reference_pixels": 2953999,
+      "floor_mesh_pixels": 2940232,
+      "floor_mesh_fraction": 0.9953395380296337,
+      "floor_mesh_within_15cm_pixels": 2544328,
+      "floor_height_mae_m": 0.01627003293824093,
+      "floor_height_rmse_m": 0.023331228389408543,
+      "wall_reference_pixels": 4073805,
+      "wall_mesh_behind_10cm_pixels": 1325947,
+      "mesh_within_4m_but_reference_beyond_4m_pixels": 422180
+    }
+  },
+  "method": "Render reconstructed mesh from stored estimated camera poses for 32 sampled original frames; compare rendered optical depth to cached simulator depth, oracle evaluation only. Camera intrinsics and original frame IDs held fixed.",
+  "limitation": "Not map input or a ground-truth-aligned whole-scene coverage measure; includes existing trajectory/depth errors."
+}

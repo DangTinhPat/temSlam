@@ -1,6 +1,7 @@
 import unittest
 import sys
 import math
+import time
 from pathlib import Path
 from types import SimpleNamespace
 from fixed_scan_route import FixedScanRoute
@@ -107,5 +108,56 @@ class RouteTest(unittest.TestCase):
         self.route.update(True,False)
         self.assertFalse(self.route.active)
         self.assertIn('LỖI tracking',self.route.status)
+
+    def test_dense_sweep_waits_for_processed_head_view(self):
+        self.route.waypoints=[dict(x=0,y=0,scan=True,scan_step_deg=8)];self.route.index=0
+        self.route.phase='sweep_head';self.route.phase_started=0
+        self.route._sweep_progress_at=time.monotonic()
+        feedback=dict(sensor_time=.1,head_yaw_rad=-math.pi)
+        self.backend.live_scan=SimpleNamespace(failure_reason=lambda:None,scan_feedback=lambda:feedback)
+        self.route.head_commanded=-math.pi;self.backend.view.update(hj=str(-math.pi),t='1')
+        self.route.update(True,False)
+        expected=-math.pi+math.radians(8)
+        self.assertAlmostEqual(self.route.head_commanded,expected)
+        self.backend.view.update(hj=str(expected),t='2');self.route.update(True,False)
+        self.assertAlmostEqual(self.route.head_commanded,expected)
+        feedback.update(sensor_time=2,head_yaw_rad=expected)
+        self.backend.view['t']='3';self.route.update(True,False)
+        self.assertAlmostEqual(self.route.head_commanded,expected+math.radians(8))
+
+    def test_dense_sweep_wait_timeout_is_explicit(self):
+        self.route.waypoints=[dict(x=0,y=0,scan=True,scan_step_deg=8)];self.route.index=0
+        self.route.phase='sweep_head';self.route.phase_started=0
+        self.route._sweep_progress_at=time.monotonic()-181
+        self.backend.live_scan=SimpleNamespace(failure_reason=lambda:None,scan_feedback=lambda:None)
+        self.route.update(True,False)
+        self.assertFalse(self.route.active);self.assertIn('quá hạn',self.route.status)
+
+    def test_dense_sweep_cannot_reuse_a_previous_stops_frame(self):
+        self.route.waypoints=[dict(x=0,y=0,scan=True,scan_step_deg=8)];self.route.index=0
+        self.route.phase='sweep_head';self.route.phase_started=10
+        self.route._sweep_progress_at=time.monotonic()
+        self.route.head_commanded=-math.pi
+        self.backend.view.update(hj=str(-math.pi),t='11')
+        self.backend.live_scan=SimpleNamespace(failure_reason=lambda:None,
+            scan_feedback=lambda:dict(sensor_time=9,head_yaw_rad=math.pi))
+        self.route.update(True,False)
+        self.assertEqual(self.route.head_commanded,-math.pi)
+        self.assertEqual(self.route.phase,'sweep_head')
+
+    def test_dense_sweep_timeout_tracks_angle_progress_not_total_duration(self):
+        self.route.waypoints=[dict(x=0,y=0,scan=True,scan_step_deg=8)];self.route.index=0
+        self.route.phase='sweep_head';self.route.phase_started=0
+        self.route._sweep_progress_at=time.monotonic()-181
+        self.route.head_commanded=0;self.backend.view.update(hj='0',t='1')
+        feedback=dict(sensor_time=1,head_yaw_rad=0)
+        self.backend.live_scan=SimpleNamespace(failure_reason=lambda:None,scan_feedback=lambda:feedback)
+        self.route.update(True,False)
+        self.assertTrue(self.route.active)
+        self.assertGreater(self.route._sweep_progress_at,time.monotonic()-1)
+        self.route._sweep_progress_at=time.monotonic()-181
+        feedback['sensor_time']=2;self.backend.view['t']='2'
+        self.route.update(True,False)
+        self.assertFalse(self.route.active)
 
 if __name__=='__main__':unittest.main()

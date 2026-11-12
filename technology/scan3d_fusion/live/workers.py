@@ -28,6 +28,12 @@ def keep_keyframe(pose, frames):
     rotated = np.trace(previous[:3, :3].T@pose[:3, :3]) <= 1+2*np.cos(.08)
     return moved or rotated
 
+def cloud_voxel_indices(cloud):
+    if not len(cloud):return np.empty(0,dtype=np.int64)
+    cells=np.floor(cloud/.03).astype(np.int64)
+    keys=np.ravel_multi_index((cells-cells.min(0)).T,np.ptp(cells,axis=0)+1)
+    return np.unique(keys,return_index=True)[1]
+
 def fusion_depth(sample):
     if ('depth_source' not in sample or str(sample['depth_source'])!=FUSION_DEPTH_SOURCE
             or ('floor_plane' in sample and np.isfinite(sample['floor_plane']).any())):
@@ -125,6 +131,7 @@ def tracking(session):
             t=float(batch['t'])
             if t<=last: time.sleep(.02);continue
             depth=fusion_depth(batch)
+            packet=json.loads(str(batch['odometry']))
             # Timestamp gaps alone do not prove tracking loss; cuVSLAM and the pose/odometry gate decide.
             if slam is None:
                 status(session,'slam','Đang làm nóng GPU tracking')
@@ -135,14 +142,14 @@ def tracking(session):
             if pose is None: raise RuntimeError('Mất tracking: map đã giữ lại. Stop SIM rồi Start SIM để quét lại')
             # Bootstrap readiness, then retain views by motion; idle time must not fill the map.
             if not keep_keyframe(pose, visual_frames):
-                status(session,'slam','Đang theo dõi',sensor_time=t,keyframes=len(frames));continue
-            if len(frames)>=1000: raise RuntimeError('Đã đạt 1000 keyframe: map đã lưu; bắt đầu phiên mới')
+                status(session,'slam','Đang theo dõi',sensor_time=t,keyframes=len(frames),head_yaw_rad=packet['head_yaw']);continue
+            if len(frames)>=4096: raise RuntimeError('Đã đạt 4096 keyframe: map đã lưu; bắt đầu phiên mới')
             filename=f'keyframes/{len(frames):05d}.npz'
             visual_frames.append({'camera_to_world':pose.copy()})
             write_npz(session/filename,depth=batch['depth'],depth_source=FUSION_DEPTH_SOURCE,
                       tof_hist=batch['tof_hist'],tof_rect=batch['tof_rect'],tof_valid=batch['tof_valid'])
             frames.append(dict(file=filename,time_s=t,timestamp_ns=ts,camera_to_world=pose.tolist()))
-            mounts.append(batch['mount']);packets.append(json.loads(str(batch['odometry'])));times.append(t)
+            mounts.append(batch['mount']);packets.append(packet);times.append(t)
             y,x=np.mgrid[0:480:8,0:640:8];z=depth[::8,::8];fx,fy,cx,cy=batch['K']
             valid=(z>.02)&(z<=4)
             points.append(np.stack(((x-cx)*z/fx,(y-cy)*z/fy,z),-1)[valid])
@@ -158,13 +165,13 @@ def tracking(session):
                 cloud.append(points[i]@corrected[:3,:3].T+corrected[:3,3])
             cloud=np.concatenate(cloud).astype(np.float32)
             if len(cloud):
-                _,indices=np.unique(np.floor(cloud/.03).astype(np.int32),axis=0,return_index=True)
+                indices=cloud_voxel_indices(cloud)
                 cloud=cloud[indices]
                 write_npz(session/'cloud.npz',xyz=cloud,path=np.array([f['camera_to_world'] for f in frames])[:,:3,3],
                           depth_source=FUSION_DEPTH_SOURCE)
                 write_json(session/'live_sequence.json',dict(frames=frames,intrinsics=batch['K'].tolist(),depth_source=FUSION_DEPTH_SOURCE,
                     bounds_m=[(cloud.min(0)-.1).tolist(),(cloud.max(0)+.1).tolist()]))
-            status(session,'slam','Đang vẽ bản đồ',sensor_time=t,keyframes=len(frames),points=len(cloud))
+            status(session,'slam','Đang vẽ bản đồ',sensor_time=t,keyframes=len(frames),points=len(cloud),head_yaw_rad=packet['head_yaw'])
     finally:
         if slam is not None: slam.tracker.save_map(str(session/'cuvslam_map'),lambda ok: print('map_saved',ok,flush=True))
 

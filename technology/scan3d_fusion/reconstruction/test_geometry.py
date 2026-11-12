@@ -88,6 +88,49 @@ class GeometryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             volume.integrate(np.ones((48, 64)), pose, K)
 
+    def test_grazing_floor_preserves_measured_extent_and_height(self):
+        K=[200,200,159.5,119.5];y,x=np.indices((240,320));depth=np.zeros((240,320),np.float32)
+        np.divide(.25*K[1],y-K[3],out=depth,where=y>K[3]);depth[depth>4]=0
+        pose=np.array([[0,0,1,0],[-1,0,0,0],[0,-1,0,.25],[0,0,0,1]],float)
+        volume=TSDF([[.4,-.8,-.09],[3.5,.8,.2]],voxel=.04,truncation=.24,device='cpu')
+        for _ in range(6):volume.integrate(depth,pose,K)
+        mesh=volume.mesh(min_views=3)
+        self.assertGreater(mesh.area,1.4)
+        self.assertGreater(mesh.bounds[1,0],3.3)
+        self.assertLess(np.max(abs(mesh.vertices[:,2])),volume.voxel/2)
+
+    def test_unknown_image_stripe_stays_open(self):
+        volume=TSDF([[-.2,-.2,.8],[.2,.2,1.2]],voxel=.02,device='cpu')
+        depth=np.ones((48,64),np.float32);depth[:,27:37]=0
+        for _ in range(6):volume.integrate(depth,np.eye(4),[50,50,31.5,23.5])
+        mesh=volume.mesh(min_views=3)
+        self.assertFalse(np.any(abs(mesh.triangles_center[:,0])<.06))
+
+    def test_supported_thin_negative_band_survives_free_space_smoothing(self):
+        volume=TSDF([[-.2,-.2,-.04],[.2,.2,.16]],voxel=.02,truncation=.12,device='cpu')
+        z=volume.points[:,2]
+        volume.weights[:]=300
+        volume.weights[z<0]=6
+        volume.weights[z<-.0201]=0
+        volume.sums=(z/.12).clamp(-1,1)*volume.weights
+        mesh=volume.mesh(min_views=3)
+        self.assertGreater(mesh.area,.1)
+        self.assertLess(np.max(abs(mesh.vertices[:,2])),.005)
+        for count in (2,5):
+            volume.weights[z<0]=count
+            volume.weights[z<-.0201]=0
+            volume.sums=(z/.12).clamp(-1,1)*volume.weights
+            with self.assertRaises(RuntimeError):volume.mesh(min_views=3)
+
+    def test_recovery_leaves_erased_steep_wall_speckle_smoothed(self):
+        volume=TSDF([[-.04,-.2,-.2],[.16,.2,.2]],voxel=.02,truncation=.12,device='cpu')
+        x=volume.points[:,0]
+        volume.weights[:]=300
+        volume.weights[x<0]=6
+        volume.weights[x<-.0201]=0
+        volume.sums=(x/.12).clamp(-1,1)*volume.weights
+        with self.assertRaises(RuntimeError):volume.mesh(min_views=3)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -56,10 +56,29 @@ cùng phiên ứng dụng nếu robot còn cách vị trí dừng không quá 0,
 đã sẵn sàng. Khởi động lại ứng dụng không khôi phục tuyến đang dở.
 
 Tốc độ tuyến tối đa 0,20 m/s, giảm dần gần điểm dừng và khi lệch hướng. Các điểm
-nối không cần quét không phát STOP. Lượt lia ToF vẫn giữ 20°/s. Tuyến dừng có lý
+nối không cần quét không phát STOP. Lượt lia ToF thông thường giữ 20°/s. Tuyến dừng có lý
 do khi 12 giây mô phỏng không tiến triển hoặc inference/SLAM báo lỗi. Sau 3
 keyframe khởi tạo, tracker chỉ lưu thêm keyframe khi camera dịch ít nhất 5 cm
 hoặc xoay ít nhất khoảng 4,6°; đứng yên lâu không tự làm đầy giới hạn keyframe.
+
+Toàn bộ 66 điểm lia trong phòng có `scan_step_deg: 8`: đầu không được
+đi trước quá 8° so với góc encoder của ảnh RGB-D mà worker SLAM đã xử lý. Dùng
+`sensor_time` và `head_yaw_rad` trong `slam_status.json`, thay vì lấy 15 Hz ToF
+làm giả định về tốc độ fusion thực tế. Chờ dữ liệu mới trước khi lia tiếp;
+feedback quá 5 giây wall-clock không còn được dùng. Nếu 180 giây wall-clock
+không có tiến triển góc fusion (ít nhất 1°), tuyến dừng có thông báo; không dùng
+thời hạn tổng lượt lia vì xử lý map lớn sẽ chậm hơn. Không giảm
+min_views; giới hạn tăng lên 4096 keyframe để đủ cho các lượt lia dày toàn phòng.
+Không đổi các điểm đi và va chạm.
+Headless cộng dự phòng thời gian cho các điểm quét dày; lượt này sẽ lâu hơn.
+Xem [kiểm tra khe sofa–bàn](../../../evaluation/sofa_gap_results.md) và
+[so sánh bốn vùng toàn phòng](../../../evaluation/room_dense_results.md).
+
+Gom point cloud vẫn giữ cùng điểm đầu tiên trong mỗi voxel 3 cm, nhưng dùng
+khóa số nguyên 1D để bỏ trùng thay vì sort từng hàng XYZ. Phép thử 7,42 triệu
+điểm (lặp mẫu tương đương 3.040 keyframe) giảm riêng bước này từ 7,27 xuống
+1,22 giây trên PC hiện tại; đây không phải benchmark toàn luồng live. Depth
+đầy đủ đưa vào TSDF không đổi.
 
 Native controller chạy riêng ở tốc độ cấu hình hiện có. Snapshot CAPTURE đồng bộ
 TOFMAP chỉ phục vụ renderer cảm biến; pose thật không cấp vào SLAM. Worker Python
@@ -76,7 +95,7 @@ kinematics đầu và thân ở cùng timestamp. Không dùng pose mô phỏng �
 
 Đây là xử lý trực tiếp với buffer mới nhất, không đảm bảo đủ 15 FPS. Tốc độ phụ
 thuộc GPU, cảnh, DELTAR và mesh; frame cũ có thể bị bỏ để tránh tăng độ trễ.
-Nên chạy chậm trong lượt đầu. Giới hạn 1000 keyframe/phiên; đến giới hạn hệ thống
+Nên chạy chậm trong lượt đầu. Giới hạn 4096 keyframe/phiên; đến giới hạn hệ thống
 ngừng ghép và yêu cầu phiên mới. TSDF là volume dày, voxel tối thiểu 4 cm, tự tăng
 khi không gian lớn. Với map lớn, dựng lại toàn mesh sẽ chậm hơn và phải chuyển
 sang volume phân mảnh nếu cần mở rộng.
@@ -109,6 +128,26 @@ khác tối đa 15 cm (dung sai tối thiểu 8 cm), và không cho ô xa thắn
 gần chồng lên ảnh RGB. Giá trị không phù hợp bị bỏ, không bị kẹp về hình học
 CAD. Sai số pose và occlusion do camera/ToF lệch vị trí vẫn có thể đặt điểm sau
 tường; bộ lọc này chưa bảo đảm loại hết.
+
+Với vùng depth liên tục nhìn xiên, bộ lọc kiểm tra thêm hình dạng inverse-depth
+trong đúng ô ToF. Chỉ giữ thêm pixel sẵn có khi có đủ hỗ trợ 2D, sai số mô hình
+cục bộ nhỏ và mean/std của cả vùng khớp ToF. Đây chỉ là kiểm tra tính phù hợp:
+không thay depth bằng mặt phẳng, không tạo depth ở pixel zero và không dùng
+IMU/chiều cao/sàn CAD. Những vùng có mép đứt hoặc phân bố không phù hợp vẫn theo
+giới hạn từng pixel cũ. Nhiễu ToF bằng zero không đồng nghĩa std của vùng bằng
+zero: sàn nhìn xiên vẫn có nhiều khoảng cách trong một vùng 8×8.
+
+Khi xuất mesh, mỗi ô Marching Cubes phải có cả 8 đỉnh đạt số quan sát tối thiểu;
+không còn co toàn vùng bằng lân cận 27 đỉnh. Vùng thiếu số đo vẫn không được
+đóng thành mặt giả. Thay đổi dùng chung cho live, finalize và offline. Xem
+[đối chiếu sàn](../../../evaluation/floor_fusion_improvement_results.md).
+
+Ở góc nhìn xiên, Gaussian có thể xóa lớp TSDF âm mỏng dù có số đo hợp lệ.
+Core giữ lại TSDF thô ở ô mất bề mặt khi cả 8 đỉnh có ít nhất hai lần số quan
+sát tối thiểu (live: 6), mặt gần nằm ngang theo gradient TSDF (|normal.Z| ≥0,9 trong map
+Z-up) và không có mặt smoothed tại ô đó/ô chung mặt kề nó. Không đổi depth,
+pose hoặc ép cao độ sàn; vùng thiếu quan sát vẫn mở. Xem
+[kiểm tra các lỗ sát tường phải](../../../evaluation/remaining_holes_results.md).
 
 ### Quét headless và lấy kết quả
 
@@ -152,6 +191,9 @@ DELTAR trên GPU rồi dựng TSDF. Giữ nguyên pose **ước lượng** đã 
 nguồn hình học, không đưa pose thật hoặc depth RGB-D chuẩn vào map. Đây chưa
 phải một lượt SLAM/tracking mới. Giữ H5 đầu vào, prediction, keyframe và
 `source.json` để kiểm tra nguồn dữ liệu. Thư mục đầu ra phải chưa tồn tại.
+Nếu nguồn là phiên đã phát lại có `inputs/` và `prediction/`, script dùng lại
+đúng RGB/ToF và prediction để so bộ lọc, không render/chạy model lại; giữ nguyên
+pose và bounds TSDF. Các thư mục liên kết phải còn tồn tại khi sử dụng kết quả.
 
 `reconstruction/floor_support.py`, `complete_floor.py` và các bản
 `floor_completion/` cũ chỉ giữ lại để đối chiếu thí nghiệm. Không dùng kết quả

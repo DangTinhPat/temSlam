@@ -27,6 +27,8 @@ class FixedScanRoute:
         self._last_diagnostic = 0.0
         self._turning = False
         self._drive_index = None
+        self._sweep_progress_at = 0.0
+        self._sweep_best_angle = -math.pi
 
     def _now(self):
         return float(self.backend.view.get("t", time.monotonic()))
@@ -172,6 +174,8 @@ class FixedScanRoute:
             if abs(head - target) < .06:
                 self.phase = "sweep_head"
                 self.phase_started = self._now()
+                self._sweep_progress_at = time.monotonic()
+                self._sweep_best_angle = -math.pi
             elif self._now() - self.phase_started > 8:
                 self.stop("Tuyến quét dừng: đầu không tới được góc bắt đầu")
                 return self.status
@@ -196,11 +200,27 @@ class FixedScanRoute:
             return self._progress("Chờ RB đứng yên")
         if self.phase == "sweep_head":
             target = math.radians(180)
-            self._ramp_head(target, math.radians(20), head)
-            if abs(head - target) < .06:
+            step = self.waypoints[self.index].get('scan_step_deg')
+            captured = True
+            limit = target
+            if step and live is not None:
+                feedback = live.scan_feedback()
+                if feedback is None or feedback['sensor_time'] < self.phase_started:
+                    if time.monotonic()-self._sweep_progress_at > 180:
+                        self.stop('Tuyến quét dừng: quá hạn chờ góc fusion mới tại điểm quét dày')
+                    return self._progress('Chờ ảnh fusion trước khi lia tiếp')
+                processed=float(feedback['head_yaw_rad'])
+                if processed>self._sweep_best_angle+math.radians(1):
+                    self._sweep_best_angle=processed
+                    self._sweep_progress_at=time.monotonic()
+                limit = min(target,processed+math.radians(step))
+                captured = abs(processed-target)<math.radians(step)
+            self._ramp_head(limit, math.radians(20), head)
+            if abs(head - target) < .06 and captured:
                 self.phase = "return_head"
                 self.phase_started = self._now()
-            elif self._now() - self.phase_started > 28:
+            elif ((not step or live is None) and self._now() - self.phase_started > 28) or (
+                    step and live is not None and time.monotonic()-self._sweep_progress_at>180):
                 self.stop("Tuyến quét dừng: đầu không hoàn thành lượt lia")
                 return self.status
             else:

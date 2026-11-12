@@ -1,0 +1,112 @@
+{
+  "baseline": "datasets/processed/scan3d_fusion/room-dense-20261112",
+  "candidate": "datasets/processed/scan3d_fusion/room-floor-preserved-20261112",
+  "frames": 3198,
+  "depth_and_poses_unchanged": true,
+  "regions": [
+    {
+      "id": 1,
+      "bounds_m": [
+        [
+          1.2,
+          0.55
+        ],
+        [
+          1.9,
+          1.3
+        ]
+      ],
+      "baseline": {
+        "supported_xy_area_m2": 0.3808,
+        "support_fraction": 0.7157894736842105,
+        "near_floor_height_rmse_m": 0.03325728378260732
+      },
+      "candidate": {
+        "supported_xy_area_m2": 0.49760000000000004,
+        "support_fraction": 0.9353383458646617,
+        "near_floor_height_rmse_m": 0.027801016051643774
+      }
+    },
+    {
+      "id": 2,
+      "bounds_m": [
+        [
+          1.5,
+          -0.3
+        ],
+        [
+          1.95,
+          0.15
+        ]
+      ],
+      "baseline": {
+        "supported_xy_area_m2": 0.1432,
+        "support_fraction": 0.6767485822306238,
+        "near_floor_height_rmse_m": 0.043400147571037336
+      },
+      "candidate": {
+        "supported_xy_area_m2": 0.17320000000000002,
+        "support_fraction": 0.8185255198487713,
+        "near_floor_height_rmse_m": 0.0398975860678161
+      }
+    },
+    {
+      "id": 3,
+      "bounds_m": [
+        [
+          1.18,
+          -2.0
+        ],
+        [
+          1.85,
+          -0.95
+        ]
+      ],
+      "baseline": {
+        "supported_xy_area_m2": 0.4172,
+        "support_fraction": 0.5788013318534961,
+        "near_floor_height_rmse_m": 0.027606196446580945
+      },
+      "candidate": {
+        "supported_xy_area_m2": 0.5216000000000001,
+        "support_fraction": 0.7236403995560489,
+        "near_floor_height_rmse_m": 0.029192031048312913
+      }
+    },
+    {
+      "id": 4,
+      "bounds_m": [
+        [
+          1.2,
+          -3.2
+        ],
+        [
+          1.55,
+          -2.3
+        ]
+      ],
+      "baseline": {
+        "supported_xy_area_m2": 0.264,
+        "support_fraction": 0.7971014492753623,
+        "near_floor_height_rmse_m": 0.016302823316425078
+      },
+      "candidate": {
+        "supported_xy_area_m2": 0.2928,
+        "support_fraction": 0.8840579710144928,
+        "near_floor_height_rmse_m": 0.013796000245043941
+      }
+    }
+  ],
+  "whole_room_proxy": {
+    "baseline": {
+      "supported_xy_area_m2": 35.548,
+      "support_fraction": 0.8291349455142558,
+      "near_floor_height_rmse_m": 0.01843771364877491
+    },
+    "candidate": {
+      "supported_xy_area_m2": 35.592,
+      "support_fraction": 0.8301612180922526,
+      "near_floor_height_rmse_m": 0.018426242684131962
+    }
+  }
+}

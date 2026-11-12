@@ -1,0 +1,49 @@
+{
+  "bounds_xy_m": [
+    [
+      -5.55,
+      -4.8
+    ],
+    [
+      1.4,
+      1.35
+    ]
+  ],
+  "resolution_m": 0.02,
+  "baseline": {
+    "supported_xy_area_m2": 32.1392,
+    "support_fraction": 0.7496268099716376,
+    "near_floor_height_rmse_m": 0.023028367377105886
+  },
+  "candidate": {
+    "supported_xy_area_m2": 35.548,
+    "support_fraction": 0.8291349455142558,
+    "near_floor_height_rmse_m": 0.01843771364877491
+  },
+  "base_frames": 912,
+  "candidate_frames": 3198,
+  "existing_poses_unchanged": true,
+  "limitation": "Rasterized XY support of near-floor measured mesh, not CAD coverage or a proof of true flatness. Extra views use propagated estimated poses.",
+  "surrounding_quadrants_excluding_gap": {
+    "t\u00e2y-nam": {
+      "baseline_fraction": 0.5758638743455498,
+      "candidate_fraction": 0.673979057591623,
+      "added_supported_area_m2": 0.7496
+    },
+    "\u0111\u00f4ng-nam": {
+      "baseline_fraction": 0.8676923076923077,
+      "candidate_fraction": 0.914044665012407,
+      "added_supported_area_m2": 0.37360000000000004
+    },
+    "t\u00e2y-b\u1eafc": {
+      "baseline_fraction": 0.6001035911602209,
+      "candidate_fraction": 0.7186118784530386,
+      "added_supported_area_m2": 1.3728
+    },
+    "\u0111\u00f4ng-b\u1eafc": {
+      "baseline_fraction": 0.8637527072258319,
+      "candidate_fraction": 0.9391940670735709,
+      "added_supported_area_m2": 0.9196000000000001
+    }
+  }
+}

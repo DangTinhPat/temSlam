@@ -18,12 +18,14 @@
     {
       "x": 0.0,
       "y": 0.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": 0.75,
       "y": 0.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": 1.05,
@@ -34,36 +36,42 @@
       "x": 1.05,
       "y": -0.44999999999999996,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": 1.05,
       "y": -1.2,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": 1.05,
       "y": -1.95,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": 1.05,
       "y": -2.6999999999999997,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": 1.05,
       "y": -3.4499999999999997,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": 1.05,
       "y": -4.2,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
@@ -75,54 +83,63 @@
       "x": 0.75,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": 0.0,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -0.75,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -1.5,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -2.25,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -3.0,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -3.75,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -4.5,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -5.25,
       "y": -4.6499999999999995,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
@@ -134,42 +151,49 @@
       "x": -5.3999999999999995,
       "y": -4.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -5.3999999999999995,
       "y": -3.3,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -5.3999999999999995,
       "y": -2.55,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -5.3999999999999995,
       "y": -1.7999999999999998,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -5.3999999999999995,
       "y": -1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -5.3999999999999995,
       "y": -0.3,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -5.3999999999999995,
       "y": 0.44999999999999996,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
@@ -181,54 +205,63 @@
       "x": -5.25,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -4.5,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -3.75,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -3.0,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -2.25,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -1.5,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": -0.75,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": 0.0,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
       "x": 0.75,
       "y": 1.05,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
@@ -240,6 +273,7 @@
       "x": 1.05,
       "y": 0.6,
       "scan": true,
+      "scan_step_deg": 8,
       "speed_m_s": 0.12
     },
     {
@@ -341,17 +375,20 @@
     {
       "x": -4.8,
       "y": -3.9,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -4.05,
       "y": -3.9,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -3.3,
       "y": -3.9,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -3.15,
@@ -364,17 +401,20 @@
     {
       "x": -2.6999999999999997,
       "y": -3.75,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.95,
       "y": -3.75,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.2,
       "y": -3.75,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.05,
@@ -387,7 +427,8 @@
     {
       "x": -0.6,
       "y": -3.9,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -0.3,
@@ -400,7 +441,8 @@
     {
       "x": 0.0,
       "y": -3.75,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": 0.75,
@@ -413,27 +455,32 @@
     {
       "x": 0.0,
       "y": -3.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -0.75,
       "y": -3.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.5,
       "y": -3.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -2.25,
       "y": -3.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -2.25,
       "y": -2.25,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.95,
@@ -466,7 +513,8 @@
     {
       "x": 0.44999999999999996,
       "y": -2.6999999999999997,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": 0.44999999999999996,
@@ -483,27 +531,32 @@
     {
       "x": 0.0,
       "y": -1.5,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -0.75,
       "y": -1.5,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.5,
       "y": -1.5,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -2.25,
       "y": -1.5,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -3.0,
       "y": -1.5,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -3.4499999999999997,
@@ -516,7 +569,8 @@
     {
       "x": -3.5999999999999996,
       "y": -1.3499999999999999,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -3.5999999999999996,
@@ -537,7 +591,8 @@
     {
       "x": -3.9,
       "y": -0.8999999999999999,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -4.05,
@@ -550,7 +605,8 @@
     {
       "x": -4.5,
       "y": -0.75,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -5.25,
@@ -602,12 +658,14 @@
     {
       "x": -2.6999999999999997,
       "y": -0.8999999999999999,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.95,
       "y": -0.8999999999999999,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.95,
@@ -616,17 +674,20 @@
     {
       "x": -1.3499999999999999,
       "y": -0.75,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -0.6,
       "y": -0.75,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": 0.15,
       "y": -0.75,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": 0.75,
@@ -651,12 +712,14 @@
     {
       "x": -0.8999999999999999,
       "y": 0.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.65,
       "y": 0.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.95,
@@ -665,7 +728,8 @@
     {
       "x": -1.95,
       "y": 0.44999999999999996,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -1.95,
@@ -690,7 +754,8 @@
     {
       "x": -3.75,
       "y": 0.15,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -3.75,
@@ -699,7 +764,8 @@
     {
       "x": -4.35,
       "y": 0.0,
-      "scan": true
+      "scan": true,
+      "scan_step_deg": 8
     },
     {
       "x": -5.1,

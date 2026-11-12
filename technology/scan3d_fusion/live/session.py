@@ -38,6 +38,15 @@ class LiveSession:
                     and not state['message'].startswith('LỖI'))
         except (FileNotFoundError,KeyError): return False
 
+    def scan_feedback(self):
+        try:
+            state=json.loads((self.session/'slam_status.json').read_text())
+            if time.time()-state['wall_time']<5 and 'head_yaw_rad' in state:
+                return state
+        except (FileNotFoundError,KeyError):
+            pass
+        return None
+
     def failure_reason(self):
         for stage, child in self.children:
             if stage not in ('infer', 'slam'):

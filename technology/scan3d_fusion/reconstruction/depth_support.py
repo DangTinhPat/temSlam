@@ -3,6 +3,47 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 
 
+def sloping_zone_support(z, u, v, index, inside, hist, valid):
+    """Allow a continuous predicted slope only when its whole-zone ToF statistics agree."""
+    coefficients=np.zeros((64,3));verified=np.zeros(64,bool)
+    row,col=np.divmod(index,8)
+    x=u-col-.5;y=v-row-.5
+    design=np.stack((x[::4,::4],y[::4,::4],np.ones_like(x[::4,::4])),-1)
+    sampled_z=z[::4,::4];sampled_index=index[::4,::4];sampled_inside=inside[::4,::4]
+    axis=(np.arange(16)+.5)/16-.5
+    gy,gx=np.meshgrid(axis,axis,indexing='ij')
+    rays=np.stack((gx.ravel(),gy.ravel(),np.ones(256)),-1)
+    for zone,(mean,sigma) in enumerate(hist):
+        if not valid[zone] or not np.isfinite([mean,sigma]).all() or sigma<=.05:
+            continue
+        keep=sampled_inside&(sampled_index==zone)&np.isfinite(sampled_z)&(sampled_z>.02)&(sampled_z<=4)
+        X=design[keep];depth=sampled_z[keep]
+        if len(depth)<24 or np.any(np.ptp(X[:,:2],axis=0)<.7):
+            continue
+        # Inverse optical depth is affine in ray direction for any plane, without an IMU/floor prior.
+        fit=np.linalg.lstsq(X,1/depth,rcond=None)[0]
+        predicted_inverse=X@fit
+        if np.any(predicted_inverse<=0):
+            continue
+        residual=np.abs(1/predicted_inverse-depth)
+        if np.quantile(residual,.9)>.025:
+            continue
+        inverse=rays@fit
+        if np.any(inverse<=0):
+            continue
+        distribution=1/inverse
+        if (distribution.min()<.02 or distribution.max()>4 or distribution.std()<.03
+                or abs(distribution.mean()-mean)>.08
+                or abs(distribution.std()-sigma)>max(.025,.35*sigma)):
+            continue
+        coefficients[zone]=fit;verified[zone]=True
+    inverse=coefficients[index,0]*x+coefficients[index,1]*y+coefficients[index,2]
+    predicted=1/np.maximum(inverse,1e-6)
+    # This only validates existing fusion pixels; it never supplies replacement depth or fills zeros.
+    return (inside & verified[index] & (z<=4) & (np.abs(z-predicted)<.03)
+            & (np.abs(z-hist[index,0])<=np.maximum(.08,3*hist[index,1])))
+
+
 def tof_consistency_mask(depth, hist, valid, K, camera_to_tof, rect=None):
     """Associate each predicted 3-D point with its actual ToF zone, not overlapping boxes."""
     depth=np.asarray(depth)
@@ -27,8 +68,9 @@ def tof_consistency_mask(depth, hist, valid, K, camera_to_tof, rect=None):
     mean,sigma=hist[index,0],hist[index,1]
     # Broad mixed returns cannot justify arbitrarily far predictions behind the closest surface.
     tolerance=np.maximum(.08,np.minimum(3*sigma,.15))
+    sloping=sloping_zone_support(z,u,v,index,inside,hist,valid)
     support=(inside & valid[index] & np.isfinite(depth) & (depth>.02) & np.isfinite(mean)
-             & np.isfinite(sigma) & (sigma>=0) & (np.abs(z-mean)<=tolerance))
+             & np.isfinite(sigma) & (sigma>=0) & ((np.abs(z-mean)<=tolerance)|sloping))
     if rect is not None:
         # Near projected returns occlude far ones; overlapping rectangles must not be OR-ed.
         nearest=np.full(depth.shape,np.inf)
@@ -39,7 +81,7 @@ def tof_consistency_mask(depth, hist, valid, K, camera_to_tof, rect=None):
             y0,x0,y1,x1=np.rint(box).astype(int)
             y0,y1=np.clip([y0,y1],0,h);x0,x1=np.clip([x0,x1],0,w)
             nearest[y0:y1,x0:x1]=np.minimum(nearest[y0:y1,x0:x1],mu+max(.08,min(3*sd,.15)))
-        support &= z<=nearest
+        support &= (z<=nearest)|sloping
     return support
 
 
