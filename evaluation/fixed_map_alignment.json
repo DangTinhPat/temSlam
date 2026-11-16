@@ -1,0 +1,33 @@
+{
+  "map_from_simulator": [
+    [
+      0.9999359313072259,
+      0.011296794790307627,
+      0.0007181282729034743,
+      0.14657221932056153
+    ],
+    [
+      -0.011296688099313855,
+      0.9999361787617163,
+      -0.00015245131677070727,
+      -0.001320305397948082
+    ],
+    [
+      -0.0007198046523089218,
+      0.00014432907829984058,
+      0.9999997305251536,
+      -0.0001760557124311779
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "reference": "datasets/processed/scan3d_fusion/room-floor-preserved-20261112",
+  "mapping_raw": "datasets/raw/tof-20261112-094256-483079",
+  "anchor_time_s": 32.47,
+  "method": "Fixed coordinate alignment from first mapping camera pose, same-time camera mount and simulator body truth of mapping session; no query data used. Evaluation only.",
+  "alignment_fitted_to_query": false
+}

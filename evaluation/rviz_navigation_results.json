@@ -1,0 +1,45 @@
+{
+  "scope": "Real ROS roundtrip with RViz tools; kinematic static mesh demo",
+  "tool_publishers": {
+    "initialpose": [
+      "rb_rviz_navigation_check",
+      "rviz"
+    ],
+    "goal_pose": [
+      "rb_rviz_navigation_check",
+      "rviz"
+    ],
+    "stop": [
+      "rb_rviz_navigation_check",
+      "rviz"
+    ]
+  },
+  "cancel_test": "passed",
+  "result": {
+    "state": "reached",
+    "message": "goal and heading reached",
+    "pose": [
+      0.8001304864124383,
+      0.7755356713371173,
+      1.5761281447102695
+    ],
+    "goal": [
+      0.8,
+      0.8,
+      1.5707963267948966
+    ],
+    "mode": "kinematic_mesh_demo",
+    "costmap": "static_mesh_projection",
+    "native_motion": false
+  },
+  "goal_error_m": 0.02446467665082407,
+  "wall_seconds": 29.388299076992553,
+  "plan_points": 50,
+  "trajectory_points": 222,
+  "global_cost_values": [
+    -1,
+    0,
+    99,
+    100
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "legacy": {
+    "frames": 150,
+    "confirmed_frames": 91,
+    "valid_depth_pixels": 23393255,
+    "class_counts": {
+      "uncertain": 13488921,
+      "ground": 1155810,
+      "obstacle": 8748524
+    }
+  },
+  "calibrated": {
+    "frames": 150,
+    "confirmed_frames": 69,
+    "valid_depth_pixels": 24676192,
+    "class_counts": {
+      "uncertain": 16730076,
+      "ground": 789839,
+      "obstacle": 7156277
+    }
+  }
+}

@@ -16,7 +16,9 @@ ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / 'technology/scan3d_fusion/reconstruction'))
 from depth_support import tof_support
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "odometry"))
-from localization import BodyLocalization
+from localization import BodyLocalization, rigid, odom_body
+
+SLAM_MAP_SOURCE = 'cuVSLAM final optimized poses; single initial wheel/IMU alignment'
 
 # OpenCV camera axes (right/down/forward) to initial horizontal map axes.
 MAP_FROM_START = np.array([[0., 0., 1., 0.], [-1., 0., 0., 0.],
@@ -43,6 +45,28 @@ def body_pose(camera_to_world, body_from_camera):
     return camera_to_world @ np.linalg.inv(transform)
 
 
+def optimized_map_poses(optimized, timestamps, initial_camera_to_world):
+    """Anchor the complete optimized graph once; never gate individual corrections."""
+    if (not timestamps or any(not isinstance(t,(int,np.integer)) or t<0 for t in timestamps)
+            or any(b<=a for a,b in zip(timestamps,timestamps[1:]))
+            or any(t not in optimized for t in timestamps)):
+        raise ValueError('Require increasing timestamps with every final optimized pose present')
+    alignment=rigid(initial_camera_to_world)@np.linalg.inv(rigid(optimized[timestamps[0]]))
+    return [alignment@rigid(optimized[t]) for t in timestamps]
+
+
+def validate_local_tracking(previous_visual,current_visual,previous_sensor,current_sensor):
+    """Reject broken local tracking, without testing global loop-closure jumps."""
+    visual_delta=np.linalg.inv(rigid(previous_visual))@rigid(current_visual)
+    sensor_delta=np.linalg.inv(rigid(previous_sensor))@rigid(current_sensor)
+    residual=np.linalg.inv(sensor_delta)@visual_delta
+    translation=np.linalg.norm(residual[:3,3])
+    angle=Rotation.from_matrix(residual[:3,:3]).magnitude()
+    # shortcut: simulation sanity bounds; calibrate encoder/IMU/visual covariance for hardware.
+    if translation>.1 or angle>.15:
+        raise RuntimeError(f'Local visual motion disagrees with wheel/IMU: {translation:.3f}m, {np.degrees(angle):.1f}deg; stop mapping, no pose substitution')
+
+
 class RgbdSlam:
     """Reusable image/depth interface; no simulator, ground-truth or ROS inputs."""
     def __init__(self, image_size, intrinsics):
@@ -52,6 +76,7 @@ class RgbdSlam:
             raise RuntimeError(f'This adapter targets cuVSLAM 17.0.1, found {version}')
         self.size = tuple(map(int, image_size))
         self.last_timestamp = -1
+        self.last_odometry_pose = None
         self.localization = BodyLocalization()
         camera = cuvslam.Camera()
         camera.size = self.size
@@ -76,11 +101,16 @@ class RgbdSlam:
                 or rgb.dtype != np.uint8 or depth_mm.shape != (height, width)
                 or depth_mm.dtype != np.uint16):
             raise ValueError('Require increasing timestamps, RGB uint8 and aligned depth uint16 mm')
+        if not np.any(depth_mm):
+            self.last_odometry_pose = None
+            raise ValueError('Require nonzero measured depth; stop mapping')
         self.last_timestamp = timestamp_ns
         estimate, slam = self.tracker.track(
             timestamp_ns, images=[np.ascontiguousarray(rgb)], depths=[np.ascontiguousarray(depth_mm)])
         if estimate.world_from_rig is None or slam is None:
+            self.last_odometry_pose = None
             return None
+        self.last_odometry_pose = pose_matrix(estimate.world_from_rig.pose)
         return pose_matrix(slam)
 
     def track_body(self, timestamp_ns, rgb, depth_mm, odometry, body_from_camera):
@@ -136,6 +166,8 @@ def main():
     records, observations, times = [], [], []
     failure = None
     loops = 0
+    previous_visual=previous_sensor=None
+    optimized={}
     fx, fy, cx, cy = sequence['intrinsics']
     for index, (frame, timestamp) in enumerate(zip(frames, timestamps)):
         with h5py.File(args.capture / frame['file']) as sample:
@@ -145,12 +177,27 @@ def main():
                                 sequence['intrinsics'], calibration)
         depth_mm = np.rint(np.clip(depth, 0, 65.535) * 1000).astype(np.uint16)
         start = time.perf_counter()
-        pose = slam.track(timestamp, rgb, depth_mm)
+        try:
+            pose = slam.track(timestamp, rgb, depth_mm)
+        except ValueError as error:
+            failure = {'index': index, 'file': frame['file'], 'reason': str(error)}
+            print(json.dumps(failure), flush=True)
+            break
         times.append(time.perf_counter() - start)
         if pose is None:
             failure = {'index': index, 'file': frame['file'], 'reason': 'tracking lost; no pose substitution'}
             print(json.dumps(failure), flush=True)
             break  # A resumed tracker may start a different map frame.
+        if odometry is not None:
+            sensor_pose=odom_body(odometry[index])@rigid(frame['body_from_camera'])
+            try:
+                if previous_visual is not None:
+                    validate_local_tracking(previous_visual,slam.last_odometry_pose,previous_sensor,sensor_pose)
+            except RuntimeError as error:
+                failure={'index':index,'file':frame['file'],'reason':str(error)}
+                print(json.dumps(failure),flush=True)
+                break
+            previous_visual,previous_sensor=slam.last_odometry_pose,sensor_pose
         record = {'file': frame['file'], 'time_s': frame['time_s'], 'timestamp_ns': timestamp,
                   'camera_to_world': pose.tolist()}
         if 'body_from_camera' in frame:
@@ -164,26 +211,24 @@ def main():
         metrics = slam.tracker.get_slam_metrics()
         if metrics and metrics.lc_status:
             loops += 1
+        # The next SDK call may fail sanity after changing historical graph poses.
+        optimized={p.timestamp_ns:pose_matrix(p.pose) for p in slam.tracker.get_all_slam_poses()}
         if index % 24 == 0:
             print(f'track {index+1}/{len(frames)}', flush=True)
 
-    # Recalculate all past poses after the final pose graph optimization.
-    optimized = {p.timestamp_ns: pose_matrix(p.pose) for p in slam.tracker.get_all_slam_poses()}
+    # Export the last accepted optimized history; rejected SDK updates cannot be rolled back.
     cloud = []
-    localization = BodyLocalization()
-    visual_rejected = 0
+    final_poses=None
+    if odometry is not None and records:
+        final_poses=optimized_map_poses(optimized,[r['timestamp_ns'] for r in records],
+                                       odom_body(odometry[0])@rigid(records[0]['body_from_camera']))
     for index, (record, points) in enumerate(zip(records, observations)):
         pose = optimized.get(record['timestamp_ns'])
         if pose is None:
             raise RuntimeError('Missing final optimized pose; refuse a mixed trajectory')
         if odometry is not None:
             record['visual_camera_to_world'] = pose.tolist()
-            fused = localization.update(record['timestamp_ns'], odometry[index], record['body_from_camera'], pose)
-            if fused is None or fused['frame'] != 'map':
-                raise RuntimeError('Invalid fused localization')
-            visual_rejected += not fused['visual_accepted']
-            record['localization'] = fused
-            pose = np.asarray(fused['world_from_camera'])
+            pose = final_poses[index]
         record['camera_to_world'] = pose.tolist()
         if 'body_from_camera' in record:
             record['body_to_world'] = body_pose(pose, record['body_from_camera']).tolist()
@@ -194,21 +239,28 @@ def main():
               'intrinsics': sequence['intrinsics'], 'image_size': sequence['image_size'],
               'frames': records}
     if odometry is not None:
-        result['pose_source'] += '; wheel/IMU odometry with external visual map correction'
+        result['pose_source'] = SLAM_MAP_SOURCE
+        result['coordinate_frame'] = 'wheel/IMU Z-up odometry world, anchored once at the first synchronized camera; no per-frame height/attitude replacement'
     saved = []
     if records:
         points = np.concatenate(cloud)
         result['bounds_m'] = [np.min(points, axis=0).tolist(), (np.max(points, axis=0)+.02).tolist()]
-        slam.tracker.save_map(str(args.output / 'map'), saved.append)
-        if saved != [True]:
-            raise RuntimeError('cuVSLAM map save failed')
+        if failure is None:
+            slam.tracker.save_map(str(args.output / 'map'), saved.append)
+            if saved != [True]:
+                raise RuntimeError('cuVSLAM map save failed')
+    graph=slam.tracker.get_pose_graph()
+    loop_poses=slam.tracker.get_loop_closure_poses() or []
     report = {'input_frames': len(frames), 'tracked_frames': len(records), 'failure': failure,
               'complete': len(records) == len(frames), 'map_saved': saved == [True],
               'odometry_file': str(args.odometry) if args.odometry else None,
-              'visual_corrections_rejected': visual_rejected,
+              'map_pose_policy': 'all final optimized SLAM poses; no per-frame odometry veto',
               'loop_closure_success_frames': loops,
-              'tracker_ms_median': float(np.median(times)*1000),
-              'tracker_ms_p95': float(np.percentile(times, 95)*1000),
+              'loop_closure_pose_count':len(loop_poses),
+              'pose_graph_nodes':len(graph.nodes) if graph else 0,
+              'pose_graph_edges':len(graph.edges) if graph else 0,
+              'tracker_ms_median': float(np.median(times)*1000) if times else None,
+              'tracker_ms_p95': float(np.percentile(times, 95)*1000) if times else None,
               'input_interval_s_median': float(np.median(np.diff(timestamps))/1e9),
               'mode': 'synchronous offline, CUDA; timing excludes DELTAR and ToF preprocessing'}
     (args.output / 'sequence.json').write_text(json.dumps(result, indent=2)+'\n')

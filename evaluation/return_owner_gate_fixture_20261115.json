@@ -1,0 +1,50 @@
+{
+  "fixture": "Analytic continuous ToF-optical-Z1.00m plane; prediction+0.04m, actual RGB-ToF extrinsics",
+  "ground_truth_used_only_in_synthetic_fixture": true,
+  "real_data_fitted": false,
+  "calibration_sha256": "0ac28ba9691ac40f6da336f50f4ad38b0e6198c369de11999bd3186db966aa7f",
+  "calibration": {
+    "rotation_matrix": [
+      [
+        0.9975423224900268,
+        -0.005476263360731831,
+        0.06985216804657741
+      ],
+      [
+        0.005405407011823934,
+        0.9999846666353897,
+        0.001203357447033642
+      ],
+      [
+        -0.06985768688011297,
+        -0.0008228205835495354,
+        0.9975566282422504
+      ]
+    ],
+    "translation_m": [
+      0.020234585159571133,
+      6.820034171808665e-05,
+      -0.010372326723077198
+    ]
+  },
+  "intrinsics": [
+    579.4112549695428,
+    579.4112549695428,
+    319.5,
+    239.5
+  ],
+  "fully_covered_zones": 56,
+  "proposed_zones": 56,
+  "accepted_zones": 0,
+  "owner_gate_rejections": 56,
+  "reason_counts": {
+    "incomplete angular coverage": 8,
+    "occlusion/source ownership changed": 56,
+    "proposal lost angular coverage": 1,
+    "selected cluster association changed": 1
+  },
+  "pre_abs_median_m": 0.03999999999999959,
+  "proposed_abs_median_m": 2.220446049250313e-16,
+  "candidate_unchanged": true,
+  "status": "Frozen exact-source-owner gate rejects valid continuous-surface resampling; no real-data bias run authorized by this fixture"
+}

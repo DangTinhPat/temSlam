@@ -8,11 +8,11 @@ export LD_LIBRARY_PATH="$ros_env/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 if [[ $# -gt 0 ]]; then
   mesh="$1"
 else
-  mesh="$(find "$root/datasets/processed/sofa_clay" -mindepth 3 -maxdepth 3 \
-    -path '*/mesh/clay.stl' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -1 | cut -d' ' -f2-)"
+  mesh="$root/datasets/processed/scan3d_fusion/room-floor-preserved-20261112/final_mesh.stl"
 fi
 if [[ -z "$mesh" || ! -f "$mesh" ]]; then
-  echo "Usage: $0 path/to/mesh/clay.stl [--compare-sofa]" >&2
+  echo "Mesh not found: $mesh" >&2
+  echo "Usage: $0 [mesh.stl] [--compare-sofa | --floor-completion]" >&2
   exit 2
 fi
 compare="${2:-}"

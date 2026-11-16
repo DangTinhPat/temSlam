@@ -62,3 +62,7 @@ Yêu cầu cơ bản: CMake ≥ 3.20, C++17, Python 3, MuJoCo (header và thư v
 - Kiểm tra kết quả mapping: [evaluation/tof_mapping_results.md](evaluation/tof_mapping_results.md)
 
 Chi tiết tài liệu được lập chỉ mục tại [docs/README.md](docs/README.md).
+
+## Cổng thông tin RB Lab
+
+Website tương tác có bản scan 3D, phát lại quỹ đạo camera, kết quả thí nghiệm và thư viện tài liệu có quản trị. Xem [hướng dẫn chạy và đăng tài liệu](<BÁO CÁO TRIỂN KHAI SLAM 3D (SIM version)/README.md>).

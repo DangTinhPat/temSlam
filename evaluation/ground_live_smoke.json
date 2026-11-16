@@ -1,0 +1,80 @@
+{
+  "session": "/home/dvt/temSlam/datasets/raw/tof-20261114-173934-042995",
+  "scope": "Native balance + inference only; no navigation goal",
+  "source": "gravity_ransac_labels_v3",
+  "frames": [
+    {
+      "t": 30.6,
+      "counts": [
+        307200,
+        0,
+        0
+      ],
+      "confirmations": 0
+    },
+    {
+      "t": 31.2,
+      "counts": [
+        307200,
+        0,
+        0
+      ],
+      "confirmations": 1
+    },
+    {
+      "t": 31.535,
+      "counts": [
+        307200,
+        0,
+        0
+      ],
+      "confirmations": 0
+    },
+    {
+      "t": 31.87,
+      "counts": [
+        307200,
+        0,
+        0
+      ],
+      "confirmations": 1
+    },
+    {
+      "t": 32.2,
+      "counts": [
+        307200,
+        0,
+        0
+      ],
+      "confirmations": 2
+    },
+    {
+      "t": 32.535,
+      "counts": [
+        139641,
+        11884,
+        155675
+      ],
+      "confirmations": 3
+    },
+    {
+      "t": 32.87,
+      "counts": [
+        307200,
+        0,
+        0
+      ],
+      "confirmations": 0
+    },
+    {
+      "t": 33.135,
+      "counts": [
+        307200,
+        0,
+        0
+      ],
+      "confirmations": 1
+    }
+  ],
+  "seconds": 34.45915995800169
+}

@@ -1,0 +1,7 @@
+.venv/
+node_modules/
+instance/
+.pytest_cache/
+__pycache__/
+static/demo/
+test-results/

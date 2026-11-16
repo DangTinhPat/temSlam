@@ -1,0 +1,214 @@
+{
+  "status": "FAIL: all3 repeats required; R3 exceeds frozen3degree maximum",
+  "gate_a_pass": false,
+  "measured_candidate": "fixed-neck-spatial-calibrated-20261115",
+  "repeats": [
+    {
+      "repeat": 1,
+      "max_input_gap_s": 0.07000000000016371,
+      "trajectories": {
+        "live_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.045430747720561514,
+          "translation_max_m": 0.07402733922949807,
+          "rotation_max_deg": 2.6386820754480085,
+          "endpoint_translation_m": 0.07364937690204752,
+          "endpoint_rotation_deg": 2.6386820754480085,
+          "rpe_translation_rmse_m": 0.010620139418156236,
+          "rpe_rotation_rmse_deg": 0.42443664990634095,
+          "path_ratio": 0.9444542686277595,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        },
+        "immediate_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.0454308332450698,
+          "translation_max_m": 0.07402752096855639,
+          "rotation_max_deg": 2.6386639863249775,
+          "endpoint_translation_m": 0.07364955853060505,
+          "endpoint_rotation_deg": 2.6386639863249775,
+          "rpe_translation_rmse_m": 0.010620153829015601,
+          "rpe_rotation_rmse_deg": 0.4244333847621171,
+          "path_ratio": 0.9444540695499598,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        },
+        "local_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.04543066427501408,
+          "translation_max_m": 0.07402734084238806,
+          "rotation_max_deg": 2.6385966208338334,
+          "endpoint_translation_m": 0.07364938801659088,
+          "endpoint_rotation_deg": 2.6385966208338334,
+          "rpe_translation_rmse_m": 0.0106201352886514,
+          "rpe_rotation_rmse_deg": 0.4244297205600388,
+          "path_ratio": 0.9444542678412909,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        }
+      },
+      "conditions": {
+        "provenance": true,
+        "full_coverage": true,
+        "cadence": true,
+        "position_rmse": true,
+        "position_max": true,
+        "angle_max": true,
+        "rpe_translation": true,
+        "rpe_rotation": true,
+        "path_ratio": true,
+        "finalization": true
+      },
+      "gate_a_repeat_pass": true,
+      "loop_events": 0,
+      "published_metrics_match_independent_math": true
+    },
+    {
+      "repeat": 2,
+      "max_input_gap_s": 0.07000000000016371,
+      "trajectories": {
+        "live_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.04011218108052327,
+          "translation_max_m": 0.06370639643306956,
+          "rotation_max_deg": 1.9881598121496147,
+          "endpoint_translation_m": 0.06151276519038984,
+          "endpoint_rotation_deg": 1.9351079620142575,
+          "rpe_translation_rmse_m": 0.010850941127824754,
+          "rpe_rotation_rmse_deg": 0.3601204925258943,
+          "path_ratio": 0.9564922187054208,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        },
+        "immediate_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.040112153175765976,
+          "translation_max_m": 0.06370638938084387,
+          "rotation_max_deg": 1.9881755364532385,
+          "endpoint_translation_m": 0.061512652870559854,
+          "endpoint_rotation_deg": 1.9351208310136783,
+          "rpe_translation_rmse_m": 0.010850940681997778,
+          "rpe_rotation_rmse_deg": 0.3601221812825759,
+          "path_ratio": 0.9564923223326022,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        },
+        "local_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.040112180186750536,
+          "translation_max_m": 0.06370649488487726,
+          "rotation_max_deg": 1.9881905472982369,
+          "endpoint_translation_m": 0.0615123204870459,
+          "endpoint_rotation_deg": 1.9351402499840853,
+          "rpe_translation_rmse_m": 0.010850950553041852,
+          "rpe_rotation_rmse_deg": 0.360125849125245,
+          "path_ratio": 0.9564925084127974,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        }
+      },
+      "conditions": {
+        "provenance": true,
+        "full_coverage": true,
+        "cadence": true,
+        "position_rmse": true,
+        "position_max": true,
+        "angle_max": true,
+        "rpe_translation": true,
+        "rpe_rotation": true,
+        "path_ratio": true,
+        "finalization": true
+      },
+      "gate_a_repeat_pass": true,
+      "loop_events": 0,
+      "published_metrics_match_independent_math": true
+    },
+    {
+      "repeat": 3,
+      "max_input_gap_s": 0.07000000000016371,
+      "trajectories": {
+        "live_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.04679449611685129,
+          "translation_max_m": 0.07387249362048787,
+          "rotation_max_deg": 3.323648187050394,
+          "endpoint_translation_m": 0.06749195666314876,
+          "endpoint_rotation_deg": 3.323648187050394,
+          "rpe_translation_rmse_m": 0.011435091174555576,
+          "rpe_rotation_rmse_deg": 0.4501025305603094,
+          "path_ratio": 0.949513008971745,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        },
+        "immediate_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.04679434646007309,
+          "translation_max_m": 0.07387222357239852,
+          "rotation_max_deg": 3.323675707563859,
+          "endpoint_translation_m": 0.06749166639975122,
+          "endpoint_rotation_deg": 3.323675707563859,
+          "rpe_translation_rmse_m": 0.011435066916586032,
+          "rpe_rotation_rmse_deg": 0.4501044822572291,
+          "path_ratio": 0.9495132031099002,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        },
+        "local_sequence.json": {
+          "frames": 150,
+          "first_anchor_translation_rmse_m": 0.046794573816256436,
+          "translation_max_m": 0.07387263614900148,
+          "rotation_max_deg": 3.3237152961827716,
+          "endpoint_translation_m": 0.06749198873364402,
+          "endpoint_rotation_deg": 3.3237152961827716,
+          "rpe_translation_rmse_m": 0.011435096102335365,
+          "rpe_rotation_rmse_deg": 0.4501114290428072,
+          "path_ratio": 0.9495129212663038,
+          "rpe_pairs": 136,
+          "horizon_min_s": 0.9400000000000546,
+          "horizon_max_s": 1.0
+        }
+      },
+      "conditions": {
+        "provenance": true,
+        "full_coverage": true,
+        "cadence": true,
+        "position_rmse": true,
+        "position_max": true,
+        "angle_max": false,
+        "rpe_translation": true,
+        "rpe_rotation": true,
+        "path_ratio": true,
+        "finalization": true
+      },
+      "gate_a_repeat_pass": false,
+      "loop_events": 0,
+      "published_metrics_match_independent_math": true
+    }
+  ],
+  "thresholds": {
+    "position_rmse_m": 0.05,
+    "position_max_m": 0.1,
+    "rotation_max_deg": 3,
+    "rpe1s_translation_rmse_m": 0.03,
+    "rpe1s_rotation_rmse_deg": 1,
+    "path_ratio": [
+      0.8,
+      1.2
+    ],
+    "frames": 150,
+    "max_input_gap_s": 0.08,
+    "max_rpe_horizon_mismatch_s": 0.07
+  },
+  "method": "Independent direct matrices from final/immediate/local histories and isolated evaluator truth; no evaluator implementation reused",
+  "map_accepted": false,
+  "gpu_run_by_reviewer": false,
+  "source_script_sha256": "20d232bf11c5ed5f2216d92f6cdda387ced3911001038796c374e86e15547c3c"
+}

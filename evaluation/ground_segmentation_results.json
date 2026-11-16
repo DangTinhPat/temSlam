@@ -1,0 +1,42 @@
+{
+  "replay": {
+    "source": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/room-floor-preserved-20261112",
+    "sequence": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/room-floor-preserved-20261112/live_sequence.json",
+    "frames": 3198,
+    "confirmed_frames": 334,
+    "source_depth_sha256": "dbb3b6c338601efd6506024d22fac0c7f216be442c654bf0d75c4051a61fd551",
+    "output_depth_sha256": "dbb3b6c338601efd6506024d22fac0c7f216be442c654bf0d75c4051a61fd551",
+    "depth_modified": false,
+    "ground_source": "gravity_ransac_labels_v3",
+    "pose_source": "wheel/IMU + gated visual poses + planar surface matching",
+    "ground_truth_geometry": false,
+    "pixel_counts": {
+      "uncertain": 941515594,
+      "ground": 5831707,
+      "obstacle": 35078299
+    },
+    "layer_points": {
+      "ground": 18012,
+      "obstacle": 215122,
+      "uncertain": 715715
+    },
+    "seconds": 166.48750283103436,
+    "limits": "Flat floor near odometry z=0; labels do not certify clearance or correct depth noise."
+  },
+  "poses_unchanged": true,
+  "raw_depth_grid": {
+    "free": 58,
+    "occupied": 20616,
+    "unknown": 7018,
+    "traversable": 0
+  },
+  "classified_depth_grid": {
+    "free": 0,
+    "occupied": 12091,
+    "unknown": 15601,
+    "traversable": 0
+  },
+  "resolution_m": 0.05,
+  "clearance_m": 0.25,
+  "scope": "Estimated poses and measured fusion depth; no ground truth geometry or floor completion"
+}

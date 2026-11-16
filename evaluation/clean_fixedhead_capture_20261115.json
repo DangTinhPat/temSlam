@@ -1,0 +1,49 @@
+{
+  "purpose": "Actual headlocked controlled native capture; no truth-driven estimation/control",
+  "head_command_rad": 0,
+  "sim_speed_factor": 1,
+  "depth_inference": "Offline only; no live drop/latest-frame queue",
+  "session": "/home/dvt/temSlam/datasets/raw/tof-20261115-231821-438519",
+  "settled_height_m": 0.158612,
+  "completed_return": false,
+  "screening_action": "stop",
+  "success": true,
+  "phases": [
+    {
+      "name": "initial_stationary",
+      "start_s": 16.88,
+      "velocity_m_s": 0.0,
+      "yaw_rate_rad_s": 0.0,
+      "end_s": 18.88
+    },
+    {
+      "name": "turn_toward_stair_and_furniture",
+      "start_s": 18.88,
+      "velocity_m_s": 0,
+      "yaw_rate_rad_s": -0.08,
+      "end_s": 53.8003
+    },
+    {
+      "name": "post_turn_settle",
+      "start_s": 53.8003,
+      "velocity_m_s": 0.0,
+      "yaw_rate_rad_s": 0.0,
+      "end_s": 56.8003
+    },
+    {
+      "name": "preview_stationary",
+      "start_s": 56.8003,
+      "velocity_m_s": 0.0,
+      "yaw_rate_rad_s": 0.0,
+      "end_s": 58.8003
+    },
+    {
+      "name": "preview_backward",
+      "start_s": 58.8003,
+      "velocity_m_s": -0.08,
+      "yaw_rate_rad_s": 0,
+      "end_s": 60.8003
+    }
+  ],
+  "wall_seconds": 209.50803825596813
+}

@@ -1,0 +1,8 @@
+{
+  "source": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-native-20261115",
+  "control": "Identical measured first RGB-D image repeated at native timestamps; not a captured trajectory or map",
+  "frames": 150,
+  "max_translation_m": 0.0,
+  "max_rotation_deg": 0.0,
+  "ground_truth_used": false
+}

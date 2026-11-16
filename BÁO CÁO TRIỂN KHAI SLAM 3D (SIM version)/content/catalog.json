@@ -1,0 +1,79 @@
+[
+  {
+    "id": "report",
+    "title": "Triển khai SLAM 3D trong mô phỏng",
+    "category": "Báo cáo",
+    "summary": "Toàn bộ hành trình từ cảm biến thưa đến bản đồ bề mặt: kiến trúc, kết quả và giới hạn.",
+    "tags": [
+      "SLAM",
+      "MuJoCo"
+    ],
+    "date": "2026-11-12"
+  },
+  {
+    "id": "architecture",
+    "title": "Bên trong pipeline RGB–ToF",
+    "category": "Công nghệ",
+    "summary": "DELTAR, cuVSLAM, odometry và TSDF phối hợp như thế nào?",
+    "tags": [
+      "DELTAR",
+      "TSDF"
+    ],
+    "date": "2026-11-12"
+  },
+  {
+    "id": "status",
+    "title": "Trạng thái & giới hạn công nghệ",
+    "category": "Công nghệ",
+    "summary": "Những gì hệ thống đã làm được, các giả thiết và phần chưa kiểm chứng.",
+    "tags": [
+      "Prototype",
+      "Giới hạn"
+    ],
+    "date": "2026-11-12"
+  },
+  {
+    "id": "room-results",
+    "title": "Thêm góc nhìn, tăng hỗ trợ bề mặt",
+    "category": "Báo cáo",
+    "summary": "So sánh 912 và 3.198 khung trên cùng phiên dữ liệu đã ghi.",
+    "tags": [
+      "Reconstruction",
+      "Đánh giá"
+    ],
+    "date": "2026-11-12"
+  },
+  {
+    "id": "floor-analysis",
+    "title": "Vì sao sàn còn lồi lõm?",
+    "category": "Báo cáo",
+    "summary": "Phân rã sai số depth và pose, cùng các thí nghiệm đã loại.",
+    "tags": [
+      "Depth",
+      "Sai số"
+    ],
+    "date": "2026-11-12"
+  },
+  {
+    "id": "live-guide",
+    "title": "Chạy một phiên quét mô phỏng",
+    "category": "Hướng dẫn",
+    "summary": "Khởi động, theo dõi phiên chạy và đọc dữ liệu đầu ra.",
+    "tags": [
+      "MuJoCo",
+      "Thực hành"
+    ],
+    "date": "2026-11-12"
+  },
+  {
+    "id": "navigation",
+    "title": "Lộ trình localization & navigation",
+    "category": "Công nghệ",
+    "summary": "Thiết kế giai đoạn tiếp theo trên bản đồ đã quét. Chưa triển khai end-to-end.",
+    "tags": [
+      "Navigation",
+      "Thiết kế"
+    ],
+    "date": "2026-11-13"
+  }
+]

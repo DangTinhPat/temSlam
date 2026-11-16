@@ -7,6 +7,20 @@ quét môi trường và dựng bản đồ bề mặt 3D dạng “đất sét�
 MuJoCo trên PC có GPU NVIDIA; **điều khiển và core SLAM không dùng ROS**.
 ROS/RViz chỉ phục vụ hiển thị.
 
+Đã có **prototype localization trên bản scan cố định**, runner replay/live và
+kiểm chứng 400 quan sát của phiên khác. Sai số hiện còn lớn hơn wheel/IMU;
+**chưa đạt để điều khiển tự hành**. Xem [cách chạy và các mốc](navigation/README.md)
+và [kết quả đối chiếu](../../evaluation/fixed_map_localization_results.md).
+Đã có [navigation chọn đích 2D](navigation/README.md#chạy-navigation), grid/A*,
+bám đường và demo động học. Bản scan hiện có 0 ô đủ khoảng hở sau inflation;
+chưa đạt navigation end-to-end. Xem [kết quả kiểm chứng](../../evaluation/navigation_results.md).
+Tuyến quét cố định vẫn dùng pose mô phỏng.
+
+Luồng live đã có [tách sàn sau depth fusion](navigation/README.md#tách-sàn-sau-fusion):
+giữ depth/mesh đầy đủ, lưu nhãn ground/obstacle/uncertain theo wheel/IMU và mount
+camera động. Grid dùng nhãn cùng bằng chứng tia gốc; nhãn sàn tự nó chưa đủ
+để chứng minh vùng đi được.
+
 Đây là prototype đang được kiểm chứng. Mesh nhìn liền mạch hoặc đẹp không tự
 chứng minh độ chính xác của depth, pose hay khả năng navigation.
 
@@ -79,7 +93,7 @@ flowchart TD
     F --> G
     H[Encoder bánh + gyro/IMU] --> I[Local odometry thân robot]
     J[Encoder cổ + động học thân/chân] --> K[Mount camera theo thời gian]
-    G --> L[Pose camera sau correction visual có gate]
+    G --> L[Pose cuối đã tối ưu, căn hệ một lần]
     I --> L
     K --> L
 
@@ -89,8 +103,8 @@ flowchart TD
     N --> O[Mesh và bridge hiển thị RViz]
 ```
 
-Luồng trên là cập nhật live. **Finalize sau quét** bổ sung bước surface matching
-để chỉnh pose rồi dựng lại TSDF; chi tiết ở bước 7 bên dưới.
+Luồng trên là cập nhật live. **Finalize sau quét** dựng lại TSDF từ lịch sử pose
+cuối đã tối ưu; không chỉnh pose bằng surface matching tuần tự.
 
 ## 3. Các bước xử lý
 
@@ -142,18 +156,15 @@ Encoder hai bánh và gyro tạo local odometry x/y/yaw với covariance, có ki
 bất đồng/nghi trượt. IMU cung cấp thông tin nghiêng thân. Camera gắn trên đầu
 quay nên cần mount thay đổi theo thời gian để quy đổi pose camera và thân.
 
-`BodyLocalization` dùng pose visual để hiệu chỉnh hệ map so với odometry.
-Correction qua gate để chặn bước nhảy lớn; đây là fusion **bên ngoài cuVSLAM**,
-không đưa wheel/IMU factors vào bộ tối ưu nội bộ của thư viện.
+Mapping lấy toàn bộ pose cuối từ cuVSLAM, dùng wheel/IMU và mount của frame đầu
+để căn hệ tọa độ một lần. Mọi hiệu chỉnh lịch sử, kể cả Z/roll/pitch, được giữ
+nguyên tương đối; không thay từng pose bằng odometry hoặc chặn loop closure lớn.
+Đây chưa phải đưa wheel/IMU factors vào bộ tối ưu nội bộ cuVSLAM.
 
-**Giả thiết hiện tại:** live dùng `level_floor=True`. Cao độ dựa vào bán kính bánh
-và động học trên nền ngang; roll/pitch theo IMU. Correction visual chỉ giữ X/Y/yaw
-sau căn hệ ban đầu, không sửa Z/roll/pitch. Đây là ràng buộc pose, không phải ép
-mesh sàn phẳng, nhưng chưa phù hợp định vị 6-DoF tổng quát trên dốc/bậc.
-
-Nếu visual correction bị gate từ chối, pose map tiếp tục dựa trên odometry và
-correction đã nhận trước đó. Tuy nhiên worker live hiện vẫn dừng khi cuVSLAM
-báo mất tracking; không có chế độ tự tiếp tục quét qua mất tracking.
+Wheel/IMU đối chiếu delta **visual odometry cục bộ**, không đối chiếu bước nhảy
+SLAM toàn cục. Mất tracking hoặc bất đồng delta quá 10 cm/0,15 rad sẽ dừng ghép,
+giữ sản phẩm hợp lệ gần nhất và báo lỗi. Ngưỡng hiện chỉ dành cho mô phỏng.
+`BodyLocalization` vẫn phục vụ nhánh định vị riêng, không cấp pose dựng map.
 
 ### Bước 6 — Cập nhật TSDF và mesh live
 
@@ -183,13 +194,14 @@ env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
 Lệnh ghi lại các file kết quả cuối trong thư mục phiên; sao lưu chúng trước nếu
 cần giữ bản cũ. Không finalize khi phiên còn đang ghi dữ liệu.
 
-Finalize dùng **surface matching point-to-plane** trên các mặt gần đứng để
-chỉnh X/Y/yaw theo từng frame. Correction có giới hạn; mặt tường đơn thiếu
-ràng buộc thì không được dùng để sửa tùy ý. Bước này giữ nguyên cao độ/roll/pitch.
+Khi dừng bình thường, tracker xuất lại lịch sử pose tối ưu kể cả khi frame cuối
+không được giữ làm keyframe. Loop closure trên frame không giữ cũng cập nhật
+cloud/sequence; mesh live dựng lại khi pose đổi dù số keyframe không tăng.
 
-Sau đó TSDF được dựng lại theo pose đã chỉnh, xuất `final_mesh.stl` và
-`final_mesh.ply`. Đây là tinh chỉnh tuần tự sau quét, **chưa phải pose graph toàn
-cục, matching 6-DoF realtime hay tối ưu depth đa khung**.
+Finalize dựng lại TSDF theo lịch sử này, xuất `final_mesh.stl` và `final_mesh.ply`.
+Không chạy surface matching tuần tự để tránh ghi đè nghiệm toàn cục. Finalize
+phiên cũ chỉ dựng lại theo pose đã lưu, không tự chạy lại SLAM hay sửa dữ liệu cũ.
+Xem [kết quả kiểm tra loop closure](../../evaluation/slam_loop_results.md).
 
 ## 4. Chúng ta đã có VIO chưa?
 
@@ -304,12 +316,17 @@ chỉ dựng sau quét để giảm tải tracking. Theo dõi đường dẫn đ
 
 ### Mở kết quả hiện tại trong RViz
 
+**Bản scan mặc định được chọn:** `room-floor-preserved-20261112` (không ép phẳng
+sàn). Launcher không có đối số sẽ luôn mở bản này, không tự chọn phiên mới nhất.
+
 ```bash
-technology/scan3d_fusion/viewer/run_clay_rviz.sh \
-  datasets/processed/scan3d_fusion/room-floor-preserved-20261112/final_mesh.stl
+technology/scan3d_fusion/viewer/run_clay_rviz.sh
 ```
 
-Đây là mở mesh đã lưu, không khởi chạy lượt SLAM mới.
+Đây là mở mesh đã lưu, không khởi chạy lượt SLAM mới. Truyền đường dẫn STL nếu
+muốn xem bản khác. Việc chọn mặc định không thay scene nhà gốc hoặc map của
+phiên live mới. Mesh nằm trong dataset cục bộ, không được đóng gói trong Git;
+cần giữ thư mục kết quả để mở được bản mặc định trên máy này.
 
 ### Phát lại dữ liệu đã ghi
 

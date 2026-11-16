@@ -49,6 +49,33 @@ def set_handheld_pose(data, camera_offset, camera_rotation, position, target):
     data.qpos[3:7] = quaternion
 
 
+def closest_cluster(values, sensor):
+    """Pure current closest-significant-return selection, before sensor noise.
+
+    Bounds are inclusive, matching the existing capture reducer. Returned moments
+    are over the original in-range rays inside the chosen histogram-bin interval.
+    """
+    values = np.asarray(values).ravel()
+    values = values[np.isfinite(values) & (values >= sensor["min_range_m"]) &
+                    (values <= sensor["max_range_m"])]
+    if len(values) < 32:
+        return None
+    counts, edges = np.histogram(values, bins=np.arange(0, 4.04, .04))
+    occupied = np.flatnonzero(counts >= max(3, counts.max() * .1))
+    if not len(occupied):
+        return None
+    clusters = np.split(occupied, np.flatnonzero(np.diff(occupied) > 1) + 1)
+    cluster = next((c for c in clusters if counts[c].sum() >= len(values)*.2), None)
+    if cluster is None:
+        return None
+    low, high = edges[cluster[0]], edges[cluster[-1]+1]
+    selected = values[(values >= low) & (values <= high)]
+    return dict(mean_m=float(selected.mean()), std_m=float(selected.std()),
+                low_m=float(low), high_m=float(high), selected_count=len(selected),
+                valid_count=len(values), significant_clusters=len(clusters),
+                whole_mean_m=float(values.mean()), whole_std_m=float(values.std()))
+
+
 def zone_statistics(depth, sensor, rng):
     """Approximate a zone return with many rays, in ToF optical-Z metres."""
     if depth.shape != (128, 128):
@@ -58,28 +85,16 @@ def zone_statistics(depth, sensor, rng):
     for row in range(8):
         for col in range(8):
             values = depth[row*16:(row+1)*16, col*16:(col+1)*16].ravel()
-            values = values[np.isfinite(values) & (values >= sensor["min_range_m"]) &
-                            (values <= sensor["max_range_m"])]
-            if len(values) < 32:
+            selected = closest_cluster(values, sensor)
+            if selected is None:
                 continue
-            # shortcut: equal-area rays approximate a return distribution; no photon/reflectance model.
-            counts, edges = np.histogram(values, bins=np.arange(0, 4.04, .04))
-            occupied = np.flatnonzero(counts >= max(3, counts.max() * .1))
-            if not len(occupied):
-                continue
-            clusters = np.split(occupied, np.flatnonzero(np.diff(occupied) > 1) + 1)
-            # The RB sensor is configured for the closest significant target.
-            cluster = next((c for c in clusters if counts[c].sum() >= len(values)*.2), None)
-            if cluster is None:
-                continue
-            selected = values[(values >= edges[cluster[0]]) & (values <= edges[cluster[-1]+1])]
-            mean = float(selected.mean())
+            mean = selected["mean_m"]
             noise = sensor["noise"]
             bound = float(noise["near_accuracy_m"]) if mean <= .2 else mean*float(noise["far_accuracy_fraction"])
             sigma_noise = bound * float(noise["sigma_fraction_of_bound"])
             index = row*8+col
             hist[index] = [np.clip(mean+rng.normal(0, sigma_noise), .02, 4),
-                           max(.005, math.hypot(float(selected.std()), sigma_noise))]
+                           max(.005, math.hypot(selected["std_m"], sigma_noise))]
             valid[index] = True
     return hist, valid
 

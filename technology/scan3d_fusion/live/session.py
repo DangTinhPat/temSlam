@@ -66,8 +66,13 @@ class LiveSession:
         # Tracking saves its database on a clean stop; terminate only owned process groups afterwards.
         for name,child in self.children:
             if name=='slam':
-                try: child.wait(timeout=3)
-                except subprocess.TimeoutExpired: pass
+                # shortcut: allow 60s for up to 4096 views; report timeout if larger sessions need more.
+                try:
+                    clean=child.wait(timeout=60)==0
+                    reason='completed' if clean else 'SLAM worker failed'
+                except subprocess.TimeoutExpired:
+                    clean=False;reason='Timed out waiting for final SLAM history/map export'
+                (self.session/'slam_shutdown.json').write_text(json.dumps(dict(clean_stop=clean,reason=reason))+'\n')
         for _,child in self.children:
             if child.poll() is None:
                 try: os.killpg(child.pid,signal.SIGTERM)

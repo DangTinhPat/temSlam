@@ -1,0 +1,160 @@
+{
+  "status": "NOT ACCEPTED: no new navigation-quality map",
+  "raw_session": "datasets/raw/tof-20261112-094256-483079",
+  "sparse_replay": {
+    "source": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/room-cuvslam-diagnostic-20261114",
+    "frames": 3198,
+    "max_truth_timestamp_offset_s": 0.0,
+    "truth_scope": "Evaluator only; no truth enters tracker or reconstruction",
+    "trajectories": {
+      "old_gated_odometry_map": {
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "matched_frames": 3198,
+        "ate_se3_rmse_m": 0.22944401908915665,
+        "ate_first_pose_rmse_m": 0.5482442732269771,
+        "rpe_adjacent_translation_rmse_m": 0.01407992383194131,
+        "rpe_adjacent_rotation_rmse_deg": 0.3527091855703779,
+        "ground_truth_path_m": 124.07904183251378,
+        "estimated_path_m": 127.35100094847908
+      },
+      "cuvslam_immediate": {
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "matched_frames": 3198,
+        "ate_se3_rmse_m": 142.3086573303684,
+        "ate_first_pose_rmse_m": 280.258793522189,
+        "rpe_adjacent_translation_rmse_m": 6.826842450248897,
+        "rpe_adjacent_rotation_rmse_deg": 33.20685570397967,
+        "ground_truth_path_m": 124.07904183251378,
+        "estimated_path_m": 2090.6433711819554
+      },
+      "cuvslam_final_optimized": {
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "matched_frames": 3198,
+        "ate_se3_rmse_m": 142.30849825196952,
+        "ate_first_pose_rmse_m": 280.2584087096441,
+        "rpe_adjacent_translation_rmse_m": 6.82683721762075,
+        "rpe_adjacent_rotation_rmse_deg": 33.206855744023706,
+        "ground_truth_path_m": 124.07904183251378,
+        "estimated_path_m": 2090.6420363932393
+      }
+    }
+  },
+  "continuous_replay": {
+    "source": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/room-cuvslam-continuous-diagnostic-20261114",
+    "frames": 750,
+    "max_truth_timestamp_offset_s": 0.0,
+    "truth_scope": "Evaluator only; no truth enters tracker or reconstruction",
+    "trajectories": {
+      "old_gated_odometry_common_frames": {
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "matched_frames": 77,
+        "ate_se3_rmse_m": 0.04222046714875982,
+        "ate_first_pose_rmse_m": 0.08206569327889046,
+        "rpe_adjacent_translation_rmse_m": 0.02353603500526706,
+        "rpe_adjacent_rotation_rmse_deg": 0.4540552011044076,
+        "ground_truth_path_m": 3.83515070916754,
+        "estimated_path_m": 4.36632155490393
+      },
+      "cuvslam_immediate": {
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "matched_frames": 750,
+        "ate_se3_rmse_m": 9.241227324063937,
+        "ate_first_pose_rmse_m": 10.828614464306733,
+        "rpe_adjacent_translation_rmse_m": 0.8427182499283267,
+        "rpe_adjacent_rotation_rmse_deg": 8.7380285597861,
+        "ground_truth_path_m": 6.5665622443985265,
+        "estimated_path_m": 79.51178916407721
+      },
+      "cuvslam_final_optimized": {
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "matched_frames": 750,
+        "ate_se3_rmse_m": 9.240888478858793,
+        "ate_first_pose_rmse_m": 10.83743783703684,
+        "rpe_adjacent_translation_rmse_m": 0.842406798787262,
+        "rpe_adjacent_rotation_rmse_deg": 8.731383381992195,
+        "ground_truth_path_m": 6.5665622443985265,
+        "estimated_path_m": 78.77239280350787
+      },
+      "cuvslam_local_odometry": {
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "matched_frames": 750,
+        "ate_se3_rmse_m": 9.369875623183749,
+        "ate_first_pose_rmse_m": 11.152114654835342,
+        "rpe_adjacent_translation_rmse_m": 0.8420496208406143,
+        "rpe_adjacent_rotation_rmse_deg": 8.684590129467383,
+        "ground_truth_path_m": 6.5665622443985265,
+        "estimated_path_m": 77.37167617551648
+      }
+    }
+  },
+  "continuous_loop_metrics_unique_timestamps": 18,
+  "continuous_observations_min": 0,
+  "earlier_same_input_run": {
+    "local": {
+      "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+      "matched_frames": 750,
+      "ate_se3_rmse_m": 76.33763046035374,
+      "ate_first_pose_rmse_m": 135.2938965800111,
+      "rpe_adjacent_translation_rmse_m": 5.53521492517976,
+      "rpe_adjacent_rotation_rmse_deg": 8.907657952301006,
+      "ground_truth_path_m": 6.566562244398526,
+      "estimated_path_m": 226.23904982103585
+    },
+    "immediate": {
+      "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+      "matched_frames": 750,
+      "ate_se3_rmse_m": 76.27208546070784,
+      "ate_first_pose_rmse_m": 135.1604533031414,
+      "rpe_adjacent_translation_rmse_m": 5.535232272852897,
+      "rpe_adjacent_rotation_rmse_deg": 8.915847291395991,
+      "ground_truth_path_m": 6.566562244398526,
+      "estimated_path_m": 226.64058531751797
+    },
+    "final": {
+      "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+      "matched_frames": 750,
+      "ate_se3_rmse_m": 76.26721061841437,
+      "ate_first_pose_rmse_m": 135.16592277542912,
+      "rpe_adjacent_translation_rmse_m": 5.534897473210441,
+      "rpe_adjacent_rotation_rmse_deg": 11.766890301883324,
+      "ground_truth_path_m": 6.566562244398526,
+      "estimated_path_m": 231.14860131037625
+    },
+    "n": 750,
+    "features_min": 0,
+    "features_median": 253.5
+  },
+  "guarded_replay": {
+    "input_frames": 750,
+    "tracked_frames": 73,
+    "failure": {
+      "index": 73,
+      "file": "00073.h5",
+      "reason": "Local visual motion disagrees with wheel/IMU: 0.012m, 9.5deg; stop mapping, no pose substitution"
+    },
+    "complete": false,
+    "map_saved": false,
+    "odometry_file": "datasets/raw/tof-20261112-094256-483079/odometry.jsonl",
+    "map_pose_policy": "all final optimized SLAM poses; no per-frame odometry veto",
+    "loop_closure_success_frames": 0,
+    "loop_closure_pose_count": 0,
+    "pose_graph_nodes": 0,
+    "pose_graph_edges": 0,
+    "tracker_ms_median": 2.3274910054169595,
+    "tracker_ms_p95": 7.365884346654639,
+    "input_interval_s_median": 0.2,
+    "mode": "synchronous offline, CUDA; timing excludes DELTAR and ToF preprocessing"
+  },
+  "tests": {
+    "adapter": 8,
+    "live": 13,
+    "reconstruction": 31,
+    "navigation": 67
+  },
+  "caveats": [
+    "GPU replay not deterministic: both continuous runs fail quality; no best-run selection as success",
+    "Ground truth read only by evaluator, never used by tracker, initial alignment or reconstruction",
+    "Old map has not been regenerated or promoted; no full 15Hz replay or hardware test",
+    "Wheel/IMU local sanity thresholds are simulation bounds, not calibrated covariance fusion"
+  ]
+}

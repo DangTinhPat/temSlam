@@ -88,6 +88,9 @@ def main():
         if backend.map_session:
             (backend.map_session/'headless_result.json').write_text(json.dumps(result, indent=2)+'\n')
     env = os.environ.copy()
+    shutdown=json.loads((session/'slam_shutdown.json').read_text())
+    if not shutdown['clean_stop']:
+        raise RuntimeError('Refuse finalize after incomplete SLAM shutdown: '+shutdown['reason'])
     env.pop('PYTHONPATH', None)
     env['MUJOCO_GL'] = 'egl'
     python = '/home/dvt/.venvs/deltar/bin/python'

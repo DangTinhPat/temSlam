@@ -78,7 +78,9 @@ X hướng trước/Y trái/Z lên khi camera đầu tiên nằm ngang. Không d
   trong ảnh. Bounds lấy từ depth quan sát, không lấy kích thước sofa ground truth.
 
 Nếu tracking mất, adapter dừng và trả exit code 2, vẫn ghi đoạn hợp lệ và báo
-frame lỗi. Không nối tiếp mù qua một lần tracker đổi gốc tọa độ.
+frame lỗi. Database SDK không được lưu sau lỗi vì frame vừa bị loại có thể đã
+thay đổi graph nội bộ; đoạn trajectory xuất dùng snapshot tối ưu trước lỗi.
+Không nối tiếp mù qua một lần tracker đổi gốc tọa độ.
 
 ## Cổ robot và tích hợp luồng ảnh
 
@@ -120,6 +122,20 @@ cuVSLAM không sửa trực tiếp bề mặt depth sai.
 Thêm `--odometry PATH/odometry.jsonl` khi chạy `track_rgbd.py`. Capture phải có
 `body_from_camera` và timestamps cùng nguồn với odometry (sai lệch tối đa 20 ms).
 Leading MAPRESET được phép; reset giữa log phải chia thành session riêng.
-Adapter giữ `visual_camera_to_world` để đối chiếu, xuất camera pose sau correction
-trong `camera_to_world` và pose local/global trong `localization`. Chạy TSDF với
-`--trajectory` như bình thường. Xem [lượt chạy đầy đủ](../../../../evaluation/full_pipeline_results.md).
+Adapter giữ `visual_camera_to_world` để đối chiếu. `camera_to_world` dùng toàn bộ
+pose cuối đã tối ưu, chỉ căn hệ một lần bằng wheel/IMU và mount ở frame đầu.
+Không gate từng correction SLAM, thay cao độ/roll/pitch hay truyền pose qua
+surface matching tuần tự. `body_to_world` được quy đổi bằng mount từng frame;
+không còn trường `localization` trong đầu ra mapping này. `track_body()` vẫn là
+giao diện định vị bên ngoài riêng, không phải nguồn pose dựng map.
+
+Wheel/IMU kiểm tra **delta odometry visual cục bộ**, tách khỏi pose SLAM có bước
+nhảy loop closure. Nếu bất đồng quá 10 cm hoặc 0,15 rad giữa hai ảnh, replay
+dừng, trả exit code 2 và ghi đoạn đã giữ; không chèn pose encoder để tiếp tục.
+Đây là ngưỡng sanity cho mô phỏng, chưa phải fusion covariance cho phần cứng.
+`tracking.json` ghi coverage, failure và bằng chứng loop closure/pose graph;
+có pose hoặc có loop closure không tự chứng minh bản đồ đúng.
+
+Chạy TSDF với `--trajectory` như bình thường. Các lượt chạy cũ trong
+[báo cáo pipeline](../../../../evaluation/full_pipeline_results.md) dùng chính
+sách fusion cũ; xem [kiểm tra loop closure hiện tại](../../../../evaluation/slam_loop_results.md).

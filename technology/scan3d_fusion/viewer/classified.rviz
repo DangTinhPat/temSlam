@@ -1,0 +1,64 @@
+Panels:
+- Class: rviz_common/Displays
+  Name: Displays
+Visualization Manager:
+  Class: ''
+  Displays:
+  - Class: rviz_default_plugins/PointCloud2
+    Enabled: true
+    Name: Obstacles only - diagnostic
+    Color Transformer: FlatColor
+    Color: 74; 89; 104
+    Size (m): 0.018
+    Style: Flat Squares
+    Topic:
+      Value: /rb_classified/obstacle
+      Reliability Policy: Reliable
+      Durability Policy: Transient Local
+  - Class: rviz_default_plugins/PointCloud2
+    Enabled: false
+    Name: Uncertain - hidden does NOT mean free
+    Color Transformer: FlatColor
+    Color: 207; 130; 33
+    Size (m): 0.018
+    Style: Flat Squares
+    Topic:
+      Value: /rb_classified/uncertain
+      Reliability Policy: Reliable
+      Durability Policy: Transient Local
+  - Class: rviz_default_plugins/PointCloud2
+    Enabled: false
+    Name: Confirmed ground evidence
+    Color Transformer: FlatColor
+    Color: 83; 151; 113
+    Size (m): 0.018
+    Style: Flat Squares
+    Topic:
+      Value: /rb_classified/ground
+      Reliability Policy: Reliable
+      Durability Policy: Transient Local
+  - Class: rviz_default_plugins/Marker
+    Enabled: true
+    Name: DIAGNOSTIC - pose unvalidated
+    Topic:
+      Value: /rb_classified/status
+      Reliability Policy: Reliable
+      Durability Policy: Transient Local
+  Global Options:
+    Background Color: 245; 242; 233
+    Fixed Frame: map
+    Frame Rate: 30
+  Tools:
+  - Class: rviz_default_plugins/MoveCamera
+  - Class: rviz_default_plugins/FocusCamera
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 1.0
+      Focal Point: {X: 0, Y: 0, Z: 0}
+      Name: Classified measured PLY - diagnostic
+      Pitch: 0.55
+      Yaw: -1.5
+Window Geometry:
+  Height: 900
+  Width: 1400

@@ -1,0 +1,22 @@
+{
+  "fixture": "Two source pixels per ToF ray:front1.04m,rear1.065m; hidden rear wins neighborzone43 after proposal while surfacefitcomesfromzone42",
+  "analytic_only": true,
+  "real_data_bias_run": false,
+  "layer_gap_m": 0.025,
+  "fit_p90_residual_m": 0.013415518491660894,
+  "rear_source_passes_original_surface": true,
+  "original_selected_residual_m": 0.03999999999999959,
+  "proposed_selected_residual_m": 0.0,
+  "original_neighbor_owner": 21608,
+  "proposed_neighbor_owner": 21609,
+  "proposed_geometry_predicate_rejections": [],
+  "verdict": "REJECTED:continuous-surface owner exception cannot distinguish25mm layers under frozen criteria",
+  "safe_action": "Corrected-depth API forbids surface owner policy; runner uses strict exact-owner identity; no threshold tightening or real-data bias trial",
+  "code_sha256": {
+    "evaluation/diagnose_return_consistency.py": "5dcfd41e48c9a0e985c49f89437ad5b61eed1bd60349a53535859ab33e3c71de",
+    "evaluation/run_return_variants.py": "668f531f04a2d222e577d8ceb9ad05f2aa5f1cfae1934635b75d9d639fcc083d"
+  },
+  "strict_global_owner_gate_rejections": [
+    "occlusion/source ownership changed"
+  ]
+}

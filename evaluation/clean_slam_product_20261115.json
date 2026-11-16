@@ -1,0 +1,449 @@
+{
+  "status": "IN PROGRESS: NO ACCEPTED CLEAN MAP",
+  "team": {
+    "plan": "gpt-6-astra high",
+    "coding": "gpt-6.1-sol medium",
+    "review_test": "gpt-6.1-sol high"
+  },
+  "native_tracking_gate": "FAIL: not all3repeats within position/angular error limits",
+  "runs": [
+    {
+      "label": "Native15Hz repeat1",
+      "folder": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-guarded-r1-20261115",
+      "oracle_depth_control": false,
+      "accepted_map": false,
+      "tracking": {
+        "input_frames": 150,
+        "tracked_frames": 150,
+        "complete": true,
+        "failure": null,
+        "map_saved": false
+      },
+      "metrics": {
+        "matched_frames": 150,
+        "duration_s": 9.940000000000055,
+        "ate_se3_rmse_m": 0.03964976547438986,
+        "ate_first_pose_rmse_m": 0.06707494921164557,
+        "first_pose_rotation_rmse_deg": 1.945643649697254,
+        "endpoint_translation_error_m": 0.1060494082739941,
+        "endpoint_rotation_error_deg": 3.6496661942154107,
+        "rpe_1s_pairs": 136,
+        "rpe_1s_translation_rmse_m": 0.01710726427065189,
+        "rpe_1s_rotation_rmse_deg": 0.5387885046122898,
+        "rpe_target_interval_s": 1.0,
+        "rpe_timestamp_tolerance_s": 0.1,
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "rpe_adjacent_translation_rmse_m": 0.001462679552122365,
+        "rpe_adjacent_rotation_rmse_deg": 0.05064781038618084,
+        "ground_truth_path_m": 1.1914877824823251,
+        "estimated_path_m": 1.0975199865625314,
+        "first_pose_translation_max_m": 0.10828897148121348,
+        "first_pose_translation_p95_m": 0.10756800697029108,
+        "first_pose_rotation_max_deg": 3.6496661942154107,
+        "first_pose_rotation_p95_deg": 3.4870100595906233
+      }
+    },
+    {
+      "label": "Native15Hz repeat2",
+      "folder": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-guarded-r2-20261115",
+      "oracle_depth_control": false,
+      "accepted_map": false,
+      "tracking": {
+        "input_frames": 150,
+        "tracked_frames": 150,
+        "complete": true,
+        "failure": null,
+        "map_saved": false
+      },
+      "metrics": {
+        "matched_frames": 150,
+        "duration_s": 9.940000000000055,
+        "ate_se3_rmse_m": 0.034144660992414186,
+        "ate_first_pose_rmse_m": 0.05961896595571027,
+        "first_pose_rotation_rmse_deg": 1.5219559887702854,
+        "endpoint_translation_error_m": 0.09506636852285262,
+        "endpoint_rotation_error_deg": 2.535253871775335,
+        "rpe_1s_pairs": 136,
+        "rpe_1s_translation_rmse_m": 0.0157549478335911,
+        "rpe_1s_rotation_rmse_deg": 0.46256955905074104,
+        "rpe_target_interval_s": 1.0,
+        "rpe_timestamp_tolerance_s": 0.1,
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "rpe_adjacent_translation_rmse_m": 0.001953398826082163,
+        "rpe_adjacent_rotation_rmse_deg": 0.06508324605579738,
+        "ground_truth_path_m": 1.1914877824823251,
+        "estimated_path_m": 1.1243483375534715,
+        "first_pose_translation_max_m": 0.09556232257961503,
+        "first_pose_translation_p95_m": 0.09478443693216405,
+        "first_pose_rotation_max_deg": 2.538856418159161,
+        "first_pose_rotation_p95_deg": 2.5094011481956446
+      }
+    },
+    {
+      "label": "Native15Hz repeat3",
+      "folder": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-guarded-r3-20261115",
+      "oracle_depth_control": false,
+      "accepted_map": false,
+      "tracking": {
+        "input_frames": 150,
+        "tracked_frames": 150,
+        "complete": true,
+        "failure": null,
+        "map_saved": false
+      },
+      "metrics": {
+        "matched_frames": 150,
+        "duration_s": 9.940000000000055,
+        "ate_se3_rmse_m": 0.026840866565429188,
+        "ate_first_pose_rmse_m": 0.04621635918374845,
+        "first_pose_rotation_rmse_deg": 1.2520702692633132,
+        "endpoint_translation_error_m": 0.0767431738390859,
+        "endpoint_rotation_error_deg": 2.5772519698433225,
+        "rpe_1s_pairs": 136,
+        "rpe_1s_translation_rmse_m": 0.012804260221222876,
+        "rpe_1s_rotation_rmse_deg": 0.3985140912967962,
+        "rpe_target_interval_s": 1.0,
+        "rpe_timestamp_tolerance_s": 0.1,
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "rpe_adjacent_translation_rmse_m": 0.0013271745864416563,
+        "rpe_adjacent_rotation_rmse_deg": 0.044463502465392477,
+        "ground_truth_path_m": 1.1914877824823251,
+        "estimated_path_m": 1.1271734784633396,
+        "first_pose_translation_max_m": 0.0772910474872736,
+        "first_pose_translation_p95_m": 0.07661681003104341,
+        "first_pose_rotation_max_deg": 2.5772519698433225,
+        "first_pose_rotation_p95_deg": 2.4637879157228184
+      }
+    },
+    {
+      "label": "Same-input5Hz decimation",
+      "folder": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-decimated5hz-guarded-20261115",
+      "oracle_depth_control": false,
+      "accepted_map": false,
+      "tracking": {
+        "input_frames": 50,
+        "tracked_frames": 50,
+        "complete": true,
+        "failure": null,
+        "map_saved": false
+      },
+      "metrics": {
+        "matched_frames": 50,
+        "duration_s": 9.800000000000182,
+        "ate_se3_rmse_m": 0.08252776292562568,
+        "ate_first_pose_rmse_m": 0.21624587629240158,
+        "first_pose_rotation_rmse_deg": 3.4016891595919914,
+        "endpoint_translation_error_m": 0.28355788736267984,
+        "endpoint_rotation_error_deg": 4.489171793384246,
+        "rpe_1s_pairs": 45,
+        "rpe_1s_translation_rmse_m": 0.04088109102196746,
+        "rpe_1s_rotation_rmse_deg": 0.980837179475986,
+        "rpe_target_interval_s": 1.0,
+        "rpe_timestamp_tolerance_s": 0.1,
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "rpe_adjacent_translation_rmse_m": 0.009398086560140654,
+        "rpe_adjacent_rotation_rmse_deg": 0.23263948817797966,
+        "ground_truth_path_m": 1.1753811864781902,
+        "estimated_path_m": 0.9319097378951517,
+        "first_pose_translation_max_m": 0.2857134576726169,
+        "first_pose_translation_p95_m": 0.2852990506508971,
+        "first_pose_rotation_max_deg": 5.015086810199087,
+        "first_pose_rotation_p95_deg": 4.9590970094255455
+      }
+    },
+    {
+      "label": "ORACLE SAME MASK CONTROL ONLY",
+      "folder": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/evaluator-only-oracle-depth-control-20261115",
+      "oracle_depth_control": true,
+      "accepted_map": false,
+      "tracking": {
+        "input_frames": 150,
+        "tracked_frames": 150,
+        "complete": null,
+        "failure": null,
+        "map_saved": false
+      },
+      "metrics": {
+        "matched_frames": 150,
+        "duration_s": 9.940000000000055,
+        "ate_se3_rmse_m": 0.022031278846874523,
+        "ate_first_pose_rmse_m": 0.05550497041633876,
+        "first_pose_rotation_rmse_deg": 2.23841452724002,
+        "endpoint_translation_error_m": 0.07157356074888363,
+        "endpoint_rotation_error_deg": 4.1097421769684255,
+        "rpe_1s_pairs": 136,
+        "rpe_1s_translation_rmse_m": 0.014500981123323537,
+        "rpe_1s_rotation_rmse_deg": 0.519932182369896,
+        "rpe_target_interval_s": 1.0,
+        "rpe_timestamp_tolerance_s": 0.1,
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "rpe_adjacent_translation_rmse_m": 0.0012522710601920427,
+        "rpe_adjacent_rotation_rmse_deg": 0.04508184116174246,
+        "ground_truth_path_m": 1.1914877824823251,
+        "estimated_path_m": 1.1478501598264441,
+        "first_pose_translation_max_m": 0.08713915195159586,
+        "first_pose_translation_p95_m": 0.08631016217180017,
+        "first_pose_rotation_max_deg": 4.1097421769684255,
+        "first_pose_rotation_p95_deg": 3.940553245374685
+      }
+    },
+    {
+      "label": "ORACLE FULL COVERAGE CONTROL ONLY",
+      "folder": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/evaluator-only-full-oracle-depth-control-20261115",
+      "oracle_depth_control": true,
+      "accepted_map": false,
+      "tracking": {
+        "input_frames": 150,
+        "tracked_frames": 150,
+        "complete": null,
+        "failure": null,
+        "map_saved": false
+      },
+      "metrics": {
+        "matched_frames": 150,
+        "duration_s": 9.940000000000055,
+        "ate_se3_rmse_m": 0.010952773456323046,
+        "ate_first_pose_rmse_m": 0.019297972913347394,
+        "first_pose_rotation_rmse_deg": 0.8855718763259466,
+        "endpoint_translation_error_m": 0.04571623184688503,
+        "endpoint_rotation_error_deg": 2.1272508693435213,
+        "rpe_1s_pairs": 136,
+        "rpe_1s_translation_rmse_m": 0.0074943515891947535,
+        "rpe_1s_rotation_rmse_deg": 0.32413683639275137,
+        "rpe_target_interval_s": 1.0,
+        "rpe_timestamp_tolerance_s": 0.1,
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "rpe_adjacent_translation_rmse_m": 0.0008637579607606334,
+        "rpe_adjacent_rotation_rmse_deg": 0.03320130863313592,
+        "ground_truth_path_m": 1.1914877824823251,
+        "estimated_path_m": 1.1631491463607233,
+        "first_pose_translation_max_m": 0.04571623184688503,
+        "first_pose_translation_p95_m": 0.04186274807497984,
+        "first_pose_rotation_max_deg": 2.1272508693435213,
+        "first_pose_rotation_p95_deg": 1.9349600220648082
+      }
+    },
+    {
+      "label": "Full DELTAR prediction TRACKING DIAGNOSTIC ONLY",
+      "folder": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/full-prediction-tracking-diagnostic-r1-20261115",
+      "oracle_depth_control": false,
+      "accepted_map": false,
+      "tracking": {
+        "input_frames": 150,
+        "tracked_frames": 150,
+        "complete": true,
+        "failure": null,
+        "map_saved": false
+      },
+      "metrics": {
+        "matched_frames": 150,
+        "duration_s": 9.940000000000055,
+        "ate_se3_rmse_m": 0.044802848845897025,
+        "ate_first_pose_rmse_m": 0.11901122373994162,
+        "first_pose_rotation_rmse_deg": 5.194933340431463,
+        "endpoint_translation_error_m": 0.19315686116275807,
+        "endpoint_rotation_error_deg": 10.284675691795378,
+        "rpe_1s_pairs": 136,
+        "rpe_1s_translation_rmse_m": 0.028340435747951385,
+        "rpe_1s_rotation_rmse_deg": 1.190806298421887,
+        "rpe_target_interval_s": 1.0,
+        "rpe_timestamp_tolerance_s": 0.1,
+        "alignment": "SE3, no scale fitting; ground truth used only by evaluator",
+        "rpe_adjacent_translation_rmse_m": 0.0021229401884354567,
+        "rpe_adjacent_rotation_rmse_deg": 0.08619844332420906,
+        "ground_truth_path_m": 1.1914877824823251,
+        "estimated_path_m": 1.0758622832015545,
+        "first_pose_translation_max_m": 0.19346325374198978,
+        "first_pose_translation_p95_m": 0.192078188799566,
+        "first_pose_rotation_max_deg": 10.284675691795378,
+        "first_pose_rotation_p95_deg": 9.727979582963744
+      }
+    }
+  ],
+  "static_control": {
+    "source": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-native-20261115",
+    "control": "Identical measured first RGB-D image repeated at native timestamps; not a captured trajectory or map",
+    "frames": 150,
+    "max_translation_m": 0.0,
+    "max_rotation_deg": 0.0,
+    "ground_truth_used": false
+  },
+  "source_hashes": {
+    "prepared_source": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-native-20261115",
+    "hashes": {
+      "rgb_tof_h5": {
+        "files": 150,
+        "sha256": "021698c106af198d26def6b8708412fc67a6453572bd0df53a13e7ea5b7c2f84"
+      },
+      "fusion_keyframes": {
+        "files": 150,
+        "sha256": "8adb72f403f63ec679831aaee837477f3163c5bb26bc993063aac6b3ab875755"
+      }
+    },
+    "frames": 150,
+    "first": 2671.0,
+    "last": 2680.94,
+    "timestamp_gaps_s": [
+      0.06,
+      0.07
+    ],
+    "timestamps_sha256": "323280df4e3fb977c444fa833221ffbbcfba3e75b0a387eb4100759a7a456095",
+    "max_odom_offset_s": 0.005000000000109139,
+    "purpose": "Immutable shared input signature for all estimator repeats and decimated same-input control"
+  },
+  "diagnostic_obstacle_product": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-obstacle-diagnostic-r1-20261115",
+  "notes": [
+    "Oracle controls remain isolated from accepted estimation and map export.",
+    "Global ToF-scale cohorts rejected; production depth support is unchanged.",
+    "Unfiltered DELTAR tracking worsened error and was rejected.",
+    "Two new native input previews failed the frozen observability screen.",
+    "Spatial fusion contract correction was measured in3SDK repeats; run3maximumangle3.32365deg failsGateA. It remains diagnostic with original checkpoint/defaults preserved."
+  ],
+  "current_status": "IN_PROGRESS: no accepted floor-free or loop-consistent replacement map",
+  "sensor_constraint": "Keep one RGB camera + ToF8x8; existing wheel/IMU permitted",
+  "quality_review": "evaluation/clean_slam_floor_quality_review_20261115.json",
+  "native_capture_previews": [
+    {
+      "source": "tof-20261115-231821-438519",
+      "passed_frames": 1,
+      "total_frames": 59,
+      "full_route": false,
+      "report": "evaluation/controlled_capture_screen_20261115.json"
+    },
+    {
+      "source": "tof-20261115-232236-759090",
+      "passed_frames": 0,
+      "total_frames": 60,
+      "full_route": false,
+      "report": "evaluation/coffee_capture_screen_20261115.json"
+    }
+  ],
+  "material_control": {
+    "status": "No feature support improvement; no full capture or tracking",
+    "report": "evaluation/material_control_pairs_20261115.json"
+  },
+  "next_experiment": "This bounded pilot stopped after failed predeclared quality checks. Original production defaults retained; no fresh-test capture, longer training, SDK probe, map export or navigation claim from this candidate.",
+  "spatial_ablation": {
+    "status": "Diagnostic only; three-repeat Gate A fails maximum angle in run3",
+    "floor_report": "evaluation/clean_slam_spatial_floor_comparison_20261115.json",
+    "coverage_report": "evaluation/deltar_spatial_coverage_20261115.json",
+    "raw_and_checkpoint_unchanged": true,
+    "tracking": [
+      {
+        "run": 1,
+        "rmse_m": 0.045430747720561514,
+        "max_angle_deg": 2.6386820754480085,
+        "max_position_m": 0.07402733922949807
+      },
+      {
+        "run": 2,
+        "rmse_m": 0.04011218108052327,
+        "max_angle_deg": 1.9881598121496147,
+        "max_position_m": 0.06370639643306956
+      },
+      {
+        "run": 3,
+        "rmse_m": 0.04679449611685129,
+        "max_angle_deg": 3.323648187050394,
+        "max_position_m": 0.07387249362048787
+      }
+    ]
+  },
+  "return_semantics_trial": {
+    "status": "REJECTED: all three variants fail physical floor/obstacle coverage",
+    "report": "evaluation/return_variants_20261115/quality.json",
+    "chronological_merge": "datasets/processed/scan3d_fusion/fixed-neck-return-variants-20261115/context_merge.json",
+    "frames_per_row": 150,
+    "modified_context_frames": 30,
+    "accepted_bias_proposals_per_row": 0,
+    "baseline_confirmed_frames": 69,
+    "candidate_confirmed_frames": 43,
+    "unsafe_owner_exception_disabled": true,
+    "production_changed": false,
+    "map_accepted": false,
+    "floor_review": "evaluation/clean_slam_return_variants_floor_review_20261115.json",
+    "fixed_floor_recall": "0/10747",
+    "fixed_obstacle_retained_fraction": 0.82266,
+    "baseline_obstacle_depth_lost_fraction": 0.17734,
+    "common_floor_height_p95_mm_before_after": [
+      67.412,
+      72.684
+    ]
+  },
+  "supervised_pilot": {
+    "status": "REJECTED: complete independent raw-depth/floor/coverage review",
+    "scope": "Current-room MuJoCo simulation feasibility only",
+    "frozen_split": "docs/superpowers/plans/2026-11-16-deltar-pilot-split.json",
+    "frozen_split_sha256": "eda7ba504dcf231e37ca12e60a12a2a4096b461303e331857a2839a5cd734871",
+    "prepared_manifest": "datasets/processed/scan3d_fusion/deltar-pilot-supervised-20261116/prepared_manifest.json",
+    "prepared_manifest_sha256": "004e5dec1c17f65bd43b9f77bcc19b44f22c3ec922cd73266e5a9f65b26c77ff",
+    "train_frames": 161,
+    "development_validation_frames": 48,
+    "fresh_test_frames": 0,
+    "training_updates_planned": 100,
+    "trainable_parameters": 431040,
+    "prepared_wall_seconds": 13.40876569703687,
+    "data_size": "260MiB",
+    "input_provenance": "Training RGB/closest-ToF replay-rendered from frozen actual native snapshots; validation H5 from earlier replay copied byte-for-byte",
+    "target_provenance": "Separate rendered RGB optical-Z npy; supervision only; input H5 depth placeholders remain zero",
+    "map_accepted": false,
+    "run_directory": "datasets/processed/scan3d_fusion/deltar-tail100-pilot-20261116",
+    "runner_sha256": "414e108143b82f669f2728123044d824d19bf108f28027a84ee0d93911a05ab1",
+    "run_complete": true,
+    "training_updates_completed": 100,
+    "gpu_trial_wall_seconds": 85.72315882099792,
+    "peak_reserved_gpu_bytes": 828375040,
+    "frozen_tensors_unchanged": true,
+    "source_sha256_verified_after": true,
+    "candidate_checkpoint_sha256": "43a3d5a32795e99f3a18be22de44fc422f1768c3c31e7a9a5563bc1f99698050",
+    "raw_validation_rmse_m_before_after": [
+      1.17959549918871,
+      1.2584125912332647
+    ],
+    "raw_validation_mae_m_before_after": [
+      0.7168649013017376,
+      0.7786075559044505
+    ],
+    "fresh_test_capture_eligible": false,
+    "production_checkpoint_changed": false,
+    "training_review": "evaluation/clean_slam_pilot_training_review_20261116.json",
+    "changed_state_tensor_count": 21,
+    "unchanged_state_tensor_count": 947,
+    "validation_range_m": [
+      0.001,
+      10.0
+    ],
+    "raw_validation_rmse_change_percent": 6.68170437,
+    "root_paired_floor_inference": "Both baseline and candidate use identical default cuDNN settings in fresh full60 processes; trainer original uses deterministic=True and is not mixed into floor comparison",
+    "decision": "evaluation/clean_slam_pilot_decision_20261116.json",
+    "floor_review": "evaluation/clean_slam_pilot_coffee_paired_floor_20261116.json",
+    "fixed_floor_recall_before_after": [
+      0.06378807557526894,
+      0.02580439630455559
+    ],
+    "common_floor_absolute_height_p95_m_before_after": [
+      0.030201400861094144,
+      0.035146815364142846
+    ],
+    "baseline_obstacle_depth_denominator": 33379,
+    "candidate_lost_baseline_obstacle_depth": 629,
+    "focused_final_tests_passed": 14,
+    "unchanged_support_classifier_all60_independently_reproduced": true
+  },
+  "last_reviewed_local_date": "2026-11-16",
+  "iteration_status": "Reviewed diagnostic iteration finished; requested clean/loop-consistent map remains unachieved",
+  "whole_room_display_correction": {
+    "reason": "User requires a whole-room map; selecting the best10second tracking segment did not meet that requirement",
+    "displayed_scan": "datasets/processed/scan3d_fusion/room-unsmoothed-20261112",
+    "frames": 3198,
+    "mesh": "datasets/processed/scan3d_fusion/room-unsmoothed-20261112/final_mesh.stl",
+    "screenshot": "evaluation/full_room_rviz_top_20261116.png",
+    "viewer": "RViz3D plus TopDownOrtho; entire saved reconstructed mesh, no scene/CAD overlay or floor completion",
+    "pose_source": "legacy wheel/IMU + gated visual poses + planar surface matching",
+    "prior_full_trajectory_se3_rmse_m": 0.22944401908915665,
+    "new_reconstruction_completed": false,
+    "floor_free": false,
+    "map_accepted": false,
+    "acceptance_scope": "Whole-room coverage and return-loop consistency required; short-segment scores alone cannot establish success"
+  }
+}

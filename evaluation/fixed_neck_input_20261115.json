@@ -1,0 +1,1208 @@
+{
+  "source": "/home/dvt/temSlam/datasets/processed/scan3d_fusion/fixed-neck-native-20261115",
+  "frames": 150,
+  "zero_depth_frames": 0,
+  "confirmed_frames": 91,
+  "samples": [
+    {
+      "index": 0,
+      "time_s": 2671.0,
+      "valid": 154993,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 1,
+      "time_s": 2671.07,
+      "valid": 154678,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 2,
+      "time_s": 2671.14,
+      "valid": 153248,
+      "ground": 9529,
+      "obstacle": 93849,
+      "confirmed": true
+    },
+    {
+      "index": 3,
+      "time_s": 2671.2,
+      "valid": 154445,
+      "ground": 9614,
+      "obstacle": 96086,
+      "confirmed": true
+    },
+    {
+      "index": 4,
+      "time_s": 2671.27,
+      "valid": 156048,
+      "ground": 8409,
+      "obstacle": 98102,
+      "confirmed": true
+    },
+    {
+      "index": 5,
+      "time_s": 2671.34,
+      "valid": 154357,
+      "ground": 7218,
+      "obstacle": 95957,
+      "confirmed": true
+    },
+    {
+      "index": 6,
+      "time_s": 2671.4,
+      "valid": 155120,
+      "ground": 5809,
+      "obstacle": 96755,
+      "confirmed": true
+    },
+    {
+      "index": 7,
+      "time_s": 2671.47,
+      "valid": 153327,
+      "ground": 6632,
+      "obstacle": 95398,
+      "confirmed": true
+    },
+    {
+      "index": 8,
+      "time_s": 2671.54,
+      "valid": 155752,
+      "ground": 8421,
+      "obstacle": 97863,
+      "confirmed": true
+    },
+    {
+      "index": 9,
+      "time_s": 2671.6,
+      "valid": 154844,
+      "ground": 8718,
+      "obstacle": 97400,
+      "confirmed": true
+    },
+    {
+      "index": 10,
+      "time_s": 2671.67,
+      "valid": 155991,
+      "ground": 9191,
+      "obstacle": 97926,
+      "confirmed": true
+    },
+    {
+      "index": 11,
+      "time_s": 2671.74,
+      "valid": 154812,
+      "ground": 10268,
+      "obstacle": 96540,
+      "confirmed": true
+    },
+    {
+      "index": 12,
+      "time_s": 2671.8,
+      "valid": 153948,
+      "ground": 10320,
+      "obstacle": 95865,
+      "confirmed": true
+    },
+    {
+      "index": 13,
+      "time_s": 2671.87,
+      "valid": 155178,
+      "ground": 12190,
+      "obstacle": 96525,
+      "confirmed": true
+    },
+    {
+      "index": 14,
+      "time_s": 2671.94,
+      "valid": 158450,
+      "ground": 11734,
+      "obstacle": 99192,
+      "confirmed": true
+    },
+    {
+      "index": 15,
+      "time_s": 2672.0,
+      "valid": 158346,
+      "ground": 12556,
+      "obstacle": 98768,
+      "confirmed": true
+    },
+    {
+      "index": 16,
+      "time_s": 2672.07,
+      "valid": 140552,
+      "ground": 11113,
+      "obstacle": 81494,
+      "confirmed": true
+    },
+    {
+      "index": 17,
+      "time_s": 2672.14,
+      "valid": 142259,
+      "ground": 10835,
+      "obstacle": 83339,
+      "confirmed": true
+    },
+    {
+      "index": 18,
+      "time_s": 2672.2,
+      "valid": 141514,
+      "ground": 10766,
+      "obstacle": 82600,
+      "confirmed": true
+    },
+    {
+      "index": 19,
+      "time_s": 2672.27,
+      "valid": 138426,
+      "ground": 11184,
+      "obstacle": 80465,
+      "confirmed": true
+    },
+    {
+      "index": 20,
+      "time_s": 2672.34,
+      "valid": 139273,
+      "ground": 12319,
+      "obstacle": 80819,
+      "confirmed": true
+    },
+    {
+      "index": 21,
+      "time_s": 2672.4,
+      "valid": 140655,
+      "ground": 13024,
+      "obstacle": 81356,
+      "confirmed": true
+    },
+    {
+      "index": 22,
+      "time_s": 2672.47,
+      "valid": 140181,
+      "ground": 12173,
+      "obstacle": 81289,
+      "confirmed": true
+    },
+    {
+      "index": 23,
+      "time_s": 2672.54,
+      "valid": 140158,
+      "ground": 11551,
+      "obstacle": 81594,
+      "confirmed": true
+    },
+    {
+      "index": 24,
+      "time_s": 2672.6,
+      "valid": 139726,
+      "ground": 11785,
+      "obstacle": 80692,
+      "confirmed": true
+    },
+    {
+      "index": 25,
+      "time_s": 2672.67,
+      "valid": 139875,
+      "ground": 11614,
+      "obstacle": 80833,
+      "confirmed": true
+    },
+    {
+      "index": 26,
+      "time_s": 2672.74,
+      "valid": 138665,
+      "ground": 11181,
+      "obstacle": 80128,
+      "confirmed": true
+    },
+    {
+      "index": 27,
+      "time_s": 2672.8,
+      "valid": 137415,
+      "ground": 10141,
+      "obstacle": 79451,
+      "confirmed": true
+    },
+    {
+      "index": 28,
+      "time_s": 2672.87,
+      "valid": 137935,
+      "ground": 11038,
+      "obstacle": 79615,
+      "confirmed": true
+    },
+    {
+      "index": 29,
+      "time_s": 2672.94,
+      "valid": 139905,
+      "ground": 12009,
+      "obstacle": 80977,
+      "confirmed": true
+    },
+    {
+      "index": 30,
+      "time_s": 2673.0,
+      "valid": 137702,
+      "ground": 10321,
+      "obstacle": 79891,
+      "confirmed": true
+    },
+    {
+      "index": 31,
+      "time_s": 2673.07,
+      "valid": 138997,
+      "ground": 10430,
+      "obstacle": 81013,
+      "confirmed": true
+    },
+    {
+      "index": 32,
+      "time_s": 2673.14,
+      "valid": 139335,
+      "ground": 10214,
+      "obstacle": 80676,
+      "confirmed": true
+    },
+    {
+      "index": 33,
+      "time_s": 2673.2,
+      "valid": 133717,
+      "ground": 9970,
+      "obstacle": 75243,
+      "confirmed": true
+    },
+    {
+      "index": 34,
+      "time_s": 2673.27,
+      "valid": 134710,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 35,
+      "time_s": 2673.34,
+      "valid": 134552,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 36,
+      "time_s": 2673.4,
+      "valid": 137409,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 37,
+      "time_s": 2673.47,
+      "valid": 134677,
+      "ground": 8000,
+      "obstacle": 76406,
+      "confirmed": true
+    },
+    {
+      "index": 38,
+      "time_s": 2673.54,
+      "valid": 138299,
+      "ground": 8858,
+      "obstacle": 79994,
+      "confirmed": true
+    },
+    {
+      "index": 39,
+      "time_s": 2673.6,
+      "valid": 140448,
+      "ground": 9742,
+      "obstacle": 82066,
+      "confirmed": true
+    },
+    {
+      "index": 40,
+      "time_s": 2673.67,
+      "valid": 142456,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 41,
+      "time_s": 2673.74,
+      "valid": 142576,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 42,
+      "time_s": 2673.8,
+      "valid": 142311,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 43,
+      "time_s": 2673.87,
+      "valid": 142182,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 44,
+      "time_s": 2673.94,
+      "valid": 142262,
+      "ground": 9697,
+      "obstacle": 83939,
+      "confirmed": true
+    },
+    {
+      "index": 45,
+      "time_s": 2674.0,
+      "valid": 135426,
+      "ground": 8720,
+      "obstacle": 77105,
+      "confirmed": true
+    },
+    {
+      "index": 46,
+      "time_s": 2674.07,
+      "valid": 135195,
+      "ground": 9031,
+      "obstacle": 76983,
+      "confirmed": true
+    },
+    {
+      "index": 47,
+      "time_s": 2674.14,
+      "valid": 136217,
+      "ground": 9496,
+      "obstacle": 78087,
+      "confirmed": true
+    },
+    {
+      "index": 48,
+      "time_s": 2674.2,
+      "valid": 139389,
+      "ground": 9107,
+      "obstacle": 81162,
+      "confirmed": true
+    },
+    {
+      "index": 49,
+      "time_s": 2674.27,
+      "valid": 135989,
+      "ground": 8559,
+      "obstacle": 77893,
+      "confirmed": true
+    },
+    {
+      "index": 50,
+      "time_s": 2674.34,
+      "valid": 135914,
+      "ground": 8292,
+      "obstacle": 77757,
+      "confirmed": true
+    },
+    {
+      "index": 51,
+      "time_s": 2674.4,
+      "valid": 136467,
+      "ground": 9089,
+      "obstacle": 78349,
+      "confirmed": true
+    },
+    {
+      "index": 52,
+      "time_s": 2674.47,
+      "valid": 135406,
+      "ground": 9995,
+      "obstacle": 77340,
+      "confirmed": true
+    },
+    {
+      "index": 53,
+      "time_s": 2674.54,
+      "valid": 136752,
+      "ground": 9810,
+      "obstacle": 78370,
+      "confirmed": true
+    },
+    {
+      "index": 54,
+      "time_s": 2674.6,
+      "valid": 134089,
+      "ground": 10232,
+      "obstacle": 76337,
+      "confirmed": true
+    },
+    {
+      "index": 55,
+      "time_s": 2674.67,
+      "valid": 135091,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 56,
+      "time_s": 2674.74,
+      "valid": 136099,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 57,
+      "time_s": 2674.8,
+      "valid": 136144,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 58,
+      "time_s": 2674.87,
+      "valid": 136629,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 59,
+      "time_s": 2674.94,
+      "valid": 136808,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 60,
+      "time_s": 2675.0,
+      "valid": 135786,
+      "ground": 9269,
+      "obstacle": 77854,
+      "confirmed": true
+    },
+    {
+      "index": 61,
+      "time_s": 2675.07,
+      "valid": 135063,
+      "ground": 10123,
+      "obstacle": 77175,
+      "confirmed": true
+    },
+    {
+      "index": 62,
+      "time_s": 2675.14,
+      "valid": 135288,
+      "ground": 10520,
+      "obstacle": 77522,
+      "confirmed": true
+    },
+    {
+      "index": 63,
+      "time_s": 2675.2,
+      "valid": 136711,
+      "ground": 10673,
+      "obstacle": 78975,
+      "confirmed": true
+    },
+    {
+      "index": 64,
+      "time_s": 2675.27,
+      "valid": 136809,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 65,
+      "time_s": 2675.34,
+      "valid": 135355,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 66,
+      "time_s": 2675.4,
+      "valid": 136548,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 67,
+      "time_s": 2675.47,
+      "valid": 138102,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 68,
+      "time_s": 2675.54,
+      "valid": 139868,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 69,
+      "time_s": 2675.6,
+      "valid": 139490,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 70,
+      "time_s": 2675.67,
+      "valid": 141748,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 71,
+      "time_s": 2675.74,
+      "valid": 140289,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 72,
+      "time_s": 2675.8,
+      "valid": 138935,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 73,
+      "time_s": 2675.87,
+      "valid": 139783,
+      "ground": 10136,
+      "obstacle": 82037,
+      "confirmed": true
+    },
+    {
+      "index": 74,
+      "time_s": 2675.94,
+      "valid": 139163,
+      "ground": 10246,
+      "obstacle": 81458,
+      "confirmed": true
+    },
+    {
+      "index": 75,
+      "time_s": 2676.0,
+      "valid": 138928,
+      "ground": 9936,
+      "obstacle": 81058,
+      "confirmed": true
+    },
+    {
+      "index": 76,
+      "time_s": 2676.07,
+      "valid": 140094,
+      "ground": 10891,
+      "obstacle": 82698,
+      "confirmed": true
+    },
+    {
+      "index": 77,
+      "time_s": 2676.14,
+      "valid": 138085,
+      "ground": 9924,
+      "obstacle": 79529,
+      "confirmed": true
+    },
+    {
+      "index": 78,
+      "time_s": 2676.2,
+      "valid": 137127,
+      "ground": 9692,
+      "obstacle": 77762,
+      "confirmed": true
+    },
+    {
+      "index": 79,
+      "time_s": 2676.27,
+      "valid": 140219,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 80,
+      "time_s": 2676.34,
+      "valid": 141104,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 81,
+      "time_s": 2676.4,
+      "valid": 140030,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 82,
+      "time_s": 2676.47,
+      "valid": 141665,
+      "ground": 10951,
+      "obstacle": 83953,
+      "confirmed": true
+    },
+    {
+      "index": 83,
+      "time_s": 2676.54,
+      "valid": 142610,
+      "ground": 14625,
+      "obstacle": 83698,
+      "confirmed": true
+    },
+    {
+      "index": 84,
+      "time_s": 2676.6,
+      "valid": 142400,
+      "ground": 15779,
+      "obstacle": 84490,
+      "confirmed": true
+    },
+    {
+      "index": 85,
+      "time_s": 2676.67,
+      "valid": 124490,
+      "ground": 14517,
+      "obstacle": 72989,
+      "confirmed": true
+    },
+    {
+      "index": 86,
+      "time_s": 2676.74,
+      "valid": 121675,
+      "ground": 14054,
+      "obstacle": 70095,
+      "confirmed": true
+    },
+    {
+      "index": 87,
+      "time_s": 2676.8,
+      "valid": 125961,
+      "ground": 15835,
+      "obstacle": 73009,
+      "confirmed": true
+    },
+    {
+      "index": 88,
+      "time_s": 2676.87,
+      "valid": 143518,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 89,
+      "time_s": 2676.94,
+      "valid": 138519,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 90,
+      "time_s": 2677.0,
+      "valid": 138633,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 91,
+      "time_s": 2677.07,
+      "valid": 139649,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 92,
+      "time_s": 2677.14,
+      "valid": 141319,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 93,
+      "time_s": 2677.2,
+      "valid": 140607,
+      "ground": 10493,
+      "obstacle": 80741,
+      "confirmed": true
+    },
+    {
+      "index": 94,
+      "time_s": 2677.27,
+      "valid": 141498,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 95,
+      "time_s": 2677.34,
+      "valid": 140975,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 96,
+      "time_s": 2677.4,
+      "valid": 138648,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 97,
+      "time_s": 2677.47,
+      "valid": 141450,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 98,
+      "time_s": 2677.54,
+      "valid": 141454,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 99,
+      "time_s": 2677.6,
+      "valid": 138042,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 100,
+      "time_s": 2677.67,
+      "valid": 134115,
+      "ground": 10489,
+      "obstacle": 75858,
+      "confirmed": true
+    },
+    {
+      "index": 101,
+      "time_s": 2677.74,
+      "valid": 141055,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 102,
+      "time_s": 2677.8,
+      "valid": 141648,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 103,
+      "time_s": 2677.87,
+      "valid": 140924,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 104,
+      "time_s": 2677.94,
+      "valid": 153100,
+      "ground": 12996,
+      "obstacle": 90733,
+      "confirmed": true
+    },
+    {
+      "index": 105,
+      "time_s": 2678.0,
+      "valid": 171057,
+      "ground": 13360,
+      "obstacle": 90058,
+      "confirmed": true
+    },
+    {
+      "index": 106,
+      "time_s": 2678.07,
+      "valid": 171057,
+      "ground": 13443,
+      "obstacle": 93187,
+      "confirmed": true
+    },
+    {
+      "index": 107,
+      "time_s": 2678.14,
+      "valid": 171907,
+      "ground": 12971,
+      "obstacle": 95564,
+      "confirmed": true
+    },
+    {
+      "index": 108,
+      "time_s": 2678.2,
+      "valid": 187522,
+      "ground": 13477,
+      "obstacle": 103491,
+      "confirmed": true
+    },
+    {
+      "index": 109,
+      "time_s": 2678.27,
+      "valid": 189479,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 110,
+      "time_s": 2678.34,
+      "valid": 192330,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 111,
+      "time_s": 2678.4,
+      "valid": 193499,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 112,
+      "time_s": 2678.47,
+      "valid": 194735,
+      "ground": 15096,
+      "obstacle": 132091,
+      "confirmed": true
+    },
+    {
+      "index": 113,
+      "time_s": 2678.54,
+      "valid": 194373,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 114,
+      "time_s": 2678.6,
+      "valid": 194137,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 115,
+      "time_s": 2678.67,
+      "valid": 193436,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 116,
+      "time_s": 2678.74,
+      "valid": 193001,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 117,
+      "time_s": 2678.8,
+      "valid": 190010,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 118,
+      "time_s": 2678.87,
+      "valid": 192549,
+      "ground": 12387,
+      "obstacle": 133351,
+      "confirmed": true
+    },
+    {
+      "index": 119,
+      "time_s": 2678.94,
+      "valid": 193284,
+      "ground": 12551,
+      "obstacle": 134158,
+      "confirmed": true
+    },
+    {
+      "index": 120,
+      "time_s": 2679.0,
+      "valid": 191648,
+      "ground": 12382,
+      "obstacle": 132523,
+      "confirmed": true
+    },
+    {
+      "index": 121,
+      "time_s": 2679.07,
+      "valid": 190212,
+      "ground": 11874,
+      "obstacle": 131410,
+      "confirmed": true
+    },
+    {
+      "index": 122,
+      "time_s": 2679.14,
+      "valid": 189897,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 123,
+      "time_s": 2679.2,
+      "valid": 190737,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 124,
+      "time_s": 2679.27,
+      "valid": 193055,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 125,
+      "time_s": 2679.34,
+      "valid": 193373,
+      "ground": 11573,
+      "obstacle": 134572,
+      "confirmed": true
+    },
+    {
+      "index": 126,
+      "time_s": 2679.4,
+      "valid": 193541,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 127,
+      "time_s": 2679.47,
+      "valid": 194260,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 128,
+      "time_s": 2679.54,
+      "valid": 195273,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 129,
+      "time_s": 2679.6,
+      "valid": 195994,
+      "ground": 11178,
+      "obstacle": 136897,
+      "confirmed": true
+    },
+    {
+      "index": 130,
+      "time_s": 2679.67,
+      "valid": 196896,
+      "ground": 18956,
+      "obstacle": 134514,
+      "confirmed": true
+    },
+    {
+      "index": 131,
+      "time_s": 2679.74,
+      "valid": 195934,
+      "ground": 20274,
+      "obstacle": 132711,
+      "confirmed": true
+    },
+    {
+      "index": 132,
+      "time_s": 2679.8,
+      "valid": 195631,
+      "ground": 21768,
+      "obstacle": 132306,
+      "confirmed": true
+    },
+    {
+      "index": 133,
+      "time_s": 2679.87,
+      "valid": 196119,
+      "ground": 20600,
+      "obstacle": 132853,
+      "confirmed": true
+    },
+    {
+      "index": 134,
+      "time_s": 2679.94,
+      "valid": 196890,
+      "ground": 22314,
+      "obstacle": 133486,
+      "confirmed": true
+    },
+    {
+      "index": 135,
+      "time_s": 2680.0,
+      "valid": 196924,
+      "ground": 22572,
+      "obstacle": 133504,
+      "confirmed": true
+    },
+    {
+      "index": 136,
+      "time_s": 2680.07,
+      "valid": 197015,
+      "ground": 22225,
+      "obstacle": 133668,
+      "confirmed": true
+    },
+    {
+      "index": 137,
+      "time_s": 2680.14,
+      "valid": 197453,
+      "ground": 22751,
+      "obstacle": 134168,
+      "confirmed": true
+    },
+    {
+      "index": 138,
+      "time_s": 2680.2,
+      "valid": 197149,
+      "ground": 23226,
+      "obstacle": 133756,
+      "confirmed": true
+    },
+    {
+      "index": 139,
+      "time_s": 2680.27,
+      "valid": 196147,
+      "ground": 21613,
+      "obstacle": 133616,
+      "confirmed": true
+    },
+    {
+      "index": 140,
+      "time_s": 2680.34,
+      "valid": 197544,
+      "ground": 23775,
+      "obstacle": 134088,
+      "confirmed": true
+    },
+    {
+      "index": 141,
+      "time_s": 2680.4,
+      "valid": 197384,
+      "ground": 22386,
+      "obstacle": 134140,
+      "confirmed": true
+    },
+    {
+      "index": 142,
+      "time_s": 2680.47,
+      "valid": 196463,
+      "ground": 23329,
+      "obstacle": 133451,
+      "confirmed": true
+    },
+    {
+      "index": 143,
+      "time_s": 2680.54,
+      "valid": 197626,
+      "ground": 24165,
+      "obstacle": 135064,
+      "confirmed": true
+    },
+    {
+      "index": 144,
+      "time_s": 2680.6,
+      "valid": 201495,
+      "ground": 23506,
+      "obstacle": 138774,
+      "confirmed": true
+    },
+    {
+      "index": 145,
+      "time_s": 2680.67,
+      "valid": 203377,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 146,
+      "time_s": 2680.74,
+      "valid": 203770,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 147,
+      "time_s": 2680.8,
+      "valid": 204114,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 148,
+      "time_s": 2680.87,
+      "valid": 202987,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    },
+    {
+      "index": 149,
+      "time_s": 2680.94,
+      "valid": 203359,
+      "ground": 0,
+      "obstacle": 0,
+      "confirmed": false
+    }
+  ]
+}
