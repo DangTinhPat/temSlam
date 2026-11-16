@@ -26,6 +26,8 @@ from controller import Navigator
 
 ROOT=Path(__file__).resolve().parents[3]
 DEFAULT_MESH=ROOT/'datasets/processed/scan3d_fusion/room-floor-preserved-20261112/final_mesh.stl'
+COSTMAP_VISUAL_LIFT_M=.14305
+LOCAL_COSTMAP_Z_M=.14305
 
 
 def read_pose(message):
@@ -39,16 +41,19 @@ def read_pose(message):
     return np.array([p.x,p.y,2*math.atan2(q.z,q.w)])
 
 
-def grid_message(grid,*,inflated=False,crop=None):
+def grid_message(grid,*,inflated=False,crop=None,z_offset=0.):
     values=np.where(grid.cells==UNKNOWN,-1,np.where(grid.cells==OCCUPIED,100,0)).astype(np.int8)
-    if inflated:values[(grid.cells==FREE)&grid.blocked]=99
+    if inflated:
+        traversable=grid.cells==FREE
+        values[traversable]=np.rint(np.clip(grid.terrain_cost[traversable],0,2)*30).astype(np.int8)
+        values[traversable&grid.blocked]=99
     x0,y0,x1,y1=crop or (0,0,values.shape[1],values.shape[0])
     values=values[y0:y1,x0:x1]
     msg=OccupancyGrid();msg.header.frame_id='map';msg.info.resolution=grid.resolution
     msg.info.height,msg.info.width=values.shape
     msg.info.origin.position.x=float(grid.origin[0]+x0*grid.resolution)
     msg.info.origin.position.y=float(grid.origin[1]+y0*grid.resolution)
-    msg.info.origin.position.z=.04 if inflated else .03
+    msg.info.origin.position.z=(COSTMAP_VISUAL_LIFT_M+z_offset) if inflated else .03
     msg.info.origin.orientation.w=1.;msg.data=values.ravel().tolist()
     return msg
 
@@ -149,7 +154,9 @@ class NavigationNode(Node):
             pub.publish(path)
         row,col=self.grid.world_to_cell(self.pose[:2]);radius=int(math.ceil(1.5/self.grid.resolution))
         crop=(max(0,col-radius),max(0,row-radius),min(self.grid.cells.shape[1],col+radius+1),min(self.grid.cells.shape[0],row+radius+1))
-        local=grid_message(self.grid,inflated=True,crop=crop);local.header.stamp=stamp;self.local_pub.publish(local)
+        local=grid_message(self.grid,inflated=True,crop=crop,
+                           z_offset=LOCAL_COSTMAP_Z_M-COSTMAP_VISUAL_LIFT_M)
+        local.header.stamp=stamp;self.local_pub.publish(local)
         markers=[]
         def marker(name,kind,xyz,scale,color):
             m=Marker();m.header=current.header;m.ns=name;m.type=kind;m.pose.orientation.w=1.
@@ -164,7 +171,9 @@ class NavigationNode(Node):
         footprint.points=[Point(x=float(self.pose[0]+.25*math.cos(a)),y=float(self.pose[1]+.25*math.sin(a)),z=0.)
                           for a in np.linspace(0,2*math.pi,49)]
         status=marker('status',Marker.TEXT_VIEW_FACING,[.2,-2.4,.8],[0,0,.12],[.15,.19,.22,1.])
-        status.text='KINEMATIC DEMO | STATIC MESH COSTMAP\n'+self.message+'\nPublish Point = STOP'
+        status.text=('BODY-HEIGHT SLICE: z = 14.3 cm | LOCAL: same slice, static crop\n'
+                     'Purple = occupied | cyan = 25 cm inflation\n'
+                     +self.message+'\nPublish Point = STOP')
         goal=marker('goal',Marker.ARROW,[0,0,.12],[.35,.04,.06],[.8,.18,.24,1.])
         if self.goal is None:goal.action=Marker.DELETE
         else:
@@ -180,13 +189,19 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--mesh',type=Path,default=DEFAULT_MESH)
     parser.add_argument('--grid',type=Path,help='Use a saved grid instead of projecting the mesh again')
+    parser.add_argument('--slice-height',type=float,
+                        help='Project mesh intersections at this Z into the observed support from --grid')
     parser.add_argument('--initial-pose',nargs=3,type=float,default=[.7,-1.6,0.],metavar=('X','Y','YAW_DEG'))
     args=parser.parse_args()
     if not args.mesh.is_file():parser.error('Mesh file not found')
     import trimesh
-    from mesh_grid import build_mesh_grid
-    grid=(NavigationGrid.load(args.grid) if args.grid is not None else
-          build_mesh_grid(trimesh.load(args.mesh,force='mesh').triangles))
+    from mesh_grid import build_height_slice_grid,build_mesh_grid
+    triangles=trimesh.load(args.mesh,force='mesh').triangles
+    if args.slice_height is not None:
+        if args.grid is None:parser.error('--slice-height requires --grid for observed floor support')
+        grid=build_height_slice_grid(triangles,NavigationGrid.load(args.grid),args.slice_height)
+    else:
+        grid=(NavigationGrid.load(args.grid) if args.grid is not None else build_mesh_grid(triangles))
     initial=[*args.initial_pose[:2],math.radians(args.initial_pose[2])]
     rclpy.init();node=None
     try:

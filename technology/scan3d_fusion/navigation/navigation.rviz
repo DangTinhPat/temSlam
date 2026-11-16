@@ -40,9 +40,9 @@ Visualization Manager:
         Reliability Policy: Reliable
         Durability Policy: Transient Local
     - Class: rviz_default_plugins/Map
-      Name: Local window - STATIC map crop
-      Enabled: false
-      Alpha: 0.55
+      Name: Local window - body slice crop (z=14.3 cm)
+      Enabled: true
+      Alpha: 0.7
       Color Scheme: costmap
       Draw Behind: false
       Topic:

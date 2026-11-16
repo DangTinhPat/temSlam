@@ -24,7 +24,8 @@ FREE, OCCUPIED, UNKNOWN = 0, 1, -1
 
 
 class NavigationGrid:
-    def __init__(self, cells, origin_xy, resolution, clearance_m=.25, *, demo_only=False):
+    def __init__(self, cells, origin_xy, resolution, clearance_m=.25, *, demo_only=False,
+                 elevation=None, roughness=None, slope=None):
         cells, origin = np.asarray(cells), np.asarray(origin_xy, dtype=float)
         if (cells.ndim != 2 or not cells.size or not np.isin(cells, [FREE, OCCUPIED, UNKNOWN]).all()
                 or origin.shape != (2,) or not np.isfinite(origin).all()
@@ -32,9 +33,24 @@ class NavigationGrid:
                 or not np.isfinite(clearance_m) or clearance_m < 0
                 or not isinstance(demo_only, (bool, np.bool_))):
             raise ValueError('Invalid navigation grid geometry or cell states')
+        shape = cells.shape
+        layers = []
+        for index, layer in enumerate((elevation, roughness, slope)):
+            values = np.full(shape, np.nan) if layer is None else np.asarray(layer, dtype=float)
+            if (values.shape != shape or np.isinf(values).any()
+                    or (index > 0 and np.any(values[np.isfinite(values)] < 0))):
+                raise ValueError('Terrain layers must match the grid and contain no infinities')
+            layers.append(values.copy())
         self.cells, self.origin = cells.astype(np.int8, copy=True), origin.copy()
         self.resolution, self.clearance_m = float(resolution), float(clearance_m)
         self.demo_only = bool(demo_only)
+        self.elevation, self.roughness, self.slope = layers
+        measured = np.isfinite(self.elevation)
+        characterized = measured & np.isfinite(self.slope) & np.isfinite(self.roughness)
+        self.terrain_cost = np.where(characterized,
+                                     np.minimum(self.slope/np.deg2rad(10), 1.) +
+                                     np.minimum(self.roughness/.02, 1.),
+                                     measured.astype(float))
         self.blocked = self.cells != FREE
         if clearance_m > 0:
             radius = int(np.ceil(clearance_m/resolution))+1
@@ -42,7 +58,8 @@ class NavigationGrid:
             # Inflate entire cell squares, so exact endpoint positions remain safe.
             footprint = np.hypot(np.maximum(abs(x)-1, 0), np.maximum(abs(y)-1, 0))*resolution <= clearance_m+1e-12
             self.blocked = binary_dilation(self.blocked, footprint, border_value=1)
-        for array in (self.cells, self.origin, self.blocked):
+        for array in (self.cells, self.origin, self.blocked, self.elevation,
+                      self.roughness, self.slope, self.terrain_cost):
             array.flags.writeable = False
 
     def world_to_cell(self, xy):
@@ -108,7 +125,8 @@ class NavigationGrid:
                     continue
                 if dr and dc and (self.blocked[row, c] or self.blocked[r, col]):
                     continue
-                cost = costs[current]+np.hypot(dr, dc)
+                distance = np.hypot(dr, dc)
+                cost = costs[current]+distance*(1.+self.terrain_cost[r, c])
                 neighbor = (r, c)
                 if cost >= costs.get(neighbor, np.inf):
                     continue
@@ -120,14 +138,18 @@ class NavigationGrid:
     def save(self, path):
         with Path(path).open('xb') as stream:
             np.savez_compressed(stream, cells=self.cells, origin=self.origin,
-                                resolution=self.resolution, clearance_m=self.clearance_m, demo_only=self.demo_only)
+                                resolution=self.resolution, clearance_m=self.clearance_m, demo_only=self.demo_only,
+                                elevation=self.elevation, roughness=self.roughness, slope=self.slope)
 
     @classmethod
     def load(cls, path):
         try:
             with np.load(path, allow_pickle=False) as data:
                 return cls(data['cells'], data['origin'], float(data['resolution']), float(data['clearance_m']),
-                           demo_only=data['demo_only'].item() if 'demo_only' in data else False)
+                           demo_only=data['demo_only'].item() if 'demo_only' in data else False,
+                           elevation=data['elevation'] if 'elevation' in data else None,
+                           roughness=data['roughness'] if 'roughness' in data else None,
+                           slope=data['slope'] if 'slope' in data else None)
         except (KeyError, TypeError) as error:
             raise ValueError('Invalid saved navigation grid') from error
 
@@ -174,7 +196,7 @@ def build_grid(session, resolution=.05, clearance_m=.25):
     frames = sequence['frames']
     if not frames:
         raise ValueError('Scan has no frames')
-    floor_counts, obstacles, origins, ambiguous = {}, set(), [], set()
+    floor_counts, floor_heights, obstacles, origins, ambiguous = {}, {}, set(), [], set()
     classification_mode = None
     poses = []
     for frame in frames:
@@ -204,6 +226,13 @@ def build_grid(session, resolution=.05, clearance_m=.25):
         for xy in _xy_cells(floor, resolution):
             cell = tuple(xy)
             floor_counts[cell] = floor_counts.get(cell, 0)+1
+        if len(floor):
+            floor_cells = np.floor(floor[:, :2]/resolution).astype(np.int64)
+            unique_cells, inverse = np.unique(floor_cells, axis=0, return_inverse=True)
+            sums = np.bincount(inverse, weights=floor[:, 2])
+            counts = np.bincount(inverse)
+            for cell, height in zip(unique_cells, sums/counts):
+                floor_heights.setdefault(tuple(cell), []).append(float(height))
         obstacles.update(map(tuple, _xy_cells(occupied, resolution)))
     if not floor_counts:
         raise ValueError('Scan has no measured floor support near z=0')
@@ -240,7 +269,30 @@ def build_grid(session, resolution=.05, clearance_m=.25):
         coverage[selected[:, 0], selected[:, 1]] += 1
     traversable = candidates[np.all(coverage >= 2, axis=1)]
     cells[traversable[:, 1]-lower[1], traversable[:, 0]-lower[0]] = FREE
-    return NavigationGrid(cells, lower*resolution, resolution, clearance_m)
+    elevation = np.full(shape, np.nan)
+    for xy in traversable:
+        heights_at_cell = floor_heights.get(tuple(xy), ())
+        if len(heights_at_cell) >= 2:
+            elevation[xy[1]-lower[1], xy[0]-lower[0]] = np.median(heights_at_cell)
+    roughness = np.full(shape, np.nan)
+    slope = np.full(shape, np.nan)
+    known = np.isfinite(elevation)
+    for row, col in zip(*np.nonzero(known)):
+        y0, y1 = max(0, row-1), min(shape[0], row+2)
+        x0, x1 = max(0, col-1), min(shape[1], col+2)
+        neighborhood = elevation[y0:y1, x0:x1]
+        local_rows, local_cols = np.nonzero(np.isfinite(neighborhood))
+        if len(local_rows) >= 3:
+            z = neighborhood[local_rows, local_cols]
+            xy = np.column_stack(((local_cols+ x0-col)*resolution,
+                                  (local_rows+ y0-row)*resolution))
+            design = np.column_stack((xy, np.ones(len(xy))))
+            if np.linalg.matrix_rank(design) == 3:
+                plane, *_ = np.linalg.lstsq(design, z, rcond=None)
+                roughness[row, col] = np.median(np.abs(z-design@plane))
+                slope[row, col] = np.arctan(np.linalg.norm(plane[:2]))
+    return NavigationGrid(cells, lower*resolution, resolution, clearance_m,
+                          elevation=elevation, roughness=roughness, slope=slope)
 
 
 if __name__ == '__main__':

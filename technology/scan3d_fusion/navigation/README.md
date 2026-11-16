@@ -6,6 +6,22 @@ navigation end-to-end trên bản đồ quét**. Giữ core không ROS, giao di�
 
 ## Chạy navigation
 
+### Lớp địa hình 2.5D trong grid navigation
+
+Grid lưu thêm `elevation`, `roughness` và `slope` cho các ô có ít nhất hai lần
+đo ground. A* tăng chi phí đi qua ô dốc/gồ ghề, và `/rb_navigation/global_costmap`
+hiển thị chi phí địa hình từ 0 đến 60 trước lớp inflation 99. Bản đồ 3D và các
+vật cản/overhang vẫn được giữ riêng; 2.5D chỉ bổ sung đặc tính bề mặt để chọn
+đường.
+
+Chi phí hiện chuẩn hóa dốc theo 10° và độ gồ ghề theo 2 cm để ưu tiên đường êm;
+đây là trọng số thử nghiệm, chưa phải giới hạn khả năng leo dốc/bước của RB. Đầu
+vào ground vẫn dùng `GroundSegmenter` hiện tại, vốn yêu cầu sàn gần Z=0 và loại
+điểm lệch cao hơn 1,2 cm. Vì vậy grid 2.5D hiện **chưa nhận diện địa hình gồ ghề
+lớn hơn ngưỡng phân loại**, chưa thay thế bộ phân loại sàn theo mặt địa phương,
+và chưa đủ điều kiện điều khiển phần cứng. Cần hiệu chuẩn độ dốc, bậc, độ nhám
+và độ tin cậy theo cấu hình RB trước khi bỏ các giới hạn này.
+
 ### Tách sàn sau fusion
 
 Luồng live tự lưu `ground_labels` cùng depth trong `rgbd.npz` và keyframe:
@@ -71,6 +87,21 @@ có thể mất nhãn vật cản. Chỉ dùng đối chiếu/demo, chưa kiểm
 Xem [ảnh và kết quả bản 2D](../../../evaluation/navigation_flat_2d_results.md).
 
 ### RViz: thả pose/goal, xem quỹ đạo và costmap
+
+Costmap theo lát cắt thân RB (thử nghiệm):
+
+```bash
+technology/scan3d_fusion/navigation/run_rviz_navigation.sh \
+  --mesh datasets/processed/scan3d_fusion/room-floor-preserved-20261112/final_mesh.stl \
+  --grid datasets/processed/scan3d_fusion/navigation-flat-2d-20261114/grid.npz \
+  --slice-height 0.14305
+```
+
+Lưới free/unknown lấy từ support sàn đã quan sát; ô occupied được raster hóa từ
+giao điểm mesh 3D với mặt phẳng map `Z=0.14305 m`, gần tâm thân demo. Không nâng
+costmap lấy ở mặt sàn. Đây là **một lát cắt**: vật cản nằm trên/dưới lát cắt có
+thể bị bỏ qua, và mặt sàn support vẫn đến từ preview giả thiết sàn phẳng. Chỉ
+dùng để kiểm tra cách chiếu hình học, chưa dùng cho điều khiển RB thật.
 
 ```bash
 technology/scan3d_fusion/navigation/run_rviz_navigation.sh
