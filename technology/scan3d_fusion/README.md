@@ -224,6 +224,44 @@ Không thể coi chúng là một rig gắn cứng khi triển khai VIO thông t
 | Mesh CAD tường/sàn/đồ vật | Không được chép vào map để vá phần thiếu |
 | Mặt phẳng suy diễn hoặc floor completion | Không nằm trong pipeline chính |
 
+### Bản sàn xử lý ngoại tuyến (bản sao riêng)
+
+Theo yêu cầu làm sạch mặt sàn để xem/navigation thử, có thể tạo bản sao mesh đã
+lọc sau khi scan hoàn tất. Processor fit mặt phẳng từ điểm ground nhất quán,
+dùng bao footprint của sàn để lấp phần thiếu điểm ở bên trong, rồi thay các mặt
+mesh sát sàn bằng lưới phẳng; phần mesh nhô cao khỏi mặt phẳng vẫn được giữ để
+bảo toàn vật thể như quả bóng. Mesh nguồn không bị sửa; vùng sàn suy ra được xuất riêng để phân biệt
+với vùng đo. Đường bao sàn dùng ground returns và mặt tường gần sàn làm bằng chứng,
+tạo alpha-shape để tránh lấp tràn qua mép lõm; các điểm trả về dưới mặt sàn được
+ghi nhận nhưng không khoét thủng mặt sàn phẳng.
+
+```bash
+env -u PYTHONPATH /home/dvt/micromamba/envs/wheel-leg-ros/bin/python \
+  technology/scan3d_fusion/reconstruction/process_floor_surface.py \
+  datasets/processed/scan3d_fusion/room-floor-preserved-20261112/final_mesh.stl \
+  datasets/processed/scan3d_fusion/room-ground-segmented-20261114/ground_layers.npz \
+  datasets/processed/scan3d_fusion/room-floor-processed-new --interactive
+
+technology/scan3d_fusion/viewer/run_clay_rviz.sh \
+  datasets/processed/scan3d_fusion/room-floor-processed-new/final_mesh.stl \
+  --floor-completion
+```
+
+Thuật toán **Greater** tối ưu height grid theo bốn trọng số: giữ số đo, làm mịn,
+ép phẳng và nội suy. Cửa sổ tuner có preview measured/inferred/obstacle cùng các
+slider giới hạn fill, bán kính footprint và bảo toàn vật thấp. Export lưu
+`greater_profile.json` và `manifest.json` gồm trọng số, thông số, hash nguồn,
+đếm vùng observed/inferred và metric thay đổi cao độ. Có thể chạy không giao diện
+bằng cách bỏ `--interactive`; các cờ như `--smooth-weight` và `--max-fill-gap-m`
+cho phép tái lập một profile. `fill-weight` (0–100%) nhân với `max-fill-gap-m`
+để ra bán kính fill thực tế, nên slider này thay đổi diện tích inferred. Trần
+bán kính fill được tính theo đường chéo grid của scan, đủ mở tới mọi ô trong
+footprint; footprint vẫn giới hạn biên được xử lý.
+
+Đây vẫn là suy diễn mặt sàn indoor một cao độ; vùng inferred không phải free-space
+đã được cảm biến quan sát. Xem lớp inferred cạnh mesh gốc; không dùng bản này thay
+mesh gốc trong SLAM hay coi vùng suy ra là bằng chứng an toàn để đi qua.
+
 Keyframe mới phải có `depth_source=deltar_tof_fusion`. Worker từ chối dữ liệu
 thiếu nguồn hoặc mang dấu `floor_plane` hữu hạn của bước ép sàn cũ. H5 của
 inference live dùng depth toàn zero làm placeholder cho loader DELTAR.

@@ -73,6 +73,16 @@ bao bốn phía, nhưng đây là bản cũ: còn sàn, bề mặt méo và qu�
 SE3 RMSE 22,94 cm trên toàn hành trình. Không coi đây là map mới đã nghiệm thu.
 [Ảnh RViz toàn phòng](../../evaluation/full_room_rviz_top_20261116.png).
 
+## Bổ sung 16/11/2026 — Greater floor tuner
+
+`reconstruction/process_floor_surface.py` có thuật toán offline **Greater**:
+height grid tối ưu theo trọng số giữ số đo, làm mịn, ép phẳng và nội suy; tuner
+Tk có preview measured/inferred/obstacle, giới hạn fill, footprint và bảo toàn
+vật thấp. Trọng số fill điều khiển tỷ lệ của bán kính fill tối đa. Export ghi
+mesh riêng, hash nguồn, tham số và số ô observed/inferred.
+Chỉ preview/export cho map floor-preserved; chưa benchmark đa bản đồ. Phần
+inferred vẫn không phải free-space và Greater không nằm trong live/finalize SLAM.
+
 Điều kiện thành công phải áp dụng trên toàn phòng và lượt quay lại vị trí đã
 quét; điểm số tốt ở đoạn ngắn không thay thế điều kiện này.
 
