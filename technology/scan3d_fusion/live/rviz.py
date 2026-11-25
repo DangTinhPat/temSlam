@@ -11,8 +11,10 @@ from geometry_msgs.msg import Point
 
 def main():
     session=Path(sys.argv[1]);rclpy.init();node=Node('rb_live_scan')
-    cloud_pub=node.create_publisher(PointCloud2,'/scan3d/cloud',1)
-    info_pub=node.create_publisher(Marker,'/scan3d/info',10)
+    cloud_pub=node.create_publisher(PointCloud2,'/scan3d/cloud',QoSProfile(depth=1,durability=DurabilityPolicy.TRANSIENT_LOCAL))
+    # Keep the saved path outside the history/queue used by frequent status messages.
+    path_pub=node.create_publisher(Marker,'/scan3d/trajectory',QoSProfile(depth=1,durability=DurabilityPolicy.TRANSIENT_LOCAL))
+    info_pub=node.create_publisher(Marker,'/scan3d/info',QoSProfile(depth=10,durability=DurabilityPolicy.TRANSIENT_LOCAL))
     mesh_pub=node.create_publisher(Marker,'/rgb_tof/clay_mesh',QoSProfile(depth=1,durability=DurabilityPolicy.TRANSIENT_LOCAL))
     last_cloud=0;last_mesh=''
     def tick():
@@ -28,7 +30,7 @@ def main():
             msg.data=xyz.tobytes();cloud_pub.publish(msg)
             m=Marker();m.header=msg.header;m.ns='trajectory';m.id=0;m.type=Marker.LINE_STRIP
             m.pose.orientation.w=1.;m.scale.x=.015;m.color.g=1.;m.color.a=1.
-            m.points=[Point(x=float(p[0]),y=float(p[1]),z=float(p[2])) for p in path];info_pub.publish(m)
+            m.points=[Point(x=float(p[0]),y=float(p[1]),z=float(p[2])) for p in path];path_pub.publish(m)
         texts=[]
         for stage in ['infer','slam','mesh']:
             try:

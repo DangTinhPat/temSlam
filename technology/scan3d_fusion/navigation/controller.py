@@ -105,9 +105,11 @@ class Navigator:
             target_distance = 0.
             self.state = 'aligning'
         else:
-            # Every lookahead is certified from the actual pose, never across a corner.
+            # Short lookahead prevents a visible waypoint beyond a corner advancing the index early.
             target_index = None
             for index in range(len(self.path)-1, self._index-1, -1):
+                if np.linalg.norm(np.asarray(self.path[index])-xy) > .30:
+                    continue
                 if self.grid.segment_clear(xy, self.path[index]):
                     target_index = index
                     break

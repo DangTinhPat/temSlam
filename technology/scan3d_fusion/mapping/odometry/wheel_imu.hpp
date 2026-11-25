@@ -28,7 +28,11 @@ class WheelImu {
     const double rw=wheel_var/(track*track), rg=.006*.006*dt+.003*.003*dt*dt;
     slip=std::abs(dw-dg)>std::max(.04,5*std::sqrt(rw+rg));
     const double gain=slip?0:rg/(rw+rg);
-    const double da=dg+gain*(dw-dg), va=slip?rg+.01*dt:rg*rw/(rg+rw);
+    // Learn only within the residual bias/3% scale budget; slow wheel slip is not a bias sample.
+    if(!slip && std::abs(dg-dw)<=.003*dt+.03*std::max(std::abs(dw),std::abs(dg))+1e-12)
+      gyro_bias_+=dt/(5+dt)*((dg-dw)/dt-gyro_bias_);
+    const double corrected=dg-gyro_bias_*dt;
+    const double da=corrected+gain*(dw-corrected), va=slip?rg+.01*dt:rg*rw/(rg+rw);
     const double vd=wheel_var*.25+(slip?.04*dt:0);
     const double c=std::cos(yaw+da*.5),s=std::sin(yaw+da*.5);
     const std::array<double,9> F{1,0,-ds*s,0,1,ds*c,0,0,1};
@@ -43,7 +47,7 @@ class WheelImu {
     return true;
   }
  private:
-  double time_=-1,left_=0,right_=0,gyro_=0;
+  double time_=-1,left_=0,right_=0,gyro_=0,gyro_bias_=0;
   bool seeded_=false;
 };
 }

@@ -274,8 +274,8 @@ chỉ ở evaluator, không phải tập test độc lập hoặc cam kết ngo�
   bản này đã rút khỏi hiển thị chính. Không tích hợp vào live/finalize.
 - Thử lọc vertex nhiều góc bằng median residual: sai số tổng thể tăng, đã bỏ
   prototype khỏi core.
-- `floor_support.py`, `complete_floor.py` và các output sàn suy diễn cũ:
-  chỉ giữ để đối chiếu, không gọi trong inference/finalize chính.
+- Các output sàn suy diễn cũ chỉ giữ làm bằng chứng thí nghiệm; thuật toán sửa
+  depth theo mặt phẳng và vá sàn hậu kỳ đã bị loại khỏi mã nguồn chính.
 
 Mở bản không ép phẳng:
 

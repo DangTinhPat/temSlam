@@ -29,7 +29,7 @@ def main():
     def send(command):
         child.stdin.write(command+'\n'); child.stdin.flush()
     backend = SimpleNamespace(root=ROOT, running=True, process=child, map_session=None,
-                              telemetry={}, view={}, log=[], send=send,
+                              telemetry={}, telemetry_received_monotonic_s=0.0, view={}, log=[], send=send,
                               command_drive=lambda v, w: send(f'DRIVE {v} {w}'))
     route = FixedScanRoute(backend, args.route)
     started = False; previous = None; samples = []; phases = []; success = False
@@ -41,6 +41,7 @@ def main():
             fields = {k: v.strip() for k, v in (p.split('=', 1) for p in line.split('|')[1:] if '=' in p)}
             if line.startswith('STATE|'):
                 backend.telemetry = fields
+                backend.telemetry_received_monotonic_s = time.monotonic()
                 continue
             backend.view = fields
             t = float(fields['t'])

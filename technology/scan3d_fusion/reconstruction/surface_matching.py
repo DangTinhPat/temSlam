@@ -77,7 +77,6 @@ def match_surface(points, normals, target, target_normals, tree, origin):
 
 def refine_sequence(session, sequence):
     result = deepcopy(sequence)
-    correction = np.eye(4)
     target = target_normals = np.empty((0,3))
     tree = None
     records = []
@@ -87,12 +86,12 @@ def refine_sequence(session, sequence):
                 not np.allclose(raw[3],[0,0,0,1]) or
                 not np.allclose(raw[:3,:3].T@raw[:3,:3],np.eye(3),atol=1e-5)):
             raise ValueError('Invalid camera pose')
-        initial = correction@raw
+        # Anchor each match to odometry so small matching biases cannot accumulate.
+        initial = raw
         with np.load(session/frame['file'],allow_pickle=False) as data:
             points,normals = vertical_points(data['depth'],result['intrinsics'],initial)
         change,record = match_surface(points,normals,target,target_normals,tree,initial[:3,3])
         pose = change@initial
-        correction = pose@np.linalg.inv(raw)
         frame['camera_to_world'] = pose.tolist()
         records.append(dict(time_s=frame['time_s'],**record))
         if len(points):
@@ -119,4 +118,4 @@ def refine_sequence(session, sequence):
     result['pose_source'] = 'wheel/IMU + gated visual poses + planar surface matching'
     return result, dict(method='robust point-to-plane XY/yaw, measured vertical surfaces',
                         accepted_frames=sum(r['accepted'] for r in records),frames=records,
-                        limitation='Sequential refinement, not a global pose graph; preserves inertial height/tilt; unobserved regions remain unknown.')
+                        limitation='Odometry-anchored local refinement, not a global pose graph; preserves inertial height/tilt; unobserved regions remain unknown.')

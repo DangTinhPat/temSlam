@@ -163,12 +163,14 @@ class NativeBackend:
         self.map_session = self.root / "datasets/raw" / (
             "tof-" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S-%f"))
         self.map_session.mkdir(parents=True, exist_ok=True)
+        viewer_env = os.environ.copy()
+        viewer_env.pop("PYTHONPATH", None)
         self._map_process = subprocess.Popen(
             [sys.executable, str(self.root / "technology/scan3d_fusion/viewer/tof_map_viewer.py"),
              "--mapper", str(executable), "--runner-command", json.dumps(self.process.args),
              "--session", str(self.map_session), "--headless"], cwd=self.root, stdin=subprocess.PIPE,
-            text=True, bufsize=1)
-        os.set_blocking(self._map_process.stdin.fileno(), False)
+            text=True, bufsize=1, env=viewer_env)
+        # Backpressure preserves encoder/IMU increments; dropping these packets corrupts odometry.
 
     def _close_map_view(self) -> None:
         process = self._map_process

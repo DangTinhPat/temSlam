@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 import time
+
+SCAN_ANGULAR_SPEED = .04  # rad/s for body turns and every head phase.
 
 
 class FixedScanRoute:
@@ -29,9 +32,20 @@ class FixedScanRoute:
         self._drive_index = None
         self._sweep_progress_at = 0.0
         self._sweep_best_angle = -math.pi
+        self._head_progress_phase = None
 
     def _now(self):
         return float(self.backend.view.get("t", time.monotonic()))
+
+    def _scan_angles(self, index=None):
+        point = self.waypoints[self.index if index is None else index]
+        start, end = point.get("scan_range_deg", self.route.get(
+            "scan_range_deg", self.route["head_range_deg"]))
+        low, high = self.route["head_range_deg"]
+        if (not math.isfinite(start) or not math.isfinite(end) or start >= end or
+                start < low or end > high):
+            raise ValueError(f"Invalid scan range {start, end}; head limits are {low, high}")
+        return math.radians(start), math.radians(end)
 
     def _record(self):
         session = getattr(self.backend, "map_session", None)
@@ -63,7 +77,7 @@ class FixedScanRoute:
             self.status = "Không xác định được scene của mô phỏng"
             return False
         if model_path != route_scene:
-            self.status = "Tuyến này chỉ dành cho indoor_tiny_house.xml"
+            self.status = "Tuyến quét không khớp scene đang chạy"
             return False
         view = self.backend.view
         try:
@@ -73,8 +87,14 @@ class FixedScanRoute:
             self.status = "Chưa có pose mô phỏng"
             return False
         fields = self.backend.telemetry
-        if (not self.backend.running or not enabled or estop or
-                fields.get("drive_ready") != "1"):
+        try:
+            for index, point in enumerate(self.waypoints):
+                if point.get("scan"):
+                    self._scan_angles(index)
+        except (KeyError, TypeError, ValueError) as exc:
+            self.status = f"Tuyến quét có góc lia không hợp lệ: {exc}"
+            return False
+        if not self.backend.running or not enabled or estop:
             self.status = "Cần bật RB và chờ trạng thái cân bằng ổn định"
             return False
         checkpoint = self.last_checkpoint
@@ -87,7 +107,8 @@ class FixedScanRoute:
                 self.status = "RB đã rời vị trí dừng; không thể nối tuyến an toàn"
                 return False
             self.index = checkpoint['index']
-            self.phase = 'drive' if checkpoint['phase'] in ('drive', 'wait_ready') else 'settle_base'
+            self.phase = 'start_hold'
+            self._start_hold_wall = time.monotonic()
             self.started = self.phase_started = self._now()
             self.still_since = self.wait_ready_since = None
             self.head_commanded = float(view.get('hj', 0))
@@ -95,16 +116,22 @@ class FixedScanRoute:
             self.last_checkpoint = None
             self._drive_index = None
             self._turning = False
-            self._progress("Tiếp tục tuyến quét")
+            self.backend.send("STOP")
+            self._progress("Chờ RB đứng yên trước khi tiếp tục tuyến quét")
             return True
-        if math.hypot(x, y) > .6 or abs(yaw) > .20:
-            self.status = "Tuyến cố định cần RB gần điểm đầu (0, 0), hướng +X"
+        start_x, start_y = self.route.get("start_xy_m", (0.0, 0.0))
+        if math.hypot(x-start_x, y-start_y) > .6 or abs(yaw) > .20:
+            self.status = f"Tuyến cố định cần RB gần điểm đầu ({start_x:g}, {start_y:g}), hướng +X"
             return False
         self.index = 0
         self.last_checkpoint = None
         self._drive_index = None
         self._turning = False
-        self.phase, self.started = "drive", self._now()
+        self.phase = "start_hold"
+        self._start_hold_wall = time.monotonic()
+        self.started = self.phase_started = self._now()
+        self.still_since = None
+        self.backend.send("STOP")
         self.head_commanded = float(view.get("hj", "0"))
         self.head_command_at = self.started
         self.status = "Đang chạy tuyến quét cố định"
@@ -140,6 +167,33 @@ class FixedScanRoute:
                 fields.get("mode") not in ("Balance", "Balancing", "Drive", "PoseChange")):
             self.stop("Tuyến quét dừng: RB mất trạng thái cân bằng/điều khiển")
             return self.status
+        if self.phase == "start_hold":
+            self.backend.send("STOP")
+            now = self._now()
+            wall_now = time.monotonic()
+            if now-self.phase_started >= 30 or wall_now-self._start_hold_wall >= 30:
+                self.stop("Tuyến quét dừng: RB chưa đứng yên/sẵn sàng sau 30 giây mô phỏng/thực")
+                return self.status
+            try:
+                received = float(getattr(self.backend, "telemetry_received_monotonic_s", 0))
+                fresh = received > 0 and 0 <= wall_now-received <= 1
+                settled = (fresh and fields.get("drive_ready") == "1" and
+                           fields.get("height_settled") == "1" and fields.get("height_motion") == "0" and
+                           abs(float(fields.get("ground_velocity", "inf"))) < .025 and
+                           abs(float(fields.get("pitch_rate", "inf"))) < .12)
+            except (TypeError, ValueError):
+                settled = False
+            if settled:
+                if self.still_since is None:
+                    self.still_since = now
+                elif now-self.still_since >= .3:
+                    self.phase = "drive"
+                    self.still_since = None
+                    self._drive_index = None
+            else:
+                self.still_since = None
+            if self.phase == "start_hold":
+                return self._progress("Chờ RB đứng yên trước khi chạy tuyến quét")
         if self.phase == "drive" and fields.get("drive_ready") != "1":
             self.backend.send("STOP")
             self.phase = "wait_ready"
@@ -169,17 +223,21 @@ class FixedScanRoute:
             return self.status
 
         if self.phase == "position_head":
-            target = -math.radians(180)
-            self._ramp_head(target, math.radians(45), head)
-            if abs(head - target) < .06:
+            target, _ = self._scan_angles()
+            paced = bool(self.waypoints[self.index].get('scan_step_deg') and live is not None)
+            limit, captured = self._processed_head_limit(target, live) if paced else (target, True)
+            if limit is None:
+                return self._progress('Chờ ảnh fusion trước khi đặt đầu tiếp')
+            self._ramp_head(limit, SCAN_ANGULAR_SPEED, head)
+            if abs(head - target) < .06 and captured:
                 self.phase = "sweep_head"
                 self.phase_started = self._now()
                 self._sweep_progress_at = time.monotonic()
-                self._sweep_best_angle = -math.pi
-            elif self._now() - self.phase_started > 8:
+                self._sweep_best_angle = target
+            elif not paced and self._now() - self.phase_started > self._head_travel_timeout():
                 self.stop("Tuyến quét dừng: đầu không tới được góc bắt đầu")
                 return self.status
-            return self._progress("Đặt đầu về −180°")
+            return self._progress(f"Đặt đầu về {math.degrees(target):.0f}°")
         if self.phase == "settle_base":
             velocity = abs(float(fields.get("ground_velocity", "inf")))
             pitch_rate = abs(float(fields.get("pitch_rate", "inf")))
@@ -199,7 +257,7 @@ class FixedScanRoute:
                 return self.status
             return self._progress("Chờ RB đứng yên")
         if self.phase == "sweep_head":
-            target = math.radians(180)
+            _, target = self._scan_angles()
             step = self.waypoints[self.index].get('scan_step_deg')
             captured = True
             limit = target
@@ -215,11 +273,11 @@ class FixedScanRoute:
                     self._sweep_progress_at=time.monotonic()
                 limit = min(target,processed+math.radians(step))
                 captured = abs(processed-target)<math.radians(step)
-            self._ramp_head(limit, math.radians(20), head)
+            self._ramp_head(limit, SCAN_ANGULAR_SPEED, head)
             if abs(head - target) < .06 and captured:
                 self.phase = "return_head"
                 self.phase_started = self._now()
-            elif ((not step or live is None) and self._now() - self.phase_started > 28) or (
+            elif ((not step or live is None) and self._now() - self.phase_started > self._head_travel_timeout()) or (
                     step and live is not None and time.monotonic()-self._sweep_progress_at>180):
                 self.stop("Tuyến quét dừng: đầu không hoàn thành lượt lia")
                 return self.status
@@ -227,19 +285,34 @@ class FixedScanRoute:
                 return self._progress(f"Đang lia ToF {math.degrees(head):.0f}°")
 
         if self.phase == "return_head":
-            self._ramp_head(0.0, math.radians(45), head)
-            if abs(head) < .06:
+            paced = bool(self.waypoints[self.index].get('scan_step_deg') and live is not None)
+            limit, captured = self._processed_head_limit(0.0, live) if paced else (0.0, True)
+            if limit is None:
+                return self._progress('Chờ ảnh fusion trước khi hồi đầu tiếp')
+            self._ramp_head(limit, SCAN_ANGULAR_SPEED, head)
+            if abs(head) < .06 and captured:
                 self.index += 1
                 self.phase = "drive"
-            elif self._now() - self.phase_started > 8:
+            elif not paced and self._now() - self.phase_started > self._head_travel_timeout():
                 self.stop("Tuyến quét dừng: đầu không hồi về hướng thẳng")
                 return self.status
             else:
                 return self._progress("Đưa đầu về hướng thẳng")
 
+        if self.phase == "drive" and live is not None:
+            feedback = live.scan_feedback() if hasattr(live, 'scan_feedback') else None
+            try:
+                sensor_time = float(feedback['sensor_time']) if feedback else float('nan')
+            except (KeyError, TypeError, ValueError):
+                sensor_time = float('nan')
+            # shortcut: cap allowable lag at 2.5 sim seconds; revisit for factors above 5x.
+            max_lag = min(2.5, .5*max(1., float(os.environ.get('RB1_SIM_SPEED_FACTOR', '1'))))
+            if not math.isfinite(sensor_time) or self._now()-sensor_time > max_lag:
+                self.backend.send("STOP")
+                return self._progress("Chờ SLAM theo kịp ảnh trước khi di chuyển")
+
         if self.index >= len(self.waypoints):
             self.backend.send("STOP")
-            self._send_head(0.0)
             self.phase = "idle"
             self.status = "Đã hoàn tất tuyến quét map"
             return self.status
@@ -263,7 +336,8 @@ class FixedScanRoute:
             self._record()
             return self.status
 
-        desired = math.atan2(point["y"] - y, point["x"] - x)
+        reverse = bool(point.get('reverse', False))
+        desired = math.atan2(point["y"] - y, point["x"] - x) + (math.pi if reverse else 0.0)
         error = math.atan2(math.sin(desired - yaw), math.cos(desired - yaw))
         now = self._now()
         if self._drive_index != self.index:
@@ -282,9 +356,36 @@ class FixedScanRoute:
         elif abs(error) < .15:
             self._turning = False
         speed_limit = max(0.0,min(.20,float(point.get('speed_m_s',.20))))
-        speed = 0.0 if self._turning else min(speed_limit, .85 * distance) * max(0.0, 1 - (error / .65)**2)
-        self.backend.command_drive(speed, max(-.55, min(.55, 1.5 * error)))
+        speed = 0.0 if self._turning else (-1 if reverse else 1) * min(speed_limit, .85 * distance) * max(0.0, 1 - (error / .65)**2)
+        self.backend.command_drive(speed, max(-SCAN_ANGULAR_SPEED, min(SCAN_ANGULAR_SPEED, 1.5 * error)))
         return self._progress(f"{'Căn hướng' if self._turning else 'Di chuyển tuyến'} · {distance:.1f} m tới điểm kế")
+
+    def _head_travel_timeout(self):
+        low, high = self.route['head_range_deg']
+        return math.radians(high-low)/SCAN_ANGULAR_SPEED + 8
+
+    def _processed_head_limit(self, target, live):
+        phase = (self.phase, self.phase_started)
+        now = time.monotonic()
+        if self._head_progress_phase != phase:
+            self._head_progress_phase = phase
+            self._head_progress_at = now
+            self._head_best_error = math.inf
+        feedback = live.scan_feedback()
+        fresh = feedback is not None and feedback['sensor_time'] >= self.phase_started
+        if fresh:
+            processed = float(feedback['head_yaw_rad'])
+            error = abs(processed-target)
+            if error < self._head_best_error-math.radians(1):
+                self._head_best_error = error
+                self._head_progress_at = now
+        if now-self._head_progress_at > 180:
+            self.stop('Tuyến quét dừng: quá hạn chờ góc fusion mới khi đặt/hồi đầu')
+            return None, False
+        if not fresh:
+            return None, False
+        step = math.radians(self.waypoints[self.index]['scan_step_deg'])
+        return max(processed-step, min(processed+step, target)), error < step
 
     def _send_head(self, angle):
         self.backend.send(f"HEAD {angle:.7f}")

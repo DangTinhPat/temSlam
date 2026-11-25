@@ -1,12 +1,44 @@
 import json,tempfile,unittest,time,subprocess
 from pathlib import Path
 import numpy as np
-from workers import write_json,write_npz,keep_keyframe,fusion_depth,FUSION_DEPTH_SOURCE,finalize,cloud_voxel_indices
+from workers import write_json,write_npz,keep_keyframe,fusion_depth,FUSION_DEPTH_SOURCE,finalize,cloud_voxel_indices,startup_tracking_state
 from session import LiveSession
 from types import SimpleNamespace
 from unittest.mock import patch,Mock
 
 class IpcTests(unittest.TestCase):
+    def test_startup_motion_gate_rejects_camera_motion_during_standup(self):
+        identity=np.eye(4)
+        previous,since,ready=startup_tracking_state(None,None,18.87,identity)
+        self.assertFalse(ready)
+        moved=identity.copy();moved[0,3]=.0066
+        previous,since,ready=startup_tracking_state(previous,since,19.135,moved)
+        self.assertIsNone(since);self.assertFalse(ready)
+        rotated=identity.copy();angle=.012
+        rotated[:2,:2]=[[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]]
+        previous,since,ready=startup_tracking_state(previous,since,19.535,rotated)
+        self.assertIsNone(since);self.assertFalse(ready)
+        previous,since,ready=startup_tracking_state(previous,since,19.935,identity)
+        self.assertIsNone(since);self.assertFalse(ready)
+        previous,since,ready=startup_tracking_state(previous,since,20.335,identity)
+        self.assertEqual(since,20.335);self.assertFalse(ready)
+        previous,since,ready=startup_tracking_state(previous,since,20.6,identity)
+        self.assertFalse(ready)
+        _,_,ready=startup_tracking_state(previous,since,20.87,identity)
+        self.assertTrue(ready)
+        previous,since,ready=startup_tracking_state(None,None,1.,identity)
+        distant=identity.copy();distant[0,3]=.009
+        _,since,ready=startup_tracking_state(previous,since,3.,distant)
+        self.assertIsNone(since);self.assertFalse(ready)
+
+    def test_startup_motion_gate_allows_x5_inference_cadence(self):
+        identity=np.eye(4)
+        previous,since,ready=startup_tracking_state(None,None,10.,identity,2.5)
+        previous,since,ready=startup_tracking_state(previous,since,11.05,identity,2.5)
+        self.assertTrue(ready)
+        _,since,ready=startup_tracking_state(previous,since,13.65,identity,2.5)
+        self.assertIsNone(since);self.assertFalse(ready)
+
     def test_shutdown_waits_for_map_export_and_records_timeout(self):
         for timeout in (False,True):
             with self.subTest(timeout=timeout),tempfile.TemporaryDirectory() as tmp:
@@ -39,9 +71,9 @@ class IpcTests(unittest.TestCase):
             surface=SimpleNamespace(export=export,faces=[0])
             fake_torch=SimpleNamespace(set_num_threads=lambda n:None,cuda=SimpleNamespace(synchronize=lambda:None))
             with patch.dict('sys.modules',{'torch':fake_torch,'reconstruct':SimpleNamespace(TSDF=lambda *a,**k:SimpleNamespace(integrate=lambda *a:None))}), \
-                    patch('workers.time.sleep',side_effect=sleep), \
-                    patch('workers.time.monotonic',side_effect=[0,10,20,30,40,50,60]), \
-                    patch('workers.build_surface',return_value=(surface,.04)) as build:
+                    patch('worker_reconstruction.time.sleep',side_effect=sleep), \
+                    patch('worker_reconstruction.time.monotonic',side_effect=[0,10,20,30,40,50,60]), \
+                    patch('worker_reconstruction.build_surface',return_value=(surface,.04)) as build:
                 workers.mesh(session)
             self.assertEqual(build.call_count,2)
             self.assertEqual(len(set(exports)),2,'RViz needs a new mesh URI for corrected poses')
@@ -58,7 +90,7 @@ class IpcTests(unittest.TestCase):
             refine=Mock(side_effect=AssertionError('Sequential refinement overwrites global closure'))
             with patch.dict('sys.modules',{'torch':SimpleNamespace(set_num_threads=lambda n:None),
                     'surface_matching':SimpleNamespace(refine_sequence=refine)}), \
-                    patch('workers.build_surface',return_value=(mesh,.04)) as build:
+                    patch('worker_reconstruction.build_surface',return_value=(mesh,.04)) as build:
                 finalize(session)
             build.assert_called_once_with(session,sequence)
             refine.assert_not_called()
@@ -70,6 +102,23 @@ class IpcTests(unittest.TestCase):
         _,expected=np.unique(np.floor(cloud/.03).astype(np.int32),axis=0,return_index=True)
         np.testing.assert_array_equal(cloud_voxel_indices(cloud),expected)
         self.assertEqual(len(cloud_voxel_indices(np.empty((0,3)))),0)
+
+    def test_hybrid_finalize_keeps_localization_poses_without_surface_refinement(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session=Path(tmp)
+            sequence=dict(frames=[],pose_source='wheel/IMU hybrid',pose_policy='hybrid',bounds_m=[[0,0,0],[1,1,1]])
+            write_json(session/'live_sequence.json',sequence)
+            surface=SimpleNamespace(export=lambda p:Path(p).write_text('mesh'),faces=[0],bounds=np.array([[0,0,0],[1,1,1]]))
+            refine=Mock(side_effect=AssertionError('Sequential matching must not alter the exported trajectory'))
+            with patch.dict('sys.modules',{'torch':SimpleNamespace(set_num_threads=lambda n:None),
+                    'surface_matching':SimpleNamespace(refine_sequence=refine)}), \
+                    patch('worker_reconstruction.build_surface',return_value=(surface,.04)) as build:
+                finalize(session)
+            refine.assert_not_called()
+            build.assert_called_once_with(session,sequence)
+            self.assertEqual(json.loads((session/'live_sequence.json').read_text()),sequence)
+            self.assertEqual(json.loads((session/'surface_sequence.json').read_text()),sequence)
+            self.assertFalse((session/'surface_matching.json').exists())
 
     def test_voxel_downsampling_keeps_obstacle_and_ground_in_same_voxel(self):
         cloud=np.array([[0.,0.,0.],[.001,.001,.001],[.002,.002,.002]])
@@ -101,7 +150,7 @@ class IpcTests(unittest.TestCase):
                 bounds=np.array([[0,0,0],[1,1,1]]),faces=[0])
             with patch.dict('sys.modules',{'torch':SimpleNamespace(set_num_threads=lambda n:None),
                     'surface_matching':SimpleNamespace(refine_sequence=lambda *a:(sequence,{}))}), \
-                    patch('workers.build_surface',return_value=(mesh,.04)):
+                    patch('worker_reconstruction.build_surface',return_value=(mesh,.04)):
                 finalize(session)
             result=json.loads((session/'mesh.json').read_text())
             self.assertEqual(result['file'],str(session/'final_mesh.stl'))
@@ -115,8 +164,10 @@ class IpcTests(unittest.TestCase):
         self.assertEqual(len(frames),3)
         moved=pose.copy();moved[0,3]=.06
         self.assertTrue(keep_keyframe(moved,frames))
-        rotated=pose.copy();angle=.1
+        rotated=pose.copy();angle=.04
         rotated[:2,:2]=[[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]]
+        self.assertFalse(keep_keyframe(rotated,frames))
+        rotated[:2,:2]=[[np.cos(.4),-np.sin(.4)],[np.sin(.4),np.cos(.4)]]
         self.assertTrue(keep_keyframe(rotated,frames))
 
     def test_failed_worker_is_reported_to_route(self):

@@ -1,0 +1,176 @@
+{
+  "scene": "simulation/scenarios/bmap1.xml",
+  "start_xy_m": [
+    0.8,
+    -0.6
+  ],
+  "grid_step_m": 0.25,
+  "scan_spacing_m": 1.5,
+  "head_range_deg": [
+    -180,
+    180
+  ],
+  "clearance_radius_m": 0.25,
+  "route_style": "three-room perimeter and doorway loop closure",
+  "waypoints": [
+    {
+      "x": 0.8,
+      "y": -0.6,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 1.9,
+      "y": -1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -1.9,
+      "y": -1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -2.15,
+      "y": -0.75,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -2.85,
+      "y": -0.75,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -4.35,
+      "y": -1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -4.35,
+      "y": 1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -3.05,
+      "y": 1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -3.05,
+      "y": -0.75,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -2.15,
+      "y": -0.75,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -1.9,
+      "y": -1.9,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -1.9,
+      "y": 1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 1.9,
+      "y": 1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 2.15,
+      "y": 0.75,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 2.85,
+      "y": 0.75,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 4.35,
+      "y": -1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 4.35,
+      "y": 1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 3.05,
+      "y": 1.9,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 3.05,
+      "y": -0.75,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 3.05,
+      "y": 0.75,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 2.15,
+      "y": 0.75,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 1.9,
+      "y": 1.9,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 1.9,
+      "y": -1.7,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -0.4,
+      "y": -1.7,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": -0.4,
+      "y": -0.6,
+      "speed_m_s": 0.05
+    },
+    {
+      "x": 0.8,
+      "y": -0.6,
+      "scan": true,
+      "scan_step_deg": 8,
+      "speed_m_s": 0.05
+    }
+  ],
+  "route_length_m": 51.15
+}

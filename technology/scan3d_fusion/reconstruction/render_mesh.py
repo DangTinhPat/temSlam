@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+import tempfile
 from xml.sax.saxutils import quoteattr
 
 import mujoco
@@ -23,11 +24,15 @@ def main():
     mesh = trimesh.load(cli.mesh, force="mesh")
     center = mesh.bounds.mean(axis=0)
     extent = np.linalg.norm(mesh.extents)
-    model = mujoco.MjModel.from_xml_string(f'''<mujoco>
+    # MuJoCo caps STL input at 200k faces; OBJ keeps the complete mesh for previews.
+    with tempfile.TemporaryDirectory() as tmp:
+        preview_mesh = Path(tmp) / 'scan.obj'
+        mesh.export(preview_mesh)
+        model = mujoco.MjModel.from_xml_string(f'''<mujoco>
       <visual><global offwidth="1000" offheight="760"/><quality shadowsize="2048"/>
         <headlight ambient=".35 .35 .35" diffuse=".65 .65 .65" specular="0 0 0"/></visual>
       <asset><texture type="skybox" builtin="gradient" rgb1=".12 .14 .17" rgb2=".07 .08 .10" width="128" height="128"/>
-        <mesh name="scan" file={quoteattr(str(cli.mesh.resolve()))}/>
+        <mesh name="scan" file={quoteattr(str(preview_mesh))}/>
         <material name="clay" rgba=".72 .69 .63 1" specular=".05" shininess=".1"/></asset>
       <worldbody><light pos="0 0 6" directional="true" dir="-.4 -.6 -1" diffuse=".5 .5 .5"/>
         <geom type="mesh" mesh="scan" material="clay" contype="0" conaffinity="0"/></worldbody>

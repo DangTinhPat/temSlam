@@ -12,6 +12,9 @@ steps, and simulated sensor timestamps advance together. GPU workers still run
 at hardware speed, so the latest-frame live buffer may skip RGB-D frames at high
 factors; omit the variable for normal wall-clock real time.
 
+Gói encoder/IMU/ToF được truyền đủ qua pipe có backpressure. Nếu mapper chậm,
+tốc độ thực có thể thấp hơn hệ số yêu cầu; không bỏ gia số odometry để giữ ×5.
+
 Một lệnh mở bảng điều khiển hiện có, MuJoCo với robot/nhà và RViz với bản đồ scan.
 Để quét riêng phòng khách có sofa ở tốc độ ×5, dùng `technology/scan3d_fusion/live/run_living_room.sh`; profile này đóng hai lối thông bằng tường va chạm và giới hạn tuyến vào phòng sofa. Nhà đầy đủ vẫn ở scene gốc.
 Bấm **Đứng dậy (từ nằm)**, chờ robot cân bằng và trạng thái **Đang vẽ bản đồ**.
@@ -20,18 +23,24 @@ Tốc độ mặc định của profile này là 0,10 m/s. Lệnh di chuyển ch
 tracking có ít nhất 3 keyframe hợp lệ để tránh di chuyển trong lúc GPU đang khởi tạo. Nhả phím để dừng; Esc dừng khẩn cấp.
 
 - MuJoCo hiển thị robot và thế giới vật lý, RViz hiển thị scan ước lượng.
-- Point cloud mặc định tắt (có thể bật trong Displays để chẩn đoán); đường đi cập nhật khi có keyframe mới (dịch 5 cm, xoay ~4,6°
-  hoặc qua 1 giây). Tracking vẫn nhận các frame RGB-D được xử lý giữa keyframe.
-- Lớp **Bề mặt đất sét (live mesh)** bật sẵn, dựng lại tối thiểu mỗi 5 giây khi có
-  keyframe mới. Bề mặt đầu tiên yêu cầu ít nhất 3 quan sát hỗ trợ; thời gian xử lý
+- Point cloud mặc định tắt (có thể bật trong Displays để chẩn đoán); đường đi cập nhật khi có keyframe mới (dịch 5 cm hoặc xoay khoảng 4,6°).
+  Tracking vẫn nhận các frame RGB-D được xử lý giữa keyframe.
+- Lớp **Bề mặt đất sét (live mesh)** bật sẵn, kiểm tra bản đồ mới mỗi 5 giây.
+  Bề mặt đầu tiên yêu cầu ít nhất 3 quan sát hỗ trợ; thời gian xử lý
   và làm nóng GPU có thể khiến lần xuất đầu chậm hơn. Vùng chưa đo vẫn để trống.
+- Bản đồ hybrid gom keyframe thành lô 25 khung và bỏ qua cờ PGO để tránh làm
+  chậm tracker; chế độ `cuvslam` mới refresh theo pose-graph. Mesh cuối luôn dùng
+  toàn bộ lịch sử keyframe đã giữ.
 - Dòng trạng thái dưới bảng điều khiển và trong RViz báo chờ cân bằng, nạp GPU,
   tracking, số liệu hoặc lỗi. Lần nạp/làm nóng GPU đầu tiên mất vài giây.
 - **Stop SIM** dừng toàn bộ worker/viewer thuộc phiên, giữ dữ liệu đã ghi.
   **Start SIM** mở phiên mới. Đóng bảng điều khiển cũng dừng các tiến trình đó.
-- Khi cuVSLAM báo mất tracking, dừng ghép map và báo lỗi rõ. Khoảng trễ timestamp
-  đơn lẻ không còn làm dừng tracker; pose visual vẫn qua gate odometry. Dùng Stop SIM
-  rồi Start SIM để tạo map mới. Không tự nối hai map khác gốc.
+- Hybrid kiểm tra delta local cuVSLAM với encoder/IMU rồi chỉ nhận pose hiện tại qua
+  `BodyLocalization`; pose-graph không được áp lên lịch sử keyframe. `--pose-policy
+  cuvslam` chọn pose đồ thị trực tiếp và dừng khi local tracking bất đồng. Cả hai
+  chế độ vẫn cần kiểm tra sai số quay lại vị trí cũ trước khi chấp nhận map. Ảnh
+  depth rỗng bị bỏ qua; nếu SDK mất tracking (`None`) hoặc odometry không hợp lệ,
+  dừng ghép map. Dùng Stop SIM rồi Start SIM để tạo map mới; không tự nối map khác gốc.
 
 ## Dữ liệu và kiến trúc
 
@@ -43,8 +52,16 @@ Mỗi lần Start SIM tạo thư mục mới `datasets/raw/tof-YYYYMMDD-HHMMSS-.
   Timestamp odometry và ảnh đã ghép phải lệch không quá 20 ms.
 - `keyframes/`, `live_sequence.json`: depth và camera pose đã ước lượng/tối ưu.
 - `cloud.npz`: point cloud đã gom voxel 3 cm và quỹ đạo.
+- `map_refresh_diagnostics.jsonl`: thời gian dựng từng bản đồ live và lý do cập nhật.
 - `mesh-*.stl`, `mesh.json`: mesh mới nhất (giữ 3 revision).
-- `cuvslam_map/`: database được lưu khi tracker thoát bình thường hoặc gặp lỗi.
+- `cuvslam_map/`: database chỉ được lưu khi tracker thoát sạch và không có lần
+  bác bỏ chuyển động visual; không dùng database từ trajectory đã bị chặn.
+- `pose_quality.json`, `tracking_diagnostics.jsonl`: thống kê visual bị loại,
+  depth rỗng, chính sách pose và trạng thái lưu database. Hybrid chưa chứng minh loop closure.
+
+RViz giữ cloud và đường đã đi cho viewer mở muộn. Quỹ đạo dùng topic riêng
+`/scan3d/trajectory` với transient-local để lịch sử trạng thái không đẩy mất nó;
+`/scan3d/info` mang trạng thái, `/scan3d/cloud` mang cloud đã lưu.
 - `infer.log`, `slam.log`, `mesh.log`, `rviz.log`, `*_status.json`: chẩn đoán.
 - `route_state.json`: điểm tuyến, trạng thái controller và pose gần nhất khi quét
   tự động; dùng để đối chiếu khi robot đứng lại. File được thay thế, không phải lịch sử.
@@ -55,20 +72,22 @@ phỏng; lỗi cân bằng vẫn dừng ngay. Sau khi dừng, nút **Tiếp tụ
 cùng phiên ứng dụng nếu robot còn cách vị trí dừng không quá 0,3 m và controller
 đã sẵn sàng. Khởi động lại ứng dụng không khôi phục tuyến đang dở.
 
-Tốc độ tuyến tối đa 0,20 m/s, giảm dần gần điểm dừng và khi lệch hướng. Các điểm
+Tuyến toàn nhà giới hạn tốc độ 0,05 m/s, giảm thêm gần điểm dừng và khi lệch
+hướng. Các điểm
 nối không cần quét không phát STOP. Lượt lia ToF thông thường giữ 20°/s. Tuyến dừng có lý
 do khi 12 giây mô phỏng không tiến triển hoặc inference/SLAM báo lỗi. Sau 3
 keyframe khởi tạo, tracker chỉ lưu thêm keyframe khi camera dịch ít nhất 5 cm
 hoặc xoay ít nhất khoảng 4,6°; đứng yên lâu không tự làm đầy giới hạn keyframe.
 
-Toàn bộ 66 điểm lia trong phòng có `scan_step_deg: 8`: đầu không được
-đi trước quá 8° so với góc encoder của ảnh RGB-D mà worker SLAM đã xử lý. Dùng
+Các điểm quét trong nhà và toàn bộ 66 điểm lia trong phòng dùng
+`scan_step_deg: 8`: đầu không được đi trước quá 8° so với góc encoder của ảnh
+RGB-D mà worker SLAM đã xử lý. Dùng
 `sensor_time` và `head_yaw_rad` trong `slam_status.json`, thay vì lấy 15 Hz ToF
-làm giả định về tốc độ fusion thực tế. Chờ dữ liệu mới trước khi lia tiếp;
+làm giả định về tốc độ fusion thực tế. Đầu lia 20°/s khi quét và 45°/s khi vào/ra góc quét. Chờ dữ liệu mới trước khi lia tiếp;
 feedback quá 5 giây wall-clock không còn được dùng. Nếu 180 giây wall-clock
 không có tiến triển góc fusion (ít nhất 1°), tuyến dừng có thông báo; không dùng
 thời hạn tổng lượt lia vì xử lý map lớn sẽ chậm hơn. Không giảm
-min_views; giới hạn tăng lên 4096 keyframe để đủ cho các lượt lia dày toàn phòng.
+min_views; giới hạn 8192 keyframe để đủ cho các lượt lia dày toàn nhà.
 Không đổi các điểm đi và va chạm.
 Headless cộng dự phòng thời gian cho các điểm quét dày; lượt này sẽ lâu hơn.
 Xem [kiểm tra khe sofa–bàn](../../../evaluation/sofa_gap_results.md) và
@@ -88,14 +107,31 @@ ROS chỉ nằm ở bridge hiển thị, domain 44. Core không import ROS.
 Mapper ghi odometry mỗi frame nhưng chỉ xuất ảnh occupancy/PLY tối đa 4 Hz để
 giảm nghẽn khi simulator chạy nhanh; nút quét chờ ít nhất 3 keyframe cuVSLAM.
 
-Map lấy lại pose tối ưu cho keyframe trước khi dựng cloud/mesh. Mount camera từ
-kinematics đầu và thân ở cùng timestamp. Không dùng pose mô phỏng để ghép map.
+Quét cả nhà không mở cửa sổ, rồi xuất mesh từ fusion:
+
+```bash
+python technology/scan3d_fusion/live/headless.py \
+  --route technology/scan3d_fusion/mapping/native/fixed_scan_route.json \
+  --speed-factor 1 --pose-policy hybrid
+```
+
+Chạy ở tốc độ mô phỏng ×1 để inference theo kịp robot; các lượt ×5 trước đây
+để khoảng cách ảnh lớn và làm giảm độ tin cậy visual. Hybrid dùng encoder/IMU
+làm quỹ đạo nền. Delta local cuVSLAM phải khớp trong 10 cm/0,15 rad, sau đó
+`BodyLocalization` còn chặn hiệu chỉnh tuyệt đối vượt 0,5 m/0,35 rad. Frame bị
+loại tiếp tục theo odometry và hiệu chỉnh cuối đã chấp nhận. Pose cuVSLAM hiện
+tại chỉ đi qua gate này; không áp pose PGO lên toàn bộ keyframe lịch sử. Cloud
+dựng lại mỗi 25 keyframe, không theo cờ PGO có thể tồn tại liên tục. Chưa xác
+nhận loop closure toàn nhà; drift odometry vẫn có thể tăng trên tuyến dài. Chế
+độ `cuvslam` xuất pose tối ưu toàn cục nên có rủi ro méo khi tracking/PGO bất
+thường. Mount camera lấy từ kinematics đầu và thân cùng timestamp; pose mô phỏng
+chỉ dùng để đánh giá sau khi ghi map.
 
 ## Giới hạn thực tế
 
 Đây là xử lý trực tiếp với buffer mới nhất, không đảm bảo đủ 15 FPS. Tốc độ phụ
 thuộc GPU, cảnh, DELTAR và mesh; frame cũ có thể bị bỏ để tránh tăng độ trễ.
-Nên chạy chậm trong lượt đầu. Giới hạn 4096 keyframe/phiên; đến giới hạn hệ thống
+Không dùng tăng tốc mô phỏng để rút ngắn lượt quét SLAM. Giới hạn 8192 keyframe/phiên; đến giới hạn hệ thống
 ngừng ghép và yêu cầu phiên mới. TSDF là volume dày, voxel tối thiểu 4 cm, tự tăng
 khi không gian lớn. Với map lớn, dựng lại toàn mesh sẽ chậm hơn và phải chuyển
 sang volume phân mảnh nếu cần mở rộng.
@@ -170,14 +206,14 @@ suy diễn.
 Nếu đứng dậy/tracking/tuyến bị lỗi, chương trình trả lỗi và giữ dữ liệu dở dang;
 không báo lượt quét đó là hoàn tất.
 
-Bước `finalize` ghép lại các bề mặt đo được bằng point-to-plane XY/yaw trước
-khi xuất mesh cuối. Chỉ dùng bề mặt gần đứng, bỏ mép đứt depth, chặn dịch chỉnh
-quá 20 cm hoặc 0,12 rad mỗi khung; một mặt tường đơn không đủ ràng buộc thì giữ
-dự đoán odometry. Không đổi cao độ/roll/pitch đã hiệu chuẩn. Lưu pose đã ghép ở
-`surface_sequence.json`, thống kê ở `surface_matching.json`; `live_sequence.json`
-giữ quỹ đạo đầu vào. Đây là bước tinh chỉnh tuần tự sau quét, chưa phải tối ưu
-pose graph toàn cục hoặc sửa luồng mesh realtime. cuVSLAM vẫn có thể bị gate
-từ chối; các phiên mới ghi `visual_accepted` cho từng keyframe để kiểm tra.
+Finalize dựng lại TSDF theo pose đã lưu cho từng keyframe; không áp surface matching
+tuần tự vào pose trước khi xuất mesh. Các phiên hybrid ghi `local_visual_accepted`
+và `visual_accepted` cho từng keyframe; `tracking_diagnostics.jsonl` ghi timestamp,
+khoảng cách thời gian và lý do loại visual. `pose_quality.json` ghi số lần loại,
+khoảng cách thời gian tracker và trạng thái lưu database. Hybrid không lấy pose
+graph để cập nhật lại lịch sử; pose cuVSLAM hiện tại vẫn qua gate local và
+`BodyLocalization`. Chế độ này chưa chứng minh loop closure; sai số odometry vẫn
+có thể tăng theo quãng đường.
 
 ### Phát lại fusion để thay dữ liệu đã bị ép sàn
 
@@ -195,8 +231,7 @@ Nếu nguồn là phiên đã phát lại có `inputs/` và `prediction/`, scrip
 đúng RGB/ToF và prediction để so bộ lọc, không render/chạy model lại; giữ nguyên
 pose và bounds TSDF. Các thư mục liên kết phải còn tồn tại khi sử dụng kết quả.
 
-`reconstruction/floor_support.py`, `complete_floor.py` và các bản
-`floor_completion/` cũ chỉ giữ lại để đối chiếu thí nghiệm. Không dùng kết quả
+Các bản `floor_completion/` cũ chỉ giữ lại để đối chiếu thí nghiệm. Không dùng kết quả
 sàn suy diễn làm đầu ra SLAM chính thức. Xem
 [fusion_only_results.md](../../../evaluation/fusion_only_results.md).
 

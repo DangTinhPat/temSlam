@@ -14,19 +14,26 @@ Visualization Manager:
   - Axis: Z
     Class: rviz_default_plugins/PointCloud2
     Color Transformer: AxisColor
-    Enabled: false
+    Enabled: true
     Name: Scan point cloud
     Size (Pixels): 3
     Style: Points
     Topic:
-      Durability Policy: Volatile
+      Durability Policy: Transient Local
       Reliability Policy: Reliable
       Value: /scan3d/cloud
   - Class: rviz_default_plugins/Marker
     Enabled: true
-    Name: Trajectory and status
+    Name: Saved trajectory
     Topic:
-      Durability Policy: Volatile
+      Durability Policy: Transient Local
+      Reliability Policy: Reliable
+      Value: /scan3d/trajectory
+  - Class: rviz_default_plugins/Marker
+    Enabled: true
+    Name: Scan status
+    Topic:
+      Durability Policy: Transient Local
       Reliability Policy: Reliable
       Value: /scan3d/info
   Global Options:
@@ -39,11 +46,11 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 5.0
+      Distance: 14.0
       Focal Point:
-        X: 1.5
-        Y: 0
-        Z: 0
+        X: -1.2
+        Y: -2.1
+        Z: 0.85
       Name: Live RGB-ToF scan
       Pitch: 0.5
       Yaw: -1.5

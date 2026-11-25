@@ -156,15 +156,24 @@ Encoder hai bánh và gyro tạo local odometry x/y/yaw với covariance, có ki
 bất đồng/nghi trượt. IMU cung cấp thông tin nghiêng thân. Camera gắn trên đầu
 quay nên cần mount thay đổi theo thời gian để quy đổi pose camera và thân.
 
-Mapping lấy toàn bộ pose cuối từ cuVSLAM, dùng wheel/IMU và mount của frame đầu
-để căn hệ tọa độ một lần. Mọi hiệu chỉnh lịch sử, kể cả Z/roll/pitch, được giữ
-nguyên tương đối; không thay từng pose bằng odometry hoặc chặn loop closure lớn.
-Đây chưa phải đưa wheel/IMU factors vào bộ tối ưu nội bộ cuVSLAM.
+Mặc định mapping dùng chế độ `hybrid`: wheel/IMU là quỹ đạo nền. Chỉ xét pose
+cuVSLAM hiện tại nếu delta local từng frame khớp odometry trong 10 cm/0,15 rad;
+`BodyLocalization` chặn tiếp hiệu chỉnh tuyệt đối vượt 0,5 m/0,35 rad. Frame bị
+loại tiếp tục theo odometry và hiệu chỉnh cuối được chấp nhận. Pose cuVSLAM hiện
+tại chỉ đi qua gate này; không áp lại toàn bộ pose PGO lên lịch sử keyframe.
+Cloud dựng lại theo lô 25 keyframe và khi kết thúc, không theo cờ PGO liên tục.
+Ảnh depth rỗng không vào SDK hoặc TSDF; vùng không có số đo vẫn để trống. Cách
+này tránh cú nhảy PGO lên toàn map nhưng chưa xác nhận đóng vòng toàn cục, nên
+sai số tích lũy vẫn có thể xuất hiện trên tuyến dài.
+Không dùng pose thật MuJoCo để ghép map, không đưa wheel/IMU factors vào bộ tối
+ưu nội bộ cuVSLAM.
 
-Wheel/IMU đối chiếu delta **visual odometry cục bộ**, không đối chiếu bước nhảy
-SLAM toàn cục. Mất tracking hoặc bất đồng delta quá 10 cm/0,15 rad sẽ dừng ghép,
-giữ sản phẩm hợp lệ gần nhất và báo lỗi. Ngưỡng hiện chỉ dành cho mô phỏng.
-`BodyLocalization` vẫn phục vụ nhánh định vị riêng, không cấp pose dựng map.
+`--pose-policy cuvslam` trong headless chọn chế độ kiểm tra nghiêm ngặt: lấy
+toàn bộ pose tối ưu cuVSLAM, chỉ căn hệ đầu một lần. Mọi hiệu chỉnh lịch sử,
+kể cả Z/roll/pitch và loop closure lớn, được giữ nguyên. Bất đồng delta visual
+cục bộ quá ngưỡng sẽ dừng; không thay pose bằng encoder. Luồng replay cuVSLAM
+độc lập vẫn giữ chính sách này. Mất tracking SDK hoặc odometry không hợp lệ
+vẫn làm phiên live dừng. Ngưỡng hiện chỉ dành cho mô phỏng.
 
 ### Bước 6 — Cập nhật TSDF và mesh live
 
@@ -194,13 +203,16 @@ env -u PYTHONPATH /home/dvt/.venvs/deltar/bin/python \
 Lệnh ghi lại các file kết quả cuối trong thư mục phiên; sao lưu chúng trước nếu
 cần giữ bản cũ. Không finalize khi phiên còn đang ghi dữ liệu.
 
-Khi dừng bình thường, tracker xuất lại lịch sử pose tối ưu kể cả khi frame cuối
-không được giữ làm keyframe. Loop closure trên frame không giữ cũng cập nhật
-cloud/sequence; mesh live dựng lại khi pose đổi dù số keyframe không tăng.
+Ở chế độ `cuvslam`, pose-graph có thể cập nhật lịch sử tối ưu khi dừng hoặc khi
+tracker báo graph update. Hybrid giữ nguyên pose đã chấp nhận cho các keyframe
+cũ, chỉ dùng pose hiện tại qua gate cho frame mới; cloud dựng lại theo lô 25
+keyframe và khi kết thúc. Mesh live dựng lại khi sequence đổi.
 
 Finalize dựng lại TSDF theo lịch sử này, xuất `final_mesh.stl` và `final_mesh.ply`.
-Không chạy surface matching tuần tự để tránh ghi đè nghiệm toàn cục. Finalize
-phiên cũ chỉ dựng lại theo pose đã lưu, không tự chạy lại SLAM hay sửa dữ liệu cũ.
+Không chạy surface matching tuần tự ở bước finalize: phép thử trên phiên nhà giảm
+ATE khoảng 4,5 mm nhưng tăng RPE liền kề từ 2,6 mm lên 3,5 cm và kéo dài quỹ đạo
+7,4 m. Phiên cũ chưa ghi `pose_policy` chỉ dựng lại theo pose đã lưu, không tự
+chạy lại SLAM.
 Xem [kết quả kiểm tra loop closure](../../evaluation/slam_loop_results.md).
 
 ## 4. Chúng ta đã có VIO chưa?
@@ -283,17 +295,19 @@ và `pose_source` của từng phiên. ToF-SLAM tham khảo không phải implem
 | Calibration | Extrinsic mô phỏng trong `config/sim_calibration.json` |
 | GPU phát triển | NVIDIA RTX 3060 |
 | Profile phòng khách | Thời gian mô phỏng ×5, scene phòng khách độc lập |
-| Tuyến cố định | 184 waypoint, 66 điểm lia, dài khoảng 96,3 m |
+| Tuyến phòng khách | 184 waypoint, 66 điểm lia, dài khoảng 96,3 m |
+| Tuyến nhà đầy đủ | 167 waypoint, 19 điểm lia 270°, dài khoảng 143,5 m; quay lại điểm đầu |
 | Đồng bộ lia/fusion | `scan_step_deg: 8`, chờ góc frame đã xử lý trước khi đầu đi tiếp |
-| Keyframe | Tối đa 4096/phiên |
+| Keyframe | Tối đa 8192/phiên |
 
 Không thêm nhiễu ToF **không có nghĩa depth không sai**. Một vùng 8×8 vẫn chứa
 nhiều khoảng cách khi nhìn xiên hoặc cắt qua sàn/tường; DELTAR vẫn có bias và
 lỗi suy luận. Mô hình ToF hiện là thống kê vùng mean/std gần đúng, chưa mô phỏng
 đầy đủ SPAD, photon histogram, vật liệu, ánh sáng mặt trời, multipath hoặc xtalk.
 
-Tuyến thử đi chu vi và các dải trong phòng; robot dừng, lia đầu quét đủ vòng,
-về hướng trước rồi đi tiếp. Bộ lập tuyến dùng scene đã biết để tránh vật cản.
+Tuyến phòng khách đi chu vi và các dải trong phòng. Tuyến nhà đầy đủ phủ bốn
+khu vực phòng rồi quay lại điểm đầu để tạo cơ hội khép vòng. Các tuyến dùng scene
+đã biết để tránh vật cản; đây chưa phải exploration tự động từ map chưa biết.
 Đây là **tuyến cố định**, chưa phải exploration/navigation từ bản đồ SLAM.
 
 ×5 tăng thời gian vật lý/controller/timestamp mô phỏng. GPU vẫn chạy theo năng
@@ -396,10 +410,10 @@ Phiên mới nằm ở `datasets/raw/tof-YYYYMMDD-HHMMSS-.../`:
 | `live_sequence.json` | Pose camera ước lượng dùng cho map live |
 | `cloud.npz` | Cloud hiển thị gom voxel 3 cm và trajectory; không thay depth đầy đủ của TSDF |
 | `mesh-*.stl`, `mesh.json` | Các revision mesh live và chỉ dẫn file hiện hành |
-| `cuvslam_map/` | Database SLAM, lưu khi tracker đóng theo luồng xử lý |
+| `cuvslam_map/` | Database SLAM, chỉ lưu khi không có chuyển động visual bị loại |
 | `route_state.json` | Trạng thái hiện tại của tuyến, không phải lịch sử đầy đủ |
 | `infer.log`, `slam.log`, `mesh.log`, `*_status.json` | Log và trạng thái từng worker |
-| `surface_sequence.json`, `surface_matching.json` | Pose và thống kê matching sau finalize |
+| `surface_sequence.json` | Pose được dùng nguyên trạng khi finalize |
 | `final_mesh.stl`, `final_mesh.ply`, `final_mesh.json` | Mesh cuối và metadata sau finalize |
 | `headless_result.json`, `result.png` | Kết quả tuyến và ảnh preview của lượt headless |
 
@@ -439,8 +453,9 @@ Bản đối chiếu đang dùng là
 `room-estimated-plane-preview-20261112` fit mặt phẳng từ mesh rồi dịch 25.524
 vertex về đó, tối đa 5,98 cm. Sàn phẳng của bản này là do giả thiết hình học,
 không chứng minh fusion chính xác. Nó không được tích hợp vào live/finalize.
-Các helper `floor_support.py`, `complete_floor.py` cũ cũng không được gọi trong
-pipeline chính; giữ lại để đối chiếu thí nghiệm.
+Các nhánh sửa depth theo mặt phẳng và vá sàn hậu kỳ đã bị loại khỏi mã nguồn
+chính. Greater chỉ xử lý preview mesh; depth đo gốc và nhãn segmentation được
+giữ riêng cho bản đồ/navigation.
 
 Những việc chưa được chứng minh hoặc chưa có:
 
@@ -480,7 +495,11 @@ technology/scan3d_fusion/
 │   ├── reconstruct.py         TSDF và xuất mesh dùng chung
 │   ├── surface_matching.py    Matching pose sau quét
 │   └── render_mesh.py         Render mesh đã xuất thành ảnh
-├── live/                      Session, inference/tracking/mesh, headless
+├── live/                      Session, headless launcher and worker dispatcher
+│   ├── worker_inference.py    RGB + ToF / DELTAR inference stage
+│   ├── worker_tracking.py     cuVSLAM, pose checks and keyframes
+│   ├── worker_reconstruction.py TSDF preview and final mesh export
+│   └── worker_common.py       Shared file, depth and keyframe helpers
 └── viewer/                    Hiển thị mesh đã lưu trong RViz
 ```
 

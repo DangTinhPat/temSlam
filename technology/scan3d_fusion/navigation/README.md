@@ -149,6 +149,26 @@ Chỉ một launcher navigation được chạy cùng lúc; không tác động 
 Cấu hình dùng các [công cụ chuẩn của RViz](https://github.com/ros2/rviz/blob/rolling/rviz2/doc/index.rst#tools).
 Xem [ảnh RViz và kết quả kiểm tra](../../../evaluation/rviz_navigation_results.md).
 
+### Đồng bộ pose RViz sang MuJoCo nhà
+
+Để xem robot CAD trong scene ngôi nhà đầy đủ, chạy thêm viewer sau trong terminal
+thứ hai, cùng `ROS_DOMAIN_ID` với RViz:
+
+```bash
+env ROS_DOMAIN_ID=189 /home/dvt/micromamba/envs/wheel-leg-ros/bin/python \
+  technology/scan3d_fusion/navigation/mujoco_house_rviz_mirror.py \
+  --initial-pose 0.7 -1.6 0
+```
+
+Viewer nạp `indoor_tiny_house_living_room.xml`, đổi pose từ frame map v10 sang
+frame MuJoCo bằng phép SE(2) fit từ trace capture đồng bộ, rồi theo topic
+`/rb_navigation/pose`. Phép fit hiện tại quay 8,41° và dịch (-0,572; -0,073) m.
+Trace cho thấy drift thay đổi theo vùng, nên phép căn cứng cải thiện chồng lớp
+nhưng không thể làm mọi vật khớp hoàn toàn; cần đối chiếu vùng đang chạy. Đây
+là đồng bộ động học để quan sát,
+**không bước physics, không mô phỏng cân bằng và không phát lệnh tới robot phần
+cứng**.
+
 ### Xem RB đi trên bản quét 3D
 
 Dùng đúng `room-floor-preserved-20261112/final_mesh.stl`, giữ nguyên mesh và lỗ

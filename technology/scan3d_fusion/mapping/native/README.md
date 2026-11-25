@@ -13,21 +13,30 @@ build/tof_only/rb_tof_mapper /tmp/replayed-map < datasets/raw/tof-SESSION/sensor
 
 The normal `rb1_sim` build also builds `rb_tof_mapper` beside the simulator binary. The dashboard opens a map window automatically, records sensor-only logs under `datasets/raw/tof-TIMESTAMP/`, and updates `map.pgm`, `state.json`, and `trajectory.csv`. Calibration comes from `technology/scan3d_fusion/config/tof.yaml`; rebuild after editing it. Python + PyYAML are build-time requirements; Tk/Pillow are used only by the viewer.
 
-The dashboard's **Quét map tự động** button follows the fixed, collision-checked route in `fixed_scan_route.json`. It starts at `(0, 0)` facing `+X`, stops every metre, waits for the base to settle, sweeps the articulated ToF head from `−180°` to `+180°`, returns it to `0°`, and only then drives to the next point. The five parallel scan lanes are connected by a precomputed path; this is path following from MuJoCo pose feedback, with no online SLAM navigation or obstacle replanning. The mapper applies the measured head angle to each ToF ray.
+The dashboard's **Quét map tự động** button follows the collision-checked full-house route in `fixed_scan_route.json`. It starts at `(0, 0)` facing `+X`, covers all four room regions, then returns to `(0, 0)` to revisit the opening area. The current path is 143.5 m with 167 waypoints and 19 selected scan stops. At each scan stop it sweeps the articulated head from `−135°` to `+135°` at up to 20°/s, returns it to `0°`, and then drives on. Translation through the route continues collecting views between scan stops. This is fixed path following from MuJoCo pose feedback, not online SLAM navigation or obstacle replanning; the SLAM workers still estimate poses from sensor data.
 
-The route now detours around the current sofa, coffee table and stairs. Straight
-segments request up to 0.20 m/s, slowing near waypoints and when heading error
-grows. Intermediate points do not send STOP; large turns use separate entry/exit
-thresholds to prevent stop/go chatter. The head sweep stays at 20 degrees/s
-(about 1.33 degrees per sample at 15 Hz). Lack of progress for 12 simulation
+![Full-house mapping route](../../../../evaluation/full_house_mapping_route.png)
+
+The route detours around the current sofa, coffee table and stairs. Full-house
+segments are capped at 0.05 m/s, slowing near waypoints and when heading error
+grows; the 19 scan stops advance at most 8 degrees per processed RGB-D image.
+In a 12-waypoint probe, 90.0% of tracking steps were accepted and aligned ATE
+was 1.75 cm over 10.7 m; the 19 cm endpoint error shows remaining drift.
+Intermediate points do not send STOP; large turns use separate entry/exit
+thresholds to prevent stop/go chatter. Lack of progress for 12 simulation
 seconds, or a failed live inference/tracking worker, stops the route with a reason.
+The live RGB-D worker saves a mapping keyframe after 5 cm translation or about
+4.6° rotation, as in the successful living-room baseline. Hybrid mapping uses
+wheel/IMU camera motion for this decision and rejects inconsistent visual
+corrections. The 8,192-view limit remains enforced; reaching it stops the scan
+with a reason. Actual saved-view count depends on processing throughput.
 
 After moving furniture, check the route against the physical collision geometry
 using a Python environment with MuJoCo installed:
 
 ```bash
 python technology/scan3d_fusion/mapping/repair_scan_route.py
-# Reconnect the fixed route around changed obstacles and respace scans every metre:
+# Reconnect the fixed route around changed obstacles and respace scan stops:
 python technology/scan3d_fusion/mapping/repair_scan_route.py --write
 # Run a separate native simulation through the entire route (no GUI or SLAM workers):
 python technology/scan3d_fusion/mapping/check_route_physics.py /tmp/route-check.json
@@ -62,7 +71,7 @@ MAPRESET
 
 `t` is simulation/sensor time, not GUI wall time. Wheel positions are cumulative signed encoder-derived distances, compensated for pitch and leg-chain rotation. Gyro heading is integrated at the source IMU rate after quiet bias estimation. Axle coordinates come from measured joint angles and calibrated forward kinematics. They are not world coordinates. No ground-truth pose is accepted. Zero range means invalid, never maximum-range free space. Frames have exactly 64 row-major radial ranges; columns run image-left to right, rows top to bottom. The fixed optical mounting is compiled from the same vision YAML as the simulator.
 
-On the supported planar floor, yaw increments use 20% gyro and 80% differential wheel yaw. XY uses the midpoint heading. Pose is initialized locally at the first supported frame. During unsupported/large-tilt frames, map accumulation pauses. Cumulative positions/integrated gyro retain motion across dropped frames; drops are reported by the GUI backend. Severe discontinuities are rejected. Reset starts a fresh map; trajectory logs contain a reset marker.
+On the supported planar floor, yaw increments use variance-weighted wheel/gyro fusion with slow residual gyro-rate compensation from nonslipping wheel measurements. See [odometry](../odometry/README.md) for the estimator and its limits. XY uses the midpoint heading. Pose is initialized locally at the first supported frame. During unsupported/large-tilt frames, map accumulation pauses. The GUI sensor pipe applies backpressure instead of dropping packets when the mapper is slow. Gaps over 0.5 sensor seconds still reseed counters and exclude that motion. Reset starts a fresh map; trajectory logs contain a reset marker.
 
 ## Map semantics and limits
 

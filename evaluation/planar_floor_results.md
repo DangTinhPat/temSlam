@@ -5,6 +5,11 @@
 đây mô tả thí nghiệm cũ, không phải mức độ hoàn chỉnh của fusion. Xem
 [bản sửa nguồn dữ liệu](fusion_only_results.md).
 
+Mã thử nghiệm `reconstruction/complete_floor.py` và `floor_support.py` đã được
+xóa khỏi source tree ngày 17/11/2026 vì không thuộc luồng chính. Báo cáo và
+output bên dưới được giữ làm lịch sử; các lệnh chạy lại phần completion cũ
+không còn áp dụng.
+
 ## Tham khảo mã nguồn
 
 - [HDL Graph SLAM: floor_detection_nodelet.cpp](https://github.com/koide3/hdl_graph_slam/blob/master/apps/floor_detection_nodelet.cpp): lọc theo chiều cao/pháp tuyến, RANSAC, kiểm tra mặt phẳng sàn và hướng pháp tuyến. Kế thừa cách mô hình hóa sàn thành một mặt phẳng có bằng chứng; không tích hợp ROS vào core, không nhập thuật toán tối ưu graph của dự án.

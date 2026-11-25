@@ -10,7 +10,15 @@ ToF-only bằng `wheel_imu.hpp`, được build vào `firmware/build/bin/rb_tof_
 quãng đường bánh; gyro được tích phân ở tốc độ nguồn và bù bias như trước.
 Packet `TOFMAP` mang số đo này xuống mapper theo tần số ToF (~15 Hz).
 
-`WheelImu` kết hợp delta yaw gyro và encoder theo phương sai. Khi độ lệch lớn
+`WheelImu` kết hợp delta yaw gyro và encoder theo phương sai. Trước khi trộn,
+nó ước lượng sai lệch tốc độ gyro chậm từ `(delta_gyro-delta_wheel)/dt` bằng
+bộ lọc bậc một có hằng số thời gian 5 giây. Bước này xử lý phần bias/scale dư
+mà kiểm tra bias khi đứng yên ở nguồn chưa loại được; không cần pose thật.
+Chỉ học khi mẫu hợp lệ, hai bánh được đỡ, không phát hiện trượt và bất đồng còn
+trong ngân sách sai số gyro: `0,003 × dt + 3% × max(|delta_wheel|, |delta_gyro|)`.
+Ngân sách này giữ nguyên giả định bias dư trong phương sai hiện có và mức scale
+3% của mô hình MPU; cần hiệu chuẩn lại trên phần cứng. Bất đồng bánh chậm ngoài
+ngân sách không được học thành gyro bias. Khi độ lệch lớn
 hơn ngưỡng 5 sigma (sàn 0,04 rad), nó gắn cờ nghi trượt, dùng gyro cho góc quay
 và tăng covariance. Chuyển động tiến vẫn lấy từ bánh; trượt đều cả hai bánh
 không thể phát hiện chỉ bằng hai nguồn này. Covariance 3×3 cho x/y/yaw được
@@ -20,6 +28,11 @@ Robot chưa cân bằng/nghiêng quá ngưỡng, mất mẫu >0,5 giây hoặc e
 0,5 m thì không tích phân đoạn đó. Bộ đếm được seed lại để không cộng chuyển
 động bánh treo vào vị trí khi trở lại cân bằng. Timestamp cũ/nonfinite bị từ chối.
 `MAPRESET` xóa cả trạng thái fusion.
+
+Luồng GUI → mapper dùng pipe có backpressure: mapper chậm thì nguồn chờ,
+không bỏ gói encoder/IMU. Vẫn giữ nguyên ngưỡng từ chối mất mẫu >0,5 giây;
+không nới ngưỡng để che mất dữ liệu. RGB-D live có thể bỏ ảnh cũ, nhưng các
+gia số odometry phải được tích phân đủ trước khi ghép ảnh theo timestamp.
 
 `TOFMAP` dùng pitch đã trừ `controller.imuPitchOffset()`. Roll lấy mốc khi
 robot nằm yên ở home và chốt lúc nhận STANDUP, với cùng giới hạn offset 0,08 rad
@@ -36,7 +49,9 @@ odometry; không coi nó là covariance đầy đủ của pose camera hoặc gl
 
 Các hệ số noise hiện là giá trị khởi đầu cho mô phỏng; cần đo noise/bias/slip của
 phần cứng để hiệu chuẩn. Covariance là xấp xỉ: bộ bù bias ở nguồn có dùng wheel_rate,
-nên tương quan encoder/gyro chưa được mô hình hóa đầy đủ. Gyro đầu vào là yaw tích phân **không wrap**, đã bù bias
+nên tương quan encoder/gyro và trạng thái bias chậm chưa được mô hình hóa đầy đủ.
+Trượt nhỏ kéo dài dưới ngưỡng có thể bị hiểu là sai lệch gyro; encoder/IMU này
+không thay thế loop closure hoặc hiệu chuẩn bánh/IMU. Gyro đầu vào là yaw tích phân **không wrap**, đã bù bias
 ở nguồn. Module không tự hiểu raw gyro trong hệ trục IMU bất kỳ.
 
 ## Nối cuVSLAM

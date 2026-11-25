@@ -18,6 +18,16 @@ python3 -m venv /tmp/temslam-map-env
 
 `indoor_tiny_house.xml` là **mặt bằng SLAM chính thức** và mặc định khi mở GUI. Kích thước trong nhà 11,52 × 10,08 m; lưới ToF có phạm vi 12,8 × 12,8 m, độ phân giải 2,5 cm. Kích thước thực của robot, đồ đạc và các lối đi được giữ nguyên. Cảnh có cửa vào rộng 1,2 m, hai vách ngăn có cửa rộng 1,4–1,6 m, sofa và bàn ăn, tủ hai cột ba tầng ngăn, cầu thang chi tiết, trụ hình bình eo thắt và hai vật cản thấp cho ToF. Cảnh AWS lớn ở trên vẫn có thể chọn riêng.
 
+### Nhà mới ba phòng, 50 m²
+
+`bmap1.xml` là scene MJC riêng cho căn nhà bmap1: sàn liền 10 × 5 m, một phòng giữa 25 m² và hai phòng hai bên mỗi phòng 12,5 m². Hai cửa rộng 0,9 m lệch nhau 1,5 m; tường xám trắng dịu, bốn đèn trần và sofa thu nhỏ còn 75% kích thước. Sofa và pose xuất phát của robot được đặt gần giữa phòng, tách nhau để tránh va chạm. Robot, camera và ToF được giữ nguyên; chỉ mesh sofa và mesh va chạm của robot còn được dùng. Scene nhà SLAM cũ vẫn được giữ để đối chiếu.
+
+Mở scene mới bằng:
+
+```bash
+RB1_SIM_MODEL=simulation/scenarios/bmap1.xml python gui/sim_gui.py
+```
+
 Hai scene nhà hiện tách đầu RB thành khớp `head_yaw` với hành trình mô phỏng ±270°. ToF, RGB camera và CAD đầu gắn trên khớp này. Servo vị trí trong MuJoCo dùng đặc tính mô phỏng để kiểm tra lia đầu; cần hiệu chỉnh mô hình mô-tơ trước khi suy ra tốc độ hoặc mô-men trên phần cứng.
 
 Mặc định GUI mở mặt bằng SLAM chính thức. Để mở cảnh AWS tham khảo:

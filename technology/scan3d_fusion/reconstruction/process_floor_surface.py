@@ -108,7 +108,10 @@ class Greater:
         face_height = centers@self.plane[:3]+self.plane[3]
         self.wall_base = ((np.abs(self.source.face_normals@self.plane[:3]) < .30) &
                           (face_height > -.04) & (face_height < .18) & (outside <= .90))
-        support = np.unique(np.round(np.vstack((ground[:, :2], centers[self.wall_base, :2]))/.01)*.01, axis=0)
+        mesh_floor = ((np.abs(self.source.face_normals@self.plane[:3]) > .7) &
+                      (np.max(np.abs(triangles@self.plane[:3]+self.plane[3]), axis=1) < .06))
+        support = np.unique(np.round(np.vstack((ground[:, :2], centers[self.wall_base, :2],
+                                                 centers[mesh_floor, :2]))/.01)*.01, axis=0)
         self.triangulation = Delaunay(support)
         tri = support[self.triangulation.simplices]
         sides = [np.linalg.norm(tri[:, (i+1)%3]-tri[:, (i+2)%3], axis=1) for i in range(3)]
@@ -161,7 +164,7 @@ class Greater:
         observed = (self.hits>0)&footprint&~self.drops
         distance = distance_transform_edt(~observed)*self.resolution
         effective_fill_gap=p['max_fill_gap_m']*p['fill_weight']/100
-        inferred = footprint&~observed&~self.drops&(distance<=effective_fill_gap)&(p['fill_weight']>0)
+        inferred = footprint&~observed&(distance<=effective_fill_gap)&(p['fill_weight']>0)
         processed = observed|inferred
         if not observed.any():
             raise ValueError('No measured ground cells inside the selected footprint')
@@ -242,7 +245,7 @@ class Greater:
         (target/'greater_profile.json').write_text(json.dumps(profile,indent=2)+'\n')
         manifest=dict(**profile,source_mesh=str(self.mesh_path),ground_layers=str(self.layers_path),
                       plane=self.plane.tolist(),observed_cells=int(result['observed'].sum()),
-                      inferred_cells=int(result['inferred'].sum()),excluded_drop_cells=int(self.drops.sum()),
+                      inferred_cells=int(result['inferred'].sum()),drop_evidence_cells=int(self.drops.sum()),
                       obstacle_cells=int(self.obstacles.sum()),removed_near_plane_faces=int(floor_faces.sum()),
                       preserved_object_faces=int(len(objects.faces)),p95_observed_height_change_m=float(np.percentile(measured_error,95)),
                       layers=layer_paths,fill_semantics='Inferred cells are not sensor observations or certified free space.')

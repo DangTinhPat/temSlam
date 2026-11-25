@@ -106,12 +106,17 @@ class RbModel:
     def _lighting(spec):
         """Bright, even light: a strong headlight, a sun with a shadow, and a sky gradient instead of black."""
         headlight = spec.visual.headlight
-        headlight.ambient, headlight.diffuse, headlight.specular = [.45, .45, .45], [.70, .70, .70], [.2, .2, .2]
+        room_lights = [light for light in spec.lights if light.name.startswith("ceiling_")]
+        headlight.ambient = [max(.45, float(value)) for value in headlight.ambient]
+        headlight.diffuse, headlight.specular = ([.22] * 3, [.05] * 3) if room_lights else ([.70] * 3, [.2] * 3)
         # Reuse the key light to keep the house plus headlight within OpenGL's eight-light limit.
         sun = spec.light("key") or spec.worldbody.add_light()
         sun.pos, sun.dir = [0.3, -0.5, 2.0], [-0.1, 0.25, -1.0]
-        sun.diffuse, sun.specular = [.85, .85, .85], [.3, .3, .3]
+        sun.diffuse, sun.specular = ([.16] * 3, [.03] * 3) if room_lights else ([.85] * 3, [.3] * 3)
+        sun.type = mujoco.mjtLightType.mjLIGHT_DIRECTIONAL
         sun.castshadow = True
+        for light in room_lights:
+            light.diffuse, light.specular = [.08] * 3, [.01] * 3
         sky = spec.add_texture(name="rb_sky", type=mujoco.mjtTexture.mjTEXTURE_SKYBOX,
                                builtin=mujoco.mjtBuiltin.mjBUILTIN_GRADIENT, rgb1=[.72, .82, .95], rgb2=[.35, .42, .55],
                                width=512, height=3072)
