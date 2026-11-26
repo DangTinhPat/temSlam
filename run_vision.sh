@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-exec "$(cd "$(dirname "$0")" && pwd)/technology/scan3d_fusion/live/run.sh" "$@"
+root="$(cd "$(dirname "$0")" && pwd)"
+exec python3 "$root/simulation/demo/live/headless.py" --preview "$@"

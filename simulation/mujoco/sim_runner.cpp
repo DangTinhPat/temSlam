@@ -8,7 +8,7 @@
 #include "rb1/control/RobotController.hpp"
 #include "SimActuatorBus.hpp"
 #include "Mpu6500Model.hpp"
-#include "../../technology/scan3d_fusion/mapping/tof_only/tof_sensor.hpp"
+#include "../../simulation/demo/mapping/tof_only/tof_sensor.hpp"
 #include <iomanip>
 
 #include <algorithm>
@@ -284,14 +284,21 @@ class RbV3Runner {
   }
 
   int run() {
-    const auto wall_start = std::chrono::steady_clock::now();
+    using Clock = std::chrono::steady_clock;
+    auto wall_start = Clock::now();
+    const double speed = options_.speed_factor > 0.0 ? options_.speed_factor : 1.0;
     while (!quit_) {
       step();
       if (options_.run_for_s > 0.0 && sim_time_s_ >= options_.run_for_s) break;
       if (options_.speed_factor > 0.0 || options_.realtime) {
-        const auto deadline = wall_start + std::chrono::duration_cast<
-            std::chrono::steady_clock::duration>(std::chrono::duration<double>(
-                sim_time_s_ / (options_.speed_factor > 0.0 ? options_.speed_factor : 1.0)));
+        auto deadline = wall_start + std::chrono::duration_cast<Clock::duration>(
+            std::chrono::duration<double>(sim_time_s_ / speed));
+        const auto now = Clock::now();
+        // A stalled live capture must not repay wall time by bursting camera frames.
+        if (options_.capture_sync && now - deadline > std::chrono::duration<double>(tof::period / speed)) {
+          wall_start += now - deadline;
+          deadline = now;
+        }
         std::this_thread::sleep_until(deadline);
       }
     }

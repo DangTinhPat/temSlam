@@ -11,7 +11,7 @@ cmake --build firmware/build -j8 --target rb1_sim
 
 Tham số mô hình mặc định và công cụ hiện hành vẫn dùng `model/dynamic.xml`.
 
-GUI lấy `simulation/scenarios/indoor_tiny_house.xml` làm mặt bằng SLAM mặc định. Cảnh AWS RoboMaker lớn vẫn có tại `simulation/scenarios/indoor_small_house.xml`. Có thể chọn scene khác bằng `RB1_SIM_MODEL=/path/to/model.xml python3 gui/sim_gui.py`.
+Demo sử dụng `simulation/scenarios/bmap1_demo_fixed_camera.xml`. Xem [cách chạy từ gốc repo](../../README.md).
 
 Viewer chạy riêng với runner vật lý. Trên máy hiện tại, renderer dùng RTX 3060; `DRI_PRIME` từ môi trường vẫn được giữ nếu người dùng đã đặt. Tùy chọn `--primitives` của `gui/rb1_gui/cad_viewer.py` vẫn cho phép xem robot bằng các khối đơn giản khi cần.
 

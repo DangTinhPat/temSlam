@@ -39,10 +39,15 @@ target_link_libraries(rb1_sim PRIVATE rb1_control rb1_core rb1_hal
   "${MUJOCO_LIBRARY}" Threads::Threads dl)
 set_target_properties(rb1_sim PROPERTIES BUILD_RPATH "${MUJOCO_ROOT}")
 
-execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../technology/scan3d_fusion/mapping/tof_only/generate_tof_calibration.py ${CMAKE_CURRENT_BINARY_DIR}/tof_calibration.hpp COMMAND_ERROR_IS_FATAL ANY)
+execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../../simulation/demo/mapping/tof_only/generate_tof_calibration.py ${CMAKE_CURRENT_BINARY_DIR}/tof_calibration.hpp COMMAND_ERROR_IS_FATAL ANY)
 target_include_directories(rb1_sim PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../technology/scan3d_fusion/mapping/native tof_mapping)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../simulation/demo/mapping/tof_only tof_mapping)
 add_dependencies(rb1_sim rb_tof_mapper)
+if(BUILD_TESTING)
+  add_test(NAME sim_capture_pacing COMMAND ${Python3_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_capture_pacing.py $<TARGET_FILE:rb1_sim>)
+  set_tests_properties(sim_capture_pacing PROPERTIES TIMEOUT 15)
+endif()
 
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../technology/scan3d_fusion/config/tof.yaml ${CMAKE_CURRENT_SOURCE_DIR}/../../technology/scan3d_fusion/mapping/tof_only/generate_tof_calibration.py)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../../simulation/demo/config/tof.yaml ${CMAKE_CURRENT_SOURCE_DIR}/../../simulation/demo/mapping/tof_only/generate_tof_calibration.py)

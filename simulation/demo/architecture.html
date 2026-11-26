@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Kiến trúc và workflow từ RGB, ToF fusion, cuVSLAM đến mesh TSDF trong dự án temSlam.">
+  <title>Kiến trúc Fusion → SLAM → Mesh | temSlam</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202b36;
+      --muted: #607080;
+      --line: #d9e1e7;
+      --paper: #f4f6f7;
+      --card: #fff;
+      --blue: #3b6f91;
+      --blue-pale: #eaf3f8;
+      --teal: #287c77;
+      --teal-pale: #e8f4f1;
+      --amber: #9a671b;
+      --amber-pale: #fff5df;
+      --shadow: 0 12px 32px rgba(28, 48, 64, .07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    a { color: #285f82; text-decoration-thickness: .08em; text-underline-offset: .18em; }
+    a:hover { color: #173f5d; }
+    .page { max-width: 1180px; margin: 0 auto; padding: 34px 24px 72px; }
+    .eyebrow { color: var(--teal); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 800px; margin: 10px 0 14px; font-size: clamp(2rem, 5vw, 3.45rem); line-height: 1.08; letter-spacing: -.04em; }
+    h2 { margin: 0 0 10px; font-size: clamp(1.35rem, 3vw, 1.85rem); letter-spacing: -.025em; }
+    h3 { margin: 0 0 7px; font-size: 1.05rem; }
+    .lede { max-width: 820px; color: var(--muted); font-size: 1.1rem; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 28px; }
+    .pill { padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: #435564; font-size: .82rem; font-weight: 650; }
+    .card { margin-top: 22px; padding: clamp(20px, 3vw, 32px); border: 1px solid var(--line); border-radius: 18px; background: var(--card); box-shadow: var(--shadow); }
+    .section-intro { max-width: 760px; margin-bottom: 22px; color: var(--muted); }
+    .diagram-wrap { overflow-x: auto; border: 1px solid #e4e9ed; border-radius: 14px; background: #fbfcfd; }
+    svg.arch { display: block; width: 100%; min-width: 880px; height: auto; }
+    .arch text { font-family: inherit; fill: var(--ink); }
+    .arch .node { fill: #fff; stroke: #cbd7df; stroke-width: 1.5; }
+    .arch .node-blue { fill: var(--blue-pale); stroke: #a9c5d6; }
+    .arch .node-teal { fill: var(--teal-pale); stroke: #a8d1c9; }
+    .arch .node-amber { fill: var(--amber-pale); stroke: #e4c889; }
+    .arch .title { font-size: 15px; font-weight: 750; }
+    .arch .small { font-size: 11.5px; fill: #596b79; }
+    .arch .lane { font-size: 11px; fill: #607080; font-weight: 800; letter-spacing: .08em; }
+    .arch .edge { fill: none; stroke: #7c93a2; stroke-width: 2; marker-end: url(#arrow); }
+    .arch .edge-data { stroke: var(--blue); }
+    .arch .edge-pose { stroke: var(--teal); }
+    .arch .edge-display { stroke: #9b7b43; stroke-dasharray: 5 5; }
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 16px; color: var(--muted); font-size: .85rem; }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .swatch { width: 17px; height: 3px; border-radius: 3px; background: var(--blue); }
+    .swatch.pose { background: var(--teal); }
+    .swatch.display { background: repeating-linear-gradient(90deg, #9b7b43 0 4px, transparent 4px 7px); }
+    .note { padding: 16px 18px; border-left: 4px solid var(--teal); border-radius: 8px; background: var(--teal-pale); color: #33504e; }
+    .note strong { color: #214e49; }
+    .steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; counter-reset: step; }
+    .step { position: relative; min-height: 130px; padding: 18px 18px 16px 62px; border: 1px solid var(--line); border-radius: 13px; background: #fff; counter-increment: step; }
+    .step::before { content: counter(step, decimal-leading-zero); position: absolute; top: 17px; left: 17px; color: var(--teal); font-size: .85rem; font-weight: 850; }
+    .step p { margin: 0; color: var(--muted); font-size: .94rem; }
+    .step small { display: block; margin-top: 8px; color: #687c8b; }
+    .two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .mode { padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+    .mode.hybrid { border-top: 4px solid var(--teal); }
+    .mode.graph { border-top: 4px solid var(--amber); }
+    .mode ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); }
+    .mode li + li { margin-top: 7px; }
+    .tag { display: inline-block; margin-bottom: 9px; padding: 3px 8px; border-radius: 999px; background: var(--teal-pale); color: #28615b; font-size: .76rem; font-weight: 800; }
+    .graph .tag { background: var(--amber-pale); color: #805613; }
+    .handoff { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .file { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .file code { display: block; overflow-wrap: anywhere; color: #2a536c; font-size: .82rem; font-weight: 700; }
+    .file p { margin: 7px 0 0; color: var(--muted); font-size: .87rem; }
+    .limits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .limit { padding: 17px; border: 1px solid #ead9b8; border-radius: 12px; background: #fffaf0; color: #66563a; }
+    .limit strong { display: block; margin-bottom: 5px; color: #785517; }
+    .refs { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+    footer { margin-top: 24px; color: var(--muted); font-size: .85rem; }
+    @media (max-width: 760px) {
+      .page { padding: 24px 15px 50px; }
+      .steps, .two-col { grid-template-columns: 1fr; }
+      .handoff { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .limits { grid-template-columns: 1fr; }
+      .card { border-radius: 14px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 0; }
+      .card { box-shadow: none; break-inside: avoid; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">temSlam · kiến trúc hệ thống</div>
+      <h1>Từ RGB + ToF fusion đến bản đồ SLAM 3D</h1>
+      <p class="lede">Luồng hiện hành tách việc suy ra chiều sâu, ước lượng pose và tích lũy hình học thành các khối riêng. Depth đã fusion cùng pose ước lượng đi vào TSDF để tạo mesh; RViz chỉ nhận dữ liệu để hiển thị.</p>
+      <div class="meta" aria-label="Tóm tắt cấu hình">
+        <span class="pill">RGB 640 × 480</span>
+        <span class="pill">ToF 8 × 8</span>
+        <span class="pill">DELTAR + ToF support</span>
+        <span class="pill">cuVSLAM RGB-D</span>
+        <span class="pill">Wheel / IMU odometry</span>
+        <span class="pill">TSDF + Marching Cubes</span>
+      </div>
+    </header>
+
+    <section class="card" aria-labelledby="architecture-title">
+      <h2 id="architecture-title">Sơ đồ kiến trúc</h2>
+      <p class="section-intro">Depth và pose là hai luồng riêng, chỉ gặp nhau tại bước tích lũy TSDF. Encoder/IMU không sửa ảnh depth; cuVSLAM không nhận wheel/IMU làm factor nội bộ.</p>
+      <div class="diagram-wrap">
+        <svg class="arch" viewBox="0 0 1120 500" role="img" aria-labelledby="diagram-title diagram-desc">
+          <title id="diagram-title">Luồng dữ liệu RGB-ToF qua fusion, SLAM và dựng mesh</title>
+          <desc id="diagram-desc">MuJoCo cung cấp RGB, ToF và odometry đồng bộ. DELTAR tạo depth fusion. cuVSLAM ước lượng chuyển động RGB-D; wheel và IMU tạo odometry nền. Bản chụp pose graph kết hợp chúng rồi chuyển keyframe depth và pose vào TSDF. Mesh cuối được hiển thị qua RViz.</desc>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7c93a2"/></marker>
+          </defs>
+          <text class="lane" x="25" y="36">LUỒNG HÌNH HỌC / DEPTH</text>
+          <text class="lane" x="25" y="293">LUỒNG ĐỊNH VỊ / POSE</text>
+
+          <rect class="node" x="25" y="75" width="170" height="105" rx="13"/>
+          <text class="title" x="43" y="104">Thu nhận đồng bộ</text>
+          <text class="small" x="43" y="128">RGB + ToF 8×8 + timestamp</text>
+          <text class="small" x="43" y="148">Encoder, IMU, góc cổ</text>
+
+          <rect class="node-blue" x="235" y="75" width="190" height="105" rx="13"/>
+          <text class="title" x="253" y="104">DELTAR + ToF support</text>
+          <text class="small" x="253" y="128">Depth dày từ RGB và ToF</text>
+          <text class="small" x="253" y="148">Căn bias, loại số đo lệch</text>
+
+          <rect class="node-blue" x="468" y="75" width="170" height="105" rx="13"/>
+          <text class="title" x="486" y="104">RGB-D keyframe</text>
+          <text class="small" x="486" y="128">RGB + depth uint16 (mm)</text>
+          <text class="small" x="486" y="148">Zero depth vẫn là unknown</text>
+
+          <rect class="node-teal" x="468" y="330" width="170" height="105" rx="13"/>
+          <text class="title" x="486" y="359">cuVSLAM RGB-D</text>
+          <text class="small" x="486" y="383">Visual tracking / SLAM</text>
+          <text class="small" x="486" y="403">Pose và pose graph</text>
+
+          <rect class="node" x="235" y="330" width="190" height="105" rx="13"/>
+          <text class="title" x="253" y="359">Wheel / IMU odometry</text>
+          <text class="small" x="253" y="383">Pose thân liên tục</text>
+          <text class="small" x="253" y="403">Gắn camera bằng động học cổ</text>
+
+          <rect class="node-teal" x="690" y="274" width="190" height="130" rx="13"/>
+          <text class="title" x="708" y="304">Bản chụp pose graph</text>
+          <text class="small" x="708" y="329">Pose graph → hệ map cố định</text>
+          <text class="small" x="708" y="349">Một pose cho mỗi keyframe</text>
+          <text class="small" x="708" y="373">Keyframe depth + camera pose</text>
+
+          <rect class="node-amber" x="690" y="75" width="190" height="105" rx="13"/>
+          <text class="title" x="708" y="104">TSDF trên GPU</text>
+          <text class="small" x="708" y="128">Tích lũy depth theo pose</text>
+          <text class="small" x="708" y="148">Đơn vị depth: mét</text>
+
+          <rect class="node-amber" x="923" y="75" width="170" height="105" rx="13"/>
+          <text class="title" x="941" y="104">Mesh 3D</text>
+          <text class="small" x="941" y="128">Marching Cubes</text>
+          <text class="small" x="941" y="148">Lọc / làm mịn bề mặt</text>
+
+          <rect class="node" x="923" y="274" width="170" height="130" rx="13"/>
+          <text class="title" x="941" y="304">RViz / lưu kết quả</text>
+          <text class="small" x="941" y="329">STL / PLY + metadata</text>
+          <text class="small" x="941" y="349">Cloud, trajectory, mesh</text>
+          <text class="small" x="941" y="373">ROS chỉ ở lớp hiển thị</text>
+
+          <path class="edge edge-data" d="M195 126 H235"/>
+          <path class="edge edge-data" d="M425 126 H468"/>
+          <path class="edge edge-data" d="M638 126 H690"/>
+          <path class="edge edge-data" d="M880 126 H923"/>
+          <path class="edge edge-display" d="M1008 180 V274"/>
+          <path class="edge edge-pose" d="M195 148 C210 148 212 382 235 382"/>
+          <path class="edge edge-pose" d="M425 382 H468"/>
+          <path class="edge edge-pose" d="M638 382 H690"/>
+          <path class="edge edge-pose" d="M785 274 V203 Q785 190 773 180"/>
+          <text class="small" x="27" y="217">Capture ghép odometry gần nhất trong ±20 ms</text>
+          <text class="small" x="690" y="224">Data depth</text>
+          <text class="small" x="798" y="224">Pose camera</text>
+        </svg>
+        <div class="legend" aria-label="Chú giải sơ đồ">
+          <span><i class="swatch"></i>Depth / hình học</span>
+          <span><i class="swatch pose"></i>Odometry / pose</span>
+          <span><i class="swatch display"></i>Hiển thị và xuất file</span>
+        </div>
+      </div>
+      <p class="note" style="margin:18px 0 0"><strong>Điểm hội tụ:</strong> TSDF cần cả depth hợp lệ và pose camera tương ứng. Depth rỗng không được thay bằng mặt sàn; pose simulator ground truth không đi vào luồng dựng map.</p>
+    </section>
+
+    <section class="card" aria-labelledby="workflow-title">
+      <h2 id="workflow-title">Workflow của một phiên quét</h2>
+      <p class="section-intro">Các worker chạy song song nhưng trao đổi qua snapshot có timestamp, file phiên và IPC; không phải một hàm duy nhất chạy tuần tự từ đầu đến cuối.</p>
+      <div class="steps">
+        <article class="step"><h3>Thu nhận và ghép thời gian</h3><p>MuJoCo render RGB 640×480, mô phỏng ToF 8×8, ghi encoder/gyro và góc cổ. Capture được ghép với odometry hợp lệ trong ngưỡng 20 ms.</p><small>Đầu ra: live_capture + odometry packet.</small></article>
+        <article class="step"><h3>Suy ra depth fusion</h3><p>DELTAR dự đoán depth dày từ RGB và histogram ToF. `tof_support` căn bias và kiểm tra lại depth theo từng vùng ToF; pixel bị loại hoặc không đo được giữ giá trị zero.</p><small>Đầu ra: RGB-D, depth lưu uint16 theo millimét.</small></article>
+        <article class="step"><h3>Tracking RGB-D</h3><p>cuVSLAM 17.0.1 chạy RGB-D trên GPU, trả visual pose và odometry pose. Trên sàn phẳng, worker giữ XY/yaw thân từ pose thị giác, lấy roll/pitch từ IMU và độ cao từ động học bánh/chân, rồi lắp lại camera theo mount của từng keyframe. Quy tắc này áp dụng cả sau khi pose graph được duyệt.</p><small>Không đưa IMU thành factor bên trong cuVSLAM.</small></article>
+        <article class="step"><h3>Kiểm tra và bắt lại pose</h3><p>Wheel/IMU giúp đối chiếu chuyển động gần nhất và độ lệch tích lũy qua sáu pose đã duyệt. Khi vượt 8 cm hoặc 0,12 rad, worker giữ mesh và tìm lại vị trí từ ảnh RGB-D gần hoặc checkpoint cuVSLAM. Ba ảnh liên tiếp phải nhất quán trước khi ghép tiếp.</p><small>Khi mất bám kéo dài, tracker tiếp tục nhận ảnh và ghi dữ liệu quanh sự kiện để kiểm tra lại.</small></article>
+        <article class="step"><h3>Chọn keyframe</h3><p>Giữ ảnh khi camera dịch khoảng 5 cm hoặc xoay khoảng 4,6° so với keyframe trước. Frame rỗng depth bị bỏ qua, frame không giữ vẫn có thể được cuVSLAM tracking.</p><small>Đầu ra: keyframes/*.npz + live_sequence.json.</small></article>
+        <article class="step"><h3>Tích lũy TSDF</h3><p>Với mỗi keyframe, chiếu depth theo camera pose vào voxel volume. TSDF tích hợp thêm góc nhìn trên GPU và dựng lại lưới khi pose graph sửa pose cũ hoặc map vượt vùng lưới.</p><small>Mesh được làm mới theo lô và cần tối thiểu ba quan sát hỗ trợ.</small></article>
+        <article class="step"><h3>Trích mesh</h3><p>Marching Cubes lấy zero-crossing có hỗ trợ, sau đó lọc thành phần nhỏ và làm mịn Gaussian/Taubin. Vùng thiếu quan sát vẫn có thể để hở.</p><small>Đầu ra: mesh-*.stl khi chạy live.</small></article>
+        <article class="step"><h3>Finalize và hiển thị</h3><p>Khi phiên dừng sạch, dựng lại TSDF từ toàn bộ lịch sử keyframe đã lưu, xuất `final_mesh.stl`, `final_mesh.ply` và metadata pose/depth source; RViz nhận mesh qua bridge.</p><small>RViz không tracking, không fusion và không sửa bản đồ.</small></article>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="policy-title">
+      <h2 id="policy-title">Pose dùng để ghép map</h2>
+      <p>Worker tích lũy keyframe theo pose thị giác đã duyệt. Khi cuVSLAM báo loop closure hoặc PGO, hoặc khi phiên dừng sạch, worker chỉ áp dụng pose graph có đủ pose theo timestamp và có hiệu chỉnh trong giới hạn.</p>
+      <p>Wheel/IMU cung cấp pose neo đầu tiên và số liệu đối chiếu chuyển động giữa các ảnh. Giá trị đối chiếu được lưu cùng kết quả bắt lại pose.</p>
+    </section>
+
+    <section class="card" aria-labelledby="artifacts-title">
+      <h2 id="artifacts-title">Các điểm bàn giao dữ liệu</h2>
+      <div class="handoff">
+        <div class="file"><code>rgbd.npz</code><p>Snapshot RGB-D mới nhất, timestamp, intrinsics, mount và nhãn ground/obstacle/uncertain.</p></div>
+        <div class="file"><code>keyframes/*.npz</code><p>Depth fusion và dữ liệu ToF cần thiết cho dựng lại.</p></div>
+        <div class="file"><code>live_sequence.json</code><p>Danh sách keyframe, pose camera, nguồn pose và bounds.</p></div>
+        <div class="file"><code>cloud.npz</code><p>Cloud đã giảm mẫu và quỹ đạo để chẩn đoán/hiển thị.</p></div>
+        <div class="file"><code>pose_quality.json</code><p>Số frame, keyframe, sai khác wheel/IMU và sự kiện loop closure/PGO từ SDK.</p></div>
+        <div class="file"><code>mesh_diagnostics.jsonl</code><p>Thời điểm xuất mesh, số keyframe tích hợp và thời gian dựng từng bản.</p></div>
+        <div class="file"><code>mesh-*.stl</code><p>Revision mesh live mới nhất.</p></div>
+        <div class="file"><code>final_mesh.stl / .ply</code><p>Mesh cuối được dựng lại sau khi phiên kết thúc sạch.</p></div>
+        <div class="file"><code>final_mesh.json</code><p>Pose source, depth source, số frame, voxel và bounds của mesh.</p></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="boundaries-title">
+      <h2 id="boundaries-title">Ranh giới và giới hạn hiện tại</h2>
+      <div class="limits">
+        <div class="limit"><strong>Chưa phải VIO</strong>IMU và encoder được xử lý bên ngoài cuVSLAM; không có tích hợp IMU chặt trong tracker.</div>
+        <div class="limit"><strong>Depth không phải đo dày độc lập</strong>ToF chỉ có 64 vùng; các pixel còn lại chủ yếu là suy luận của DELTAR có ràng buộc ToF.</div>
+        <div class="limit"><strong>Map chưa được chứng nhận</strong>Loop closure, sai số pose và độ phủ hình học cần đánh giá theo phiên; unknown không đồng nghĩa free space.</div>
+      </div>
+      <p style="margin:18px 0 0"><strong>Navigation nằm downstream:</strong> segmentation/grid/costmap tiêu thụ map sau SLAM. Chúng không thuộc lõi fusion → tracking → TSDF và không tự làm sạch pose hay lấp mesh.</p>
+    </section>
+
+    <section class="card" aria-labelledby="source-title">
+      <h2 id="source-title">Mã nguồn theo từng khối</h2>
+      <div class="refs">
+        <a href="live/headless.py">Điều phối phiên headless</a>
+        <a href="live/worker_inference.py">Worker DELTAR/fusion</a>
+        <a href="live/worker_tracking.py">Worker tracking/keyframe</a>
+        <a href="../../vslam/tracker.py">Adapter cuVSLAM RGB-D</a>
+        <a href="../../vslam/localization.py">Pose wheel/IMU</a>
+        <a href="live/worker_reconstruction.py">Worker TSDF/finalize</a>
+        <a href="reconstruction/reconstruct.py">TSDF và trích mesh</a>
+        <a href="live/rviz.py">Bridge hiển thị RViz</a>
+        <a href="../../README.md">README kỹ thuật</a>
+      </div>
+    </section>
+
+    <footer>Đối chiếu theo source tree hiện tại · temSlam · 25/11/2026</footer>
+  </main>
+</body>
+</html>

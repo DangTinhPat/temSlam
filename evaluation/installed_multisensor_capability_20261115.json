@@ -1,7 +1,0 @@
-{
-  "purpose": "Installed SDK construction capability only; no sensor data, no tracking, no map",
-  "version": "17.0.1+cu12",
-  "calibration": "Nominal API-only placeholders, NOT sensor calibration",
-  "construction_supported": true,
-  "tracking_validated": false
-}

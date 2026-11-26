@@ -1,3 +1,4 @@
-# Simulated sensors
+# Cảm biến mô phỏng
 
-ToF-only adapter và mã sinh calibration nằm trong [technology/scan3d_fusion/mapping/tof_only](../../technology/scan3d_fusion/mapping/tof_only/). Calibration dùng chung ở `technology/scan3d_fusion/config/tof.yaml`. Sensor adapter không được đọc pose thật của robot.
+Hiệu chuẩn và thiết lập ToF nằm trong [demo/config](../demo/config/).
+Mã ToF và mapper wheel/IMU nằm trong [demo/mapping/tof_only](../demo/mapping/tof_only/).

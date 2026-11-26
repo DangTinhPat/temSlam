@@ -1,0 +1,19 @@
+# ToF 8x8 module placement on the left side of the RB head cover.
+schema_version: 1
+sensor:
+  name: tof_8x8
+  parent_link: body_link
+  position_body_m: [0.08782801416, 0.020098, 0.09394086668] # module center; +Y is robot-left.
+  xyaxes_body: [-0.06823166404, -0.997564, 0.0145030879, 0.2079116908, 0.0, 0.9781476007] # rigid 12-degree tilt with the RGB camera.
+  board_size_m: [0.002, 0.01, 0.01] # full X/Y/Z dimensions; generic render placeholder
+  window_size_m: [0.0004, 0.005, 0.005]
+  fovy_deg: 45
+  min_range_m: 0.02
+  max_range_m: 4.0
+  frame_rate_hz: 15
+  noise:
+    near_accuracy_m: 0.014 # 20–200 mm, 8x8 gray target at 5 kLux
+    far_accuracy_fraction: 0.08 # 200–4000 mm, 8x8 gray target at 5 kLux
+    corner_extra_fraction: 0.04
+    sigma_fraction_of_bound: 0.0 # idealized no-noise test
+  # shortcut: package dimensions are generic because the exact ToF board CAD was not supplied; replace with vendor CAD when available.

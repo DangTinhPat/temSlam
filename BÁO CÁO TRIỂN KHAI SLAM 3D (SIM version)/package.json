@@ -1,1 +1,0 @@
-{"name":"rb-research-portal","private":true,"type":"module","scripts":{"test:ui":"playwright test"},"dependencies":{"three":"0.181.2"},"devDependencies":{"@playwright/test":"1.56.1"}}

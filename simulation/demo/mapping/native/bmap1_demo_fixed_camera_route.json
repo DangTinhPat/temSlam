@@ -1,0 +1,48 @@
+{
+  "start_xy_m": [
+    0.8,
+    -0.6
+  ],
+  "clearance_radius_m": 0.25,
+  "route_length_m": 16.7,
+  "finish_yaw_deg": 0,
+  "scene": "simulation/scenarios/bmap1_demo_fixed_camera.xml",
+  "route_style": "Middle room perimeter with a fixed camera; body turns towards the next waypoint",
+  "waypoints": [
+    {
+      "x": 0.8,
+      "y": -0.6,
+      "speed_m_s": 0.08
+    },
+    {
+      "x": 1.9,
+      "y": -1.9,
+      "speed_m_s": 0.08
+    },
+    {
+      "x": -1.9,
+      "y": -1.9,
+      "speed_m_s": 0.08
+    },
+    {
+      "x": -1.9,
+      "y": 1.9,
+      "speed_m_s": 0.08
+    },
+    {
+      "x": 1.9,
+      "y": 1.9,
+      "speed_m_s": 0.08
+    },
+    {
+      "x": 1.9,
+      "y": -0.6,
+      "speed_m_s": 0.08
+    },
+    {
+      "x": 0.8,
+      "y": -0.6,
+      "speed_m_s": 0.08
+    }
+  ]
+}
